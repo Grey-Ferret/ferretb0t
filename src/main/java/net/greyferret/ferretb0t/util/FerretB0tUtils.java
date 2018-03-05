@@ -1,7 +1,6 @@
 package net.greyferret.ferretb0t.util;
 
 import net.dv8tion.jda.core.entities.Message;
-import net.greyferret.ferretb0t.entity.Loots;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

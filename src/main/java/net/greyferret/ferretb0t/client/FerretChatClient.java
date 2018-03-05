@@ -83,7 +83,9 @@ public class FerretChatClient extends DefaultClient {
     @Bean("getViewers")
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public List<String> getViewers() {
-        Optional<Channel> _channel = client.getChannel(chatConfig.getChannelWithHashTag());
+        String channelName = chatConfig.getChannelWithHashTag();
+
+        Optional<Channel> _channel = client.getChannel(channelName);
         if (_channel.isPresent()) {
             Channel channel = _channel.get();
             return channel.getNicknames();

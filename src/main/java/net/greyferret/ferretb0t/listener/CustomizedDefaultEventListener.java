@@ -50,13 +50,14 @@ public class CustomizedDefaultEventListener extends DefaultEventListener {
         try {
             if (event.getActor() instanceof User) {
                 User user = (User) event.getActor();
-                String userNick = user.getNick();
-                logger.info(userNick + " leaved!");
+//                String userNick = user.getNick();
+//                logger.info(userNick + " leaved!");
+                String channelName = chatConfig.getChannelWithHashTag();
 
                 //Old functions:
-                Optional<Channel> channel = this.client.getChannel(chatConfig.getChannelWithHashTag());
-                if (!chatConfig.getChannelWithHashTag().equalsIgnoreCase(event.getParameters().get(0))) {
-                    logger.warn("PART message was thrown for channel " + event.getParameters().get(0) + ", instead of " + chatConfig.getChannelWithHashTag());
+                Optional<Channel> channel = this.client.getChannel(channelName);
+                if (!channelName.equalsIgnoreCase(event.getParameters().get(0))) {
+                    logger.warn("PART message was thrown for channel " + event.getParameters().get(0) + ", instead of " + channelName);
                 }
                 if (channel.isPresent()) {
                     if (event.getActor() instanceof User) {
@@ -78,7 +79,7 @@ public class CustomizedDefaultEventListener extends DefaultEventListener {
                         this.trackException(event, "PART message sent for non-user");
                     }
                 } else {
-                    logger.warn("Channel is not presented for PART message. Channel: " + event.getParameters().get(0) + ", amount of channels: " + this.client.getChannels().size());
+                    logger.warn("No channel was found for PART message.");
                 }
             } else
                 throw new Exception("Actor with leave message wasn't user " + event.getActor());
