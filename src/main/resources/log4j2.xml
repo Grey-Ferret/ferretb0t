@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="log-path">logs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="consoleLogger" target="SYSTEM_OUT">
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n}"/>
+        </Console>
+        <RollingFile name="fileFileLogger" fileName="${log-path}/log.log"
+                     filePattern="${log-path}/log-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="errorFileLogger" fileName="${log-path}/error.log"
+                     filePattern="${log-path}/error-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info" additivity="false">
+            <AppenderRef ref="consoleLogger"/>
+            <AppenderRef ref="fileFileLogger" level="info"/>
+            <AppenderRef ref="errorFileLogger" level="error"/>
+        </Root>
+
+        <logger name="org.pircbotx.PircBotX" level="ERROR"/>
+        <logger name="org.pircbotx.InputParser" level="ERROR"/>
+        <logger name="org.pircbotx.output.OutputRaw" level="ERROR"/>
+        <logger name="org.pircbotx.dcc.Chat" level="ERROR"/>
+        <logger name="org.pircbotx.dcc.ReceiveChat" level="ERROR"/>
+    </Loggers>
+</Configuration>
