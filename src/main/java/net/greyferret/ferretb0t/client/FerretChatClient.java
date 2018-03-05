@@ -28,70 +28,68 @@ import java.util.Optional;
 @Component("FerretChatClient")
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class FerretChatClient extends DefaultClient {
-    @Autowired
-    private ChatConfig chatConfig;
-    @Autowired
-    private ApplicationContext context;
-    @Autowired
-    private ApplicationConfig applicationConfig;
+	private static final Logger logger = LogManager.getLogger();
+	@Autowired
+	private ChatConfig chatConfig;
+	@Autowired
+	private ApplicationContext context;
+	@Autowired
+	private ApplicationConfig applicationConfig;
+	private DefaultClient client;
 
-    private static final Logger logger = LogManager.getLogger();
+	private FerretChatClient() {
+	}
 
-    private DefaultClient client;
+	@PostConstruct
+	private void postConstruct() {
+		DefaultBuilder defaultBuilder = (DefaultBuilder) Client.builder();
+		client = (DefaultClient) defaultBuilder.nick(chatConfig.getLogin())
+				.serverPassword(chatConfig.getPassword())
+				.serverHost("irc.twitch.tv")
+				.name("FerretB0t")
+				.build();
+		FerretB0tChatListener ferretB0tChatListener = context.getBean(FerretB0tChatListener.class, client);
+		DefaultActorTracker actorTracker = new DefaultActorTracker(client);
+		client.getActorTracker().trackChannel(chatConfig.getChannelWithHashTag());
+		client.getActorTracker().setChannelListReceived(chatConfig.getChannelWithHashTag());
+		client.addChannel(chatConfig.getChannelWithHashTag());
+		client.getEventManager().registerEventListener(ferretB0tChatListener);
+		for (Object listener : client.getEventManager().getRegisteredEventListeners()) {
+			if (listener instanceof DefaultEventListener) {
+				client.getEventManager().unregisterEventListener(listener);
+				CustomizedDefaultEventListener customizedDefaultEventListener = context.getBean(CustomizedDefaultEventListener.class, client);
+				client.getEventManager().registerEventListener(customizedDefaultEventListener);
+			}
+		}
+	}
 
-    private FerretChatClient() {
-    }
+	public void connect() {
+		client.connect();
+		client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
+	}
 
-    @PostConstruct
-    private void postConstruct() {
-        DefaultBuilder defaultBuilder = (DefaultBuilder) Client.builder();
-        client = (DefaultClient) defaultBuilder.nick(chatConfig.getLogin())
-                .serverPassword(chatConfig.getPassword())
-                .serverHost("irc.twitch.tv")
-                .name("FerretB0t")
-                .build();
-        FerretB0tChatListener ferretB0tChatListener = context.getBean(FerretB0tChatListener.class, client);
-        DefaultActorTracker actorTracker = new DefaultActorTracker(client);
-        client.getActorTracker().trackChannel(chatConfig.getChannelWithHashTag());
-        client.getActorTracker().setChannelListReceived(chatConfig.getChannelWithHashTag());
-        client.addChannel(chatConfig.getChannelWithHashTag());
-        client.getEventManager().registerEventListener(ferretB0tChatListener);
-        for (Object listener : client.getEventManager().getRegisteredEventListeners()) {
-            if (listener instanceof DefaultEventListener) {
-                client.getEventManager().unregisterEventListener(listener);
-                CustomizedDefaultEventListener customizedDefaultEventListener = context.getBean(CustomizedDefaultEventListener.class, client);
-                client.getEventManager().registerEventListener(customizedDefaultEventListener);
-            }
-        }
-    }
+	public void sendMessage(String text) {
+		logger.info(text);
+		if (!applicationConfig.isDebug())
+			client.sendMessage(chatConfig.getChannelWithHashTag(), text);
+	}
 
-    public void connect() {
-        client.connect();
-        client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
-    }
+	public Optional<Channel> getChannel(String channel) {
+		return client.getChannel(channel);
+	}
 
-    public void sendMessage(String text) {
-        logger.info(text);
-        if (!applicationConfig.isDebug())
-            client.sendMessage(chatConfig.getChannelWithHashTag(), text);
-    }
+	@Bean("getViewers")
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public List<String> getViewers() {
+		String channelName = chatConfig.getChannelWithHashTag();
 
-    public Optional<Channel> getChannel(String channel) {
-        return client.getChannel(channel);
-    }
-
-    @Bean("getViewers")
-    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public List<String> getViewers() {
-        String channelName = chatConfig.getChannelWithHashTag();
-
-        Optional<Channel> _channel = client.getChannel(channelName);
-        if (_channel.isPresent()) {
-            Channel channel = _channel.get();
-            return channel.getNicknames();
-        } else {
-            logger.warn("NO CHANNEL WAS FOUND");
-            return new ArrayList<>();
-        }
-    }
+		Optional<Channel> _channel = client.getChannel(channelName);
+		if (_channel.isPresent()) {
+			Channel channel = _channel.get();
+			return channel.getNicknames();
+		} else {
+			logger.warn("No channel was found");
+			return new ArrayList<>();
+		}
+	}
 }

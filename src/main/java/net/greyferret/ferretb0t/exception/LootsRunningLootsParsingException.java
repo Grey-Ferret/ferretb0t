@@ -6,7 +6,7 @@ package net.greyferret.ferretb0t.exception;
  * Created by GreyFerret on 11.12.2017.
  */
 public class LootsRunningLootsParsingException extends FerretB0tException {
-    public LootsRunningLootsParsingException(Exception e) {
-        super(e);
-    }
+	public LootsRunningLootsParsingException(Exception e) {
+		super(e);
+	}
 }

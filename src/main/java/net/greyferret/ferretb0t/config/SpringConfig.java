@@ -27,68 +27,68 @@ import java.util.Properties;
 @Configuration
 @PropertySource("file:${configdir}/config.properties")
 @ComponentScan(basePackages = {"net.greyferret.ferretb0t"},
-        excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringConfig.class)})
+		excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringConfig.class)})
 @EnableConfigurationProperties({ChatConfig.class, LootsConfig.class, DbConfig.class, ApplicationConfig.class, DiscordConfig.class})
 @EnableTransactionManagement
 public class SpringConfig {
-    private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger();
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
 
-    @Autowired
-    private DbConfig dbConfig;
-    @Autowired
-    private ApplicationConfig applicationConfig;
+	@Autowired
+	private DbConfig dbConfig;
+	@Autowired
+	private ApplicationConfig applicationConfig;
 
-    @Bean
-    public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl(dbConfig.getUrl());
-        dataSource.setUsername(dbConfig.getUsername());
-        dataSource.setPassword(dbConfig.getPassword());
-        return dataSource;
-    }
+	public static SimpleDateFormat getDateFormat() {
+		return dateFormat;
+	}
 
-    public static SimpleDateFormat getDateFormat() {
-        return dateFormat;
-    }
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
+	}
 
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource());
-        em.setPackagesToScan("net.greyferret.ferretb0t.entity");
+	@Bean
+	public DataSource dataSource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName("org.postgresql.Driver");
+		dataSource.setUrl(dbConfig.getUrl());
+		dataSource.setUsername(dbConfig.getUsername());
+		dataSource.setPassword(dbConfig.getPassword());
+		return dataSource;
+	}
 
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        em.setJpaProperties(additionalProperties());
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+		em.setDataSource(dataSource());
+		em.setPackagesToScan("net.greyferret.ferretb0t.entity");
 
-        return em;
-    }
+		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		em.setJpaVendorAdapter(vendorAdapter);
+		em.setJpaProperties(additionalProperties());
 
-    @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(emf);
+		return em;
+	}
 
-        return transactionManager;
-    }
+	@Bean
+	public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+		JpaTransactionManager transactionManager = new JpaTransactionManager();
+		transactionManager.setEntityManagerFactory(emf);
 
-    Properties additionalProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", "update");
-        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
+		return transactionManager;
+	}
+
+	Properties additionalProperties() {
+		Properties properties = new Properties();
+		properties.setProperty("hibernate.hbm2ddl.auto", "update");
+		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
 //        properties.setProperty("hibernate.show_sql", String.valueOf(applicationConfig.isDebug()));
 //        properties.setProperty("hibernate.format_sql", String.valueOf(applicationConfig.isDebug()));
-        properties.setProperty("hibernate.connection.charSet", "UTF-8");
-        return properties;
-    }
-
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }
+		properties.setProperty("hibernate.connection.charSet", "UTF-8");
+		return properties;
+	}
 
 //    @Bean
 //    public PersistenceExceptionTranslationPostProcessor exceptionTranslation(){

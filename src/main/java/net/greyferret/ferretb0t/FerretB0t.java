@@ -20,44 +20,42 @@ import javax.annotation.PostConstruct;
  */
 @Component
 public class FerretB0t implements Runnable {
-    @Autowired
-    private ApplicationContext context;
+	private static final Logger logger = LogManager.getLogger();
+	@Autowired
+	private ApplicationContext context;
+	private boolean isOn;
+	private LootsEngine lootsEngine;
+	private ChatEngine chatEngine;
+	private DiscordEngine discordEngine;
+	private Thread lootsThread;
+	private Thread chatThread;
+	private Thread discordThread;
 
-    private static final Logger logger = LogManager.getLogger();
+	public FerretB0t() {
+	}
 
-    private boolean isOn;
-    private LootsEngine lootsEngine;
-    private ChatEngine chatEngine;
-    private DiscordEngine discordEngine;
-    private Thread lootsThread;
-    private Thread chatThread;
-    private Thread discordThread;
+	@PostConstruct
+	private void postConstruct() {
+		this.lootsEngine = context.getBean(LootsEngine.class);
+		this.chatEngine = context.getBean(ChatEngine.class);
+		this.discordEngine = context.getBean(DiscordEngine.class);
+		this.lootsThread = new Thread(this.lootsEngine);
+		this.lootsThread.setName("Loots Bot");
+		this.chatThread = new Thread(this.chatEngine);
+		this.chatThread.setName("Chat Bot");
+		this.discordThread = new Thread(this.discordEngine);
+		this.discordThread.setName("Discord Bot");
+	}
 
-    public FerretB0t() {
-    }
+	@Override
+	public void run() {
+		this.isOn = true;
+		this.discordThread.start();
+		this.lootsThread.start();
+		this.chatThread.start();
 
-    @PostConstruct
-    private void postConstruct() {
-        this.lootsEngine = context.getBean(LootsEngine.class);
-        this.chatEngine = context.getBean(ChatEngine.class);
-        this.discordEngine = context.getBean(DiscordEngine.class);
-        this.lootsThread = new Thread(this.lootsEngine);
-        this.lootsThread.setName("Loots Bot");
-        this.chatThread = new Thread(this.chatEngine);
-        this.chatThread.setName("Chat Bot");
-        this.discordThread = new Thread(this.discordEngine);
-        this.discordThread.setName("Discord Bot");
-    }
+		while (isOn) {
 
-    @Override
-    public void run() {
-        this.isOn = true;
-        this.discordThread.start();
-        this.lootsThread.start();
-        this.chatThread.start();
-
-        while (isOn) {
-
-        }
-    }
+		}
+	}
 }

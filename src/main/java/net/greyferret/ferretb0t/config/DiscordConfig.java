@@ -12,50 +12,50 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "discord")
 public class DiscordConfig {
-    @NotEmpty
-    private String token;
-    private Long announcementChannel;
-    private Long testChannel;
-    private Long checkTime;
-    private String escapeLogBotId;
+	@NotEmpty
+	private String token;
+	private Long announcementChannel;
+	private Long testChannel;
+	private Long checkTime;
+	private String escapeLogBotId;
 
-    public String getToken() {
-        return token;
-    }
+	public String getToken() {
+		return token;
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public void setToken(String token) {
+		this.token = token;
+	}
 
-    public Long getAnnouncementChannel() {
-        return announcementChannel;
-    }
+	public Long getAnnouncementChannel() {
+		return announcementChannel;
+	}
 
-    public void setAnnouncementChannel(Long announcementChannel) {
-        this.announcementChannel = announcementChannel;
-    }
+	public void setAnnouncementChannel(Long announcementChannel) {
+		this.announcementChannel = announcementChannel;
+	}
 
-    public Long getTestChannel() {
-        return testChannel;
-    }
+	public Long getTestChannel() {
+		return testChannel;
+	}
 
-    public void setTestChannel(Long testChannel) {
-        this.testChannel = testChannel;
-    }
+	public void setTestChannel(Long testChannel) {
+		this.testChannel = testChannel;
+	}
 
-    public Long getCheckTime() {
-        return checkTime;
-    }
+	public Long getCheckTime() {
+		return checkTime;
+	}
 
-    public void setCheckTime(Long checkTime) {
-        this.checkTime = checkTime;
-    }
+	public void setCheckTime(Long checkTime) {
+		this.checkTime = checkTime;
+	}
 
-    public String getEscapeLogBotId() {
-        return escapeLogBotId;
-    }
+	public String getEscapeLogBotId() {
+		return escapeLogBotId;
+	}
 
-    public void setEscapeLogBotId(String escapeLogBotId) {
-        this.escapeLogBotId = escapeLogBotId;
-    }
+	public void setEscapeLogBotId(String escapeLogBotId) {
+		this.escapeLogBotId = escapeLogBotId;
+	}
 }

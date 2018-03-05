@@ -13,48 +13,47 @@ import java.util.List;
 
 @Component
 public class ViewersEngine implements Runnable {
-    @Autowired
-    private ChatConfig chatConfig;
-    @Autowired
-    private ViewerService viewerService;
-    @Autowired
-    private ApplicationContext context;
+	private static final Logger logger = LogManager.getLogger();
+	@Autowired
+	private ChatConfig chatConfig;
+	@Autowired
+	private ViewerService viewerService;
+	@Autowired
+	private ApplicationContext context;
+	private boolean isOn = true;
 
-    private static final Logger logger = LogManager.getLogger();
-    private boolean isOn = true;
+	private ViewersEngine() {
+	}
 
-    private ViewersEngine() {
-    }
+	/***
+	 * Main run method
+	 */
+	@Override
+	public void run() {
+		try {
+			boolean lastResult = false;
+			while (isOn) {
+				Integer retryMs;
+				if (lastResult == true)
+					retryMs = chatConfig.getUsersCheckMs();
+				else
+					retryMs = chatConfig.getUsersCheckMsFailed();
 
-    /***
-     * Main run method
-     */
-    @Override
-    public void run() {
-        try {
-            boolean lastResult = false;
-            while (isOn) {
-                Integer retryMs;
-                if (lastResult == true)
-                    retryMs = chatConfig.getUsersCheckMs();
-                else
-                    retryMs = chatConfig.getUsersCheckMsFailed();
+				Thread.sleep(retryMs);
 
-                Thread.sleep(retryMs);
+				boolean isChannelOnline = context.getBean("isChannelOnline", boolean.class);
+				List<String> nicknames = context.getBean("getViewers", ArrayList.class);
 
-                boolean isChannelOnline = context.getBean("isChannelOnline", boolean.class);
-                List<String> nicknames = context.getBean("getViewers", ArrayList.class);
+				if (nicknames.size() > 1) {
+					viewerService.checkViewersAndAddPoints(nicknames, isChannelOnline);
+					logger.info("User list (" + nicknames.size() + ") was refreshed!");
+					lastResult = true;
+				} else {
+					lastResult = false;
+				}
+			}
+		} catch (Exception e) {
 
-                if (nicknames.size() > 1) {
-                    viewerService.checkViewersAndAddPoints(nicknames, isChannelOnline);
-                    logger.info("User list (" + nicknames.size() + ") was refreshed!");
-                    lastResult = true;
-                } else {
-                    lastResult = false;
-                }
-            }
-        } catch (Exception e) {
-
-        }
-    }
+		}
+	}
 }

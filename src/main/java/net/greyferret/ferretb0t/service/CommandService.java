@@ -22,58 +22,57 @@ import java.util.Set;
 
 @Service
 public class CommandService {
-    @PersistenceContext
-    private EntityManager entityManager;
-    @Autowired
-    private EntityManagerFactory entityManagerFactory;
+	private static final Logger logger = LogManager.getLogger();
+	@PersistenceContext
+	private EntityManager entityManager;
+	@Autowired
+	private EntityManagerFactory entityManagerFactory;
 
-    private static final Logger logger = LogManager.getLogger();
+	public static void proceedFoundCommand(Command command, ChannelMessageEventWrapper event) {
+		Command.MentionType mentionType = command.getMentionType();
+		if (mentionType == Command.MentionType.WITH_MENTION) {
+			findAndSendMessageWithMention(command, event);
+		} else if (mentionType == Command.MentionType.WITHOUT_MENTION) {
+			event.sendMessage(command.getResponse());
+		} else {
+			findAndSendMessageWithMention(command, event);
+		}
+	}
 
-    @Transactional
-    public boolean proceedCommand(String code, ChannelMessageEventWrapper event) {
-        if (code.startsWith("!"))
-            code = code.substring(1);
+	private static void findAndSendMessageWithMention(Command command, ChannelMessageEventWrapper event) {
+		String[] split = StringUtils.split(FerretB0tUtils.buildMessage(event.getMessage()), ' ');
+		if (split.length == 1)
+			event.sendMessageWithMention(command.getResponse());
+		else
+			event.sendMessageWithMention(command.getResponse(), split[split.length - 1]);
+	}
 
-        for (Command command : getAllCommands()) {
-            if (command.getAllCodes().contains(code)) {
-                proceedFoundCommand(command, event);
-                return true;
-            }
-        }
-        return false;
-    }
+	@Transactional
+	public boolean proceedCommand(String code, ChannelMessageEventWrapper event) {
+		if (code.startsWith("!"))
+			code = code.substring(1);
 
-    @Transactional
-    public Set<Command> getAllCommands() {
-        Set<Command> all = new HashSet<>();
+		for (Command command : getAllCommands()) {
+			if (command.getAllCodes().contains(code)) {
+				proceedFoundCommand(command, event);
+				return true;
+			}
+		}
+		return false;
+	}
 
-        CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-        CriteriaQuery<Command> criteria = builder.createQuery(Command.class);
-        Root<Command> root = criteria.from(Command.class);
-        criteria.select(root);
+	@Transactional
+	public Set<Command> getAllCommands() {
+		Set<Command> all = new HashSet<>();
 
-        List<Command> commandList = entityManager.createQuery(criteria).getResultList();
-        all.addAll(commandList);
-        return all;
-    }
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Command> criteria = builder.createQuery(Command.class);
+		Root<Command> root = criteria.from(Command.class);
+		criteria.select(root);
 
-    public static void proceedFoundCommand(Command command, ChannelMessageEventWrapper event) {
-        Command.MentionType mentionType = command.getMentionType();
-        if (mentionType == Command.MentionType.WITH_MENTION) {
-            findAndSendMessageWithMention(command, event);
-        } else if (mentionType == Command.MentionType.WITHOUT_MENTION) {
-            event.sendMessage(command.getResponse());
-        } else {
-            findAndSendMessageWithMention(command, event);
-        }
-    }
-
-    private static void findAndSendMessageWithMention(Command command, ChannelMessageEventWrapper event) {
-        String[] split = StringUtils.split(FerretB0tUtils.buildMessage(event.getMessage()), ' ');
-        if (split.length == 1)
-            event.sendMessageWithMention(command.getResponse());
-        else
-            event.sendMessageWithMention(command.getResponse(), split[split.length - 1]);
-    }
+		List<Command> commandList = entityManager.createQuery(criteria).getResultList();
+		all.addAll(commandList);
+		return all;
+	}
 }
 

@@ -14,153 +14,153 @@ import javax.validation.constraints.NotNull;
 @Validated
 @ConfigurationProperties(prefix = "loots")
 public class LootsConfig {
-    @NotEmpty
-    private String login;
-    @NotEmpty
-    private String password;
-    @NotEmpty
-    private String tokenChroma;
-    @NotEmpty
-    private String token;
-    @NotEmpty
-    private String key;
-    @NotNull
-    private Long pointsForLoots;
+	@NotEmpty
+	private String login;
+	@NotEmpty
+	private String password;
+	@NotEmpty
+	private String tokenChroma;
+	@NotEmpty
+	private String token;
+	@NotEmpty
+	private String key;
+	@NotNull
+	private Long pointsForLoots;
 
-    private Timer timer;
+	private Timer timer;
 
-    private SubPlan subPlan;
+	private SubPlan subPlan;
 
-    public static class Timer {
-        private Long additionalRetryMs;
-        private Long defaultRetryMs;
-        private Long maxRetryMs;
+	public String getLogin() {
+		return login;
+	}
 
-        public Long getAdditionalRetryMs() {
-            return additionalRetryMs;
-        }
+	public void setLogin(String login) {
+		this.login = login;
+	}
 
-        public void setAdditionalRetryMs(Long additionalRetryMs) {
-            this.additionalRetryMs = additionalRetryMs;
-        }
+	public String getPassword() {
+		return password;
+	}
 
-        public Long getDefaultRetryMs() {
-            return defaultRetryMs;
-        }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-        public void setDefaultRetryMs(Long defaultRetryMs) {
-            this.defaultRetryMs = defaultRetryMs;
-        }
+	public String getTokenChroma() {
+		return tokenChroma;
+	}
 
-        public Long getMaxRetryMs() {
-            return maxRetryMs;
-        }
+	public void setTokenChroma(String tokenChroma) {
+		this.tokenChroma = tokenChroma;
+	}
 
-        public void setMaxRetryMs(Long maxRetryMs) {
-            this.maxRetryMs = maxRetryMs;
-        }
-    }
+	public String getToken() {
+		return token;
+	}
 
-    public static class SubPlan {
-        private Long prime;
-        private Long five;
-        private Long ten;
-        private Long twentyFive;
+	public void setToken(String token) {
+		this.token = token;
+	}
 
-        public Long getPrime() {
-            return prime;
-        }
+	public String getKey() {
+		return key;
+	}
 
-        public void setPrime(Long prime) {
-            this.prime = prime;
-        }
+	public void setKey(String key) {
+		this.key = key;
+	}
 
-        public Long getFive() {
-            return five;
-        }
+	public Timer getTimer() {
+		return timer;
+	}
 
-        public void setFive(Long five) {
-            this.five = five;
-        }
+	public void setTimer(Timer timer) {
+		this.timer = timer;
+	}
 
-        public Long getTen() {
-            return ten;
-        }
+	public Long getPointsForLoots() {
+		return pointsForLoots;
+	}
 
-        public void setTen(Long ten) {
-            this.ten = ten;
-        }
+	public void setPointsForLoots(Long pointsForLoots) {
+		this.pointsForLoots = pointsForLoots;
+	}
 
-        public Long getTwentyFive() {
-            return twentyFive;
-        }
+	public SubPlan getSubPlan() {
+		return subPlan;
+	}
 
-        public void setTwentyFive(Long twentyFive) {
-            this.twentyFive = twentyFive;
-        }
-    }
+	public void setSubPlan(SubPlan subPlan) {
+		this.subPlan = subPlan;
+	}
 
-    public String getLogin() {
-        return login;
-    }
+	public static class Timer {
+		private Long additionalRetryMs;
+		private Long defaultRetryMs;
+		private Long maxRetryMs;
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
+		public Long getAdditionalRetryMs() {
+			return additionalRetryMs;
+		}
 
-    public String getPassword() {
-        return password;
-    }
+		public void setAdditionalRetryMs(Long additionalRetryMs) {
+			this.additionalRetryMs = additionalRetryMs;
+		}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+		public Long getDefaultRetryMs() {
+			return defaultRetryMs;
+		}
 
-    public String getTokenChroma() {
-        return tokenChroma;
-    }
+		public void setDefaultRetryMs(Long defaultRetryMs) {
+			this.defaultRetryMs = defaultRetryMs;
+		}
 
-    public void setTokenChroma(String tokenChroma) {
-        this.tokenChroma = tokenChroma;
-    }
+		public Long getMaxRetryMs() {
+			return maxRetryMs;
+		}
 
-    public String getToken() {
-        return token;
-    }
+		public void setMaxRetryMs(Long maxRetryMs) {
+			this.maxRetryMs = maxRetryMs;
+		}
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public static class SubPlan {
+		private Long prime;
+		private Long five;
+		private Long ten;
+		private Long twentyFive;
 
-    public String getKey() {
-        return key;
-    }
+		public Long getPrime() {
+			return prime;
+		}
 
-    public void setKey(String key) {
-        this.key = key;
-    }
+		public void setPrime(Long prime) {
+			this.prime = prime;
+		}
 
-    public Timer getTimer() {
-        return timer;
-    }
+		public Long getFive() {
+			return five;
+		}
 
-    public void setTimer(Timer timer) {
-        this.timer = timer;
-    }
+		public void setFive(Long five) {
+			this.five = five;
+		}
 
-    public Long getPointsForLoots() {
-        return pointsForLoots;
-    }
+		public Long getTen() {
+			return ten;
+		}
 
-    public void setPointsForLoots(Long pointsForLoots) {
-        this.pointsForLoots = pointsForLoots;
-    }
+		public void setTen(Long ten) {
+			this.ten = ten;
+		}
 
-    public SubPlan getSubPlan() {
-        return subPlan;
-    }
+		public Long getTwentyFive() {
+			return twentyFive;
+		}
 
-    public void setSubPlan(SubPlan subPlan) {
-        this.subPlan = subPlan;
-    }
+		public void setTwentyFive(Long twentyFive) {
+			this.twentyFive = twentyFive;
+		}
+	}
 }

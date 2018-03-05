@@ -12,19 +12,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DiscordListener extends ListenerAdapter {
-    @Autowired
-    private DiscordConfig discordConfig;
+	private static final Logger logger = LogManager.getLogger();
+	@Autowired
+	private DiscordConfig discordConfig;
 
-    private static final Logger logger = LogManager.getLogger();
-
-    @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (!event.getAuthor().getId().equalsIgnoreCase(discordConfig.getEscapeLogBotId())) {
-            if (event.isFromType(ChannelType.PRIVATE)) {
-                logger.info("PRIVATE: " + FerretB0tUtils.buildDiscordMessageLog(event.getMessage()));
-            } else {
-                logger.info(FerretB0tUtils.buildDiscordMessageLog(event.getMessage()));
-            }
-        }
-    }
+	@Override
+	public void onMessageReceived(MessageReceivedEvent event) {
+		if (!event.getAuthor().getId().equalsIgnoreCase(discordConfig.getEscapeLogBotId())) {
+			if (event.isFromType(ChannelType.PRIVATE)) {
+				logger.info("PRIVATE: " + FerretB0tUtils.buildDiscordMessageLog(event.getMessage()));
+			} else {
+				logger.info(FerretB0tUtils.buildDiscordMessageLog(event.getMessage()));
+			}
+		}
+	}
 }
