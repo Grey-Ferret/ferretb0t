@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component("FerretChatClient")
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -49,9 +50,6 @@ public class FerretChatClient extends DefaultClient {
 				.name("FerretB0t")
 				.build();
 		FerretB0tChatListener ferretB0tChatListener = context.getBean(FerretB0tChatListener.class, client);
-		DefaultActorTracker actorTracker = new DefaultActorTracker(client);
-		client.getActorTracker().trackChannel(chatConfig.getChannelWithHashTag());
-		client.getActorTracker().setChannelListReceived(chatConfig.getChannelWithHashTag());
 		client.addChannel(chatConfig.getChannelWithHashTag());
 		client.getEventManager().registerEventListener(ferretB0tChatListener);
 		for (Object listener : client.getEventManager().getRegisteredEventListeners()) {
@@ -74,16 +72,13 @@ public class FerretChatClient extends DefaultClient {
 			client.sendMessage(chatConfig.getChannelWithHashTag(), text);
 	}
 
-	public Optional<Channel> getChannel(String channel) {
-		return client.getChannel(channel);
-	}
-
 	@Bean("getViewers")
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public List<String> getViewers() {
 		String channelName = chatConfig.getChannelWithHashTag();
 
 		Optional<Channel> _channel = client.getChannel(channelName);
+		Set<Channel> trackedChannels = client.getActorTracker().getTrackedChannels();
 		if (_channel.isPresent()) {
 			Channel channel = _channel.get();
 			return channel.getNicknames();
