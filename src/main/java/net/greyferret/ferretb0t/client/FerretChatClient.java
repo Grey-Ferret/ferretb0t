@@ -78,7 +78,6 @@ public class FerretChatClient extends DefaultClient {
 		String channelName = chatConfig.getChannelWithHashTag();
 
 		Optional<Channel> _channel = client.getChannel(channelName);
-		Set<Channel> trackedChannels = client.getActorTracker().getTrackedChannels();
 		if (_channel.isPresent()) {
 			Channel channel = _channel.get();
 			return channel.getNicknames();
