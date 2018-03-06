@@ -51,7 +51,7 @@ public class FerretChatClient extends DefaultClient {
 				.build();
 		FerretB0tChatListener ferretB0tChatListener = context.getBean(FerretB0tChatListener.class, client);
 		client.addChannel(chatConfig.getChannelWithHashTag());
-		client.getEventManager().registerEventListener(ferretB0tChatListener);
+		client.getActorTracker().trackChannel(chatConfig.getChannelWithHashTag());
 		for (Object listener : client.getEventManager().getRegisteredEventListeners()) {
 			if (listener instanceof DefaultEventListener) {
 				client.getEventManager().unregisterEventListener(listener);
@@ -59,6 +59,7 @@ public class FerretChatClient extends DefaultClient {
 				client.getEventManager().registerEventListener(customizedDefaultEventListener);
 			}
 		}
+		client.getEventManager().registerEventListener(ferretB0tChatListener);
 	}
 
 	public void connect() {
@@ -83,6 +84,16 @@ public class FerretChatClient extends DefaultClient {
 			return channel.getNicknames();
 		} else {
 			logger.warn("No channel was found");
+			client.removeChannel(channelName);
+			client.addChannel(channelName);
+			if (client.getChannel(channelName).isPresent()) {
+				logger.info("remove>add fixed it");
+			} else {
+				logger.info("remove>add DIDNT FIX IT");
+				client.getActorTracker().trackChannel(channelName);
+				if (client.getChannel(channelName).isPresent())
+					logger.info("FIXED IT YEAH");
+			}
 			return new ArrayList<>();
 		}
 	}

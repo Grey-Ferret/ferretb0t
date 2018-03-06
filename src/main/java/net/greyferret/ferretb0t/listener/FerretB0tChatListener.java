@@ -64,7 +64,7 @@ public class FerretB0tChatListener extends TwitchListener {
 
 	@CommandFilter("PRIVMSG")
 	@Handler(priority = Integer.MAX_VALUE - 2)
-	public void userState(ClientReceiveCommandEvent event) {
+	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper wrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
 		String userType = wrapper.getTag("user-type");
@@ -88,7 +88,6 @@ public class FerretB0tChatListener extends TwitchListener {
 		}
 
 	}
-
 
 	@Handler
 	private void onUserNoticeEvent(UserNoticeEvent event) {

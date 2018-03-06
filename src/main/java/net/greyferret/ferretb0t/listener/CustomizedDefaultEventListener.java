@@ -38,14 +38,14 @@ public class CustomizedDefaultEventListener extends DefaultEventListener {
 
 	@Override
 	@CommandFilter("MODE")
-	@Handler(priority = Integer.MAX_VALUE - 1)
+	@Handler(priority = Integer.MAX_VALUE - 2)
 	public void mode(ClientReceiveCommandEvent event) {
 
 	}
 
 	@Override
 	@CommandFilter("PART")
-	@Handler(priority = Integer.MAX_VALUE - 1)
+	@Handler(priority = Integer.MAX_VALUE - 2)
 	public void part(ClientReceiveCommandEvent event) {
 		try {
 			if (event.getActor() instanceof User) {
@@ -80,6 +80,9 @@ public class CustomizedDefaultEventListener extends DefaultEventListener {
 					}
 				} else {
 					logger.warn("No channel was found for PART message.");
+					client.getActorTracker().trackChannel(channelName);
+					if (client.getChannel(channelName).isPresent())
+						logger.info("FIXED IT YEAH");
 				}
 			} else
 				throw new Exception("Actor with leave message wasn't user " + event.getActor());
