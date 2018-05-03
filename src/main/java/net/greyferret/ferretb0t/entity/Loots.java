@@ -21,145 +21,132 @@ import java.util.Date;
 @Entity
 @Table(name = "loots")
 public class Loots implements Serializable {
-    private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger();
 
-    @Type(type = "org.hibernate.type.TextType")
-    @Column(name = "message")
-    private String message;
-    @Column(name = "id")
-    @Id
-    private String id;
-    @Column(name = "date")
-    private Date date;
-    @Column(name = "paid")
-    private Boolean paid;
-    @Column(name = "loots_name")
-    private String lootsName;
+	@Type(type = "org.hibernate.type.TextType")
+	@Column(name = "message")
+	private String message;
+	@Column(name = "id")
+	@Id
+	private String id;
+	@Column(name = "date")
+	private Date date;
+	@Column(name = "paid")
+	private Boolean paid;
+	@Column(name = "loots_name")
+	private String lootsName;
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "author", referencedColumnName = "loots_Name")
+	private ViewerLootsMap viewerLootsMap;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "author", referencedColumnName = "loots_name")
-    private Viewer viewer;
+	private Loots() {
+	}
 
-    private Loots() {
-    }
+	public Loots(Ok entry) {
+		this.message = entry.getAttachments().getMessage();
+		this.id = entry.getId();
+		this.date = new Date();
+		this.paid = false;
+		String name = FerretB0tUtils.parseLootsAuthor(entry.getFrom().getAccount().getName());
+		this.lootsName = name;
+	}
 
-    public Loots(Ok entry) {
-        this.message = entry.getAttachments().getMessage();
-        this.id = entry.getId();
-        this.date = new Date();
-        this.paid = false;
-        this.lootsName = FerretB0tUtils.parseLootsAuthor(entry.getFrom().getAccount().getName());
-    }
+	/***
+	 * Method for advanced parsing of running Loots (that is currently showing)
+	 *
+	 * @param runningLoots
+	 */
+	public Loots(LinkedTreeMap<String, java.lang.Object> runningLoots) throws LootsRunningLootsParsingException {
+		try {
+			this.id = String.valueOf(runningLoots.get("_id"));
+			LinkedTreeMap<String, Object> attachments = (LinkedTreeMap<String, Object>) runningLoots.get("attachments");
+			this.message = String.valueOf(attachments.get("message"));
+			LinkedTreeMap<String, Object> from = (LinkedTreeMap<String, Object>) runningLoots.get("from");
+			LinkedTreeMap<String, Object> account = (LinkedTreeMap<String, Object>) from.get("account");
+			this.lootsName = FerretB0tUtils.parseLootsAuthor((String) account.get("name"));
+			this.date = new Date();
+			this.paid = false;
+		} catch (Exception e) {
+			throw new LootsRunningLootsParsingException(e);
+		}
+	}
 
-    /***
-     * Method for advanced parsing of running Loots (that is currently showing)
-     *
-     * @param runningLoots
-     */
-    public Loots(LinkedTreeMap<String, java.lang.Object> runningLoots) throws LootsRunningLootsParsingException {
-        try {
-            this.id = String.valueOf(runningLoots.get("_id"));
-            LinkedTreeMap<String, Object> attachments = (LinkedTreeMap<String, Object>) runningLoots.get("attachments");
-            this.message = String.valueOf(attachments.get("message"));
-            LinkedTreeMap<String, Object> from = (LinkedTreeMap<String, Object>) runningLoots.get("from");
-            LinkedTreeMap<String, Object> account = (LinkedTreeMap<String, Object>) from.get("account");
-            this.lootsName = FerretB0tUtils.parseLootsAuthor((String) account.get("name"));
-            this.date = new Date();
-            this.paid = false;
-        } catch (Exception e) {
-            throw new LootsRunningLootsParsingException(e);
-        }
-    }
+	@Override
+	public String toString() {
+		Date dateLatest = this.date;
+		String lootsName;
+		String twitchName;
+		if (viewerLootsMap != null) {
+			lootsName = viewerLootsMap.getLootsName();
+			twitchName = viewerLootsMap.getLootsName();
+		} else {
+			lootsName = this.lootsName;
+			twitchName = this.lootsName;
+		}
+		return "Loots(" + this.id + ") " + SpringConfig.getDateFormat().format(dateLatest) + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
+	}
 
-    /***
-     * Method for advanced parsing of running Loots (that is currently showing)
-     *
-     * @param runningLoots
-     */
-    public Loots(LinkedTreeMap<String, java.lang.Object> runningLoots, Viewer viewer) throws LootsRunningLootsParsingException {
-        this(runningLoots);
-        this.viewer = viewer;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
-    @Override
-    public String toString() {
-        Date dateLatest = this.date;
-        String lootsName;
-        String twitchName;
-        if (viewer != null) {
-            lootsName = viewer.getLootsNameWithCase();
-            twitchName = viewer.getLootsNameWithCase();
-        } else {
-            lootsName = this.lootsName;
-            twitchName = this.lootsName;
-        }
-        return "Loots(" + this.id + ") " + SpringConfig.getDateFormat().format(dateLatest) + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
-    }
+		Loots loots = (Loots) o;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+		return id.equals(loots.id);
 
-        Loots loots = (Loots) o;
+	}
 
-        return id.equals(loots.id);
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
 
-    }
+	public String getMessage() {
+		return message;
+	}
 
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
+	public void setMessage(String message) {
+		this.message = message;
+	}
 
-    public String getMessage() {
-        return message;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getId() {
-        return id;
-    }
+	public Date getDate() {
+		return date;
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public void setDate(Date date) {
+		this.date = date;
+	}
 
-    public Boolean getPaid() {
-        return paid;
-    }
+	public Boolean getPaid() {
+		return paid;
+	}
 
-    public void setPaid(Boolean paid) {
-        this.paid = paid;
-    }
+	public void setPaid(Boolean paid) {
+		this.paid = paid;
+	}
 
-    public Viewer getUser() {
-        return viewer;
-    }
+	public String getLootsName() {
+		return lootsName;
+	}
 
-    public void setUser(Viewer user) {
-        this.viewer = user;
-    }
+	public void setLootsName(String lootsName) {
+		this.lootsName = lootsName;
+	}
 
-    public String getLootsName() {
-        return lootsName;
-    }
+	public ViewerLootsMap getViewerLootsMap() {
+		return viewerLootsMap;
+	}
 
-    public void setLootsName(String lootsName) {
-        this.lootsName = lootsName;
-    }
-
-    public String getAuthorTwitchName() {
-        if (viewer != null)
-            return this.viewer.getLoginWithCase();
-        else
-            return this.lootsName;
-    }
-
-    public String getAuthorLootsName() {
-        return this.lootsName;
-    }
+	public void setViewerLootsMap(ViewerLootsMap viewerLootsMap) {
+		this.viewerLootsMap = viewerLootsMap;
+	}
 }

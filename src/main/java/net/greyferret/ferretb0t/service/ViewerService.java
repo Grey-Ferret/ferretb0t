@@ -1,10 +1,9 @@
 package net.greyferret.ferretb0t.service;
 
 import net.greyferret.ferretb0t.entity.Viewer;
-import org.apache.commons.lang3.StringUtils;
+import net.greyferret.ferretb0t.entity.ViewerLootsMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.kitteh.irc.client.library.element.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -32,63 +31,6 @@ public class ViewerService {
 	private ApplicationContext context;
 	@Autowired
 	private LootsService lootsService;
-
-	/***
-	 * Method that updates Twitch Nick for Loots Nick
-	 *
-	 * @param lootsName
-	 * @param twitchName
-	 * @return
-	 */
-	@Transactional
-	public String updateAlias(String lootsName, String twitchName) {
-		boolean isUpdated = false;
-		String res = "Something went wrong";
-		if (StringUtils.isNotBlank(lootsName) && StringUtils.isNotBlank(twitchName)) {
-			Viewer viewer = entityManager.find(Viewer.class, twitchName.toLowerCase());
-			if (viewer != null) {
-				viewer.setLootsNameWithCase(lootsName);
-				entityManager.merge(viewer);
-				isUpdated = true;
-			} else {
-				viewer = entityManager.find(Viewer.class, lootsName.toLowerCase());
-				if (viewer != null) {
-					viewer.setLootsNameWithCase(twitchName);
-					entityManager.merge(viewer);
-					isUpdated = true;
-				} else {
-					res = "Could not find viewer with name " + twitchName + " or " + lootsName;
-					logger.info("Could not find viewer for " + twitchName + " or " + lootsName);
-				}
-			}
-		}
-		if (isUpdated) {
-			entityManager.flush();
-			res = "Готово!";
-		}
-		return res;
-	}
-
-	@Transactional
-	public String showAliasMessage(String lootsName) {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
-		Root<Viewer> root = criteria.from(Viewer.class);
-		criteria.select(root);
-
-		criteria.where(builder.equal(root.get("lootsName"), lootsName.toLowerCase()));
-
-		Viewer viewer = null;
-		List<Viewer> viewerList = entityManager.createQuery(criteria).getResultList();
-		if (viewer == null) {
-			return "No alias were found";
-		} else {
-			if (viewerList.size() > 1)
-				logger.warn("Found more than 1 viewer with the same very same Loots name: " + lootsName);
-			viewer = viewerList.get(0);
-			return "L:" + lootsName + " T:" + viewer.getLoginWithCase();
-		}
-	}
 
 	@Transactional
 	public void checkViewersAndAddPoints(List<String> users, boolean isChannelOnline) {
@@ -138,16 +80,47 @@ public class ViewerService {
 	@Transactional
 	public Viewer findViewerForLootsName(String lootsName) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
-		Root<Viewer> root = criteria.from(Viewer.class);
+		CriteriaQuery<ViewerLootsMap> criteria = builder.createQuery(ViewerLootsMap.class);
+		Root<ViewerLootsMap> root = criteria.from(ViewerLootsMap.class);
 		criteria.select(root);
 
 		criteria.where(builder.equal(root.get("lootsName"), lootsName.toLowerCase()));
 
-		List<Viewer> userList = entityManager.createQuery(criteria).getResultList();
-		if (userList == null || userList.size() == 0) {
+		List<ViewerLootsMap> viewerLootsMapList = entityManager.createQuery(criteria).getResultList();
+		if (viewerLootsMapList == null || viewerLootsMapList.size() == 0) {
 			return null;
+		} else {
+			ViewerLootsMap viewerLootsMap = viewerLootsMapList.get(0);
+			Viewer viewer = viewerLootsMap.getViewer();
+			if (viewer == null) {
+				Viewer viewerByName = getViewerByName(lootsName.toLowerCase());
+				if (viewerByName != null) {
+					logger.info("Found Viewer by name: " + viewerByName);
+					viewerLootsMap.setViewer(viewerByName);
+					entityManager.merge(viewerLootsMap);
+					entityManager.flush();
+					return viewerByName;
+				}
+			} else {
+				return viewer;
+			}
 		}
-		return userList.get(0);
+		return null;
+	}
+
+	@Transactional
+	public Viewer getViewerByName(String login) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
+		Root<Viewer> root = criteria.from(Viewer.class);
+		criteria.select(root);
+
+		criteria.where(builder.equal(root.get("login"), login));
+
+		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
+		if (resultList == null || resultList.size() == 0) {
+			return null;
+		} else
+			return resultList.get(0);
 	}
 }

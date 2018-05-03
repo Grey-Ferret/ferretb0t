@@ -15,12 +15,6 @@ public class Viewer implements Serializable {
     @Id
     @Column(name = "login")
     private String login;
-    @Column(name = "login_case")
-    private String loginWithCase;
-    @Column(name = "loots_name")
-    private String lootsName;
-    @Column(name = "loots_name_case")
-    private String lootsNameWithCase;
     @Column(name = "points")
     private Long points;
     @Column(name = "true_points")
@@ -34,14 +28,11 @@ public class Viewer implements Serializable {
     @Column(name = "sub_streak")
     private int subStreak;
 
-    private Viewer() {
+    public Viewer() {
     }
 
     public Viewer(String author) {
         this.login = author;
-        this.loginWithCase = author.toLowerCase();
-        this.lootsName = author;
-        this.lootsNameWithCase = author.toLowerCase();
         this.points = 0L;
         this.pointsTrue = 0l;
         this.subStreak = 0;
@@ -55,33 +46,6 @@ public class Viewer implements Serializable {
     @Deprecated
     public void setLogin(String login) {
         this.login = login;
-    }
-
-    public String getLoginWithCase() {
-        return loginWithCase;
-    }
-
-    public void setLoginWithCase(String loginWithCase) {
-        this.loginWithCase = loginWithCase;
-        this.login = loginWithCase.toLowerCase();
-    }
-
-    public String getLootsName() {
-        return lootsName;
-    }
-
-    @Deprecated
-    public void setLootsName(String lootsName) {
-        this.lootsName = lootsName;
-    }
-
-    public String getLootsNameWithCase() {
-        return lootsNameWithCase;
-    }
-
-    public void setLootsNameWithCase(String lootsNameWithCase) {
-        this.lootsNameWithCase = lootsNameWithCase;
-        this.lootsName = lootsNameWithCase.toLowerCase();
     }
 
     public Long getPoints() {

@@ -29,14 +29,7 @@ public class CommandService {
 	private EntityManagerFactory entityManagerFactory;
 
 	public static void proceedFoundCommand(Command command, ChannelMessageEventWrapper event) {
-		Command.MentionType mentionType = command.getMentionType();
-		if (mentionType == Command.MentionType.WITH_MENTION) {
-			findAndSendMessageWithMention(command, event);
-		} else if (mentionType == Command.MentionType.WITHOUT_MENTION) {
-			event.sendMessage(command.getResponse());
-		} else {
-			findAndSendMessageWithMention(command, event);
-		}
+		findAndSendMessageWithMention(command, event);
 	}
 
 	private static void findAndSendMessageWithMention(Command command, ChannelMessageEventWrapper event) {

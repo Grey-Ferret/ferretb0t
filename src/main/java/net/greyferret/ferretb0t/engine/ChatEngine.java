@@ -69,8 +69,8 @@ public class ChatEngine implements Runnable {
 	private void givePoints() {
 		Set<Loots> lootsEntries = lootsService.payForUnpaidLoots();
 		for (Loots loots : lootsEntries) {
-			String message = FerretB0tUtils.buildAddPointsMessage(loots.getAuthorTwitchName(), lootsConfig.getPointsForLoots());
-			viewerService.addPoints(loots.getAuthorLootsName(), lootsConfig.getPointsForLoots());
+			String message = FerretB0tUtils.buildAddPointsMessage(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+			viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
 			if (StringUtils.isNotBlank(message)) {
 				ferretB0t.sendMessage(message);
 			}
