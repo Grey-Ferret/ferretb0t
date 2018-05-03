@@ -2,6 +2,7 @@ package net.greyferret.ferretb0t.listener;
 
 import net.engio.mbassy.listener.Handler;
 import net.greyferret.ferretb0t.config.ChatConfig;
+import net.greyferret.ferretb0t.util.FerretB0tUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
@@ -38,14 +39,14 @@ public class CustomizedDefaultEventListener extends DefaultEventListener {
 
 	@Override
 	@CommandFilter("MODE")
-	@Handler(priority = Integer.MAX_VALUE - 1)
+	@Handler(priority = Integer.MAX_VALUE - 2)
 	public void mode(ClientReceiveCommandEvent event) {
 
 	}
 
 	@Override
 	@CommandFilter("PART")
-	@Handler(priority = Integer.MAX_VALUE - 1)
+	@Handler(priority = Integer.MAX_VALUE - 2)
 	public void part(ClientReceiveCommandEvent event) {
 		try {
 			if (event.getActor() instanceof User) {
@@ -80,6 +81,7 @@ public class CustomizedDefaultEventListener extends DefaultEventListener {
 					}
 				} else {
 					logger.warn("No channel was found for PART message.");
+					FerretB0tUtils.fixClient(client, channelName);
 				}
 			} else
 				throw new Exception("Actor with leave message wasn't user " + event.getActor());

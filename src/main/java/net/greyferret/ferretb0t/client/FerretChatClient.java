@@ -5,6 +5,7 @@ import net.greyferret.ferretb0t.config.ChatConfig;
 import net.greyferret.ferretb0t.config.Messages;
 import net.greyferret.ferretb0t.listener.CustomizedDefaultEventListener;
 import net.greyferret.ferretb0t.listener.FerretB0tChatListener;
+import net.greyferret.ferretb0t.util.FerretB0tUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
@@ -13,6 +14,7 @@ import org.kitteh.irc.client.library.defaults.DefaultClient;
 import org.kitteh.irc.client.library.defaults.DefaultEventListener;
 import org.kitteh.irc.client.library.defaults.feature.DefaultActorTracker;
 import org.kitteh.irc.client.library.element.Channel;
+import org.kitteh.irc.client.library.util.Sanity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -20,10 +22,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component("FerretChatClient")
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -49,11 +53,8 @@ public class FerretChatClient extends DefaultClient {
 				.name("FerretB0t")
 				.build();
 		FerretB0tChatListener ferretB0tChatListener = context.getBean(FerretB0tChatListener.class, client);
-		DefaultActorTracker actorTracker = new DefaultActorTracker(client);
-		client.getActorTracker().trackChannel(chatConfig.getChannelWithHashTag());
-		client.getActorTracker().setChannelListReceived(chatConfig.getChannelWithHashTag());
 		client.addChannel(chatConfig.getChannelWithHashTag());
-		client.getEventManager().registerEventListener(ferretB0tChatListener);
+		client.getActorTracker().trackChannel(chatConfig.getChannelWithHashTag());
 		for (Object listener : client.getEventManager().getRegisteredEventListeners()) {
 			if (listener instanceof DefaultEventListener) {
 				client.getEventManager().unregisterEventListener(listener);
@@ -61,6 +62,7 @@ public class FerretChatClient extends DefaultClient {
 				client.getEventManager().registerEventListener(customizedDefaultEventListener);
 			}
 		}
+		client.getEventManager().registerEventListener(ferretB0tChatListener);
 	}
 
 	public void connect() {
@@ -74,8 +76,10 @@ public class FerretChatClient extends DefaultClient {
 			client.sendMessage(chatConfig.getChannelWithHashTag(), text);
 	}
 
-	public Optional<Channel> getChannel(String channel) {
-		return client.getChannel(channel);
+	@Nonnull
+	@Override
+	public Optional<Channel> getChannel(@Nonnull String name) {
+		return this.client.getActorTracker().getTrackedChannel(Sanity.nullCheck(name, "Channel name cannot be null"));
 	}
 
 	@Bean("getViewers")
@@ -89,6 +93,14 @@ public class FerretChatClient extends DefaultClient {
 			return channel.getNicknames();
 		} else {
 			logger.warn("No channel was found");
+			client.removeChannel(channelName);
+			client.addChannel(channelName);
+			if (client.getChannel(channelName).isPresent()) {
+				logger.info("remove>add fixed it");
+			} else {
+				logger.info("remove>add DIDNT FIX IT");
+				FerretB0tUtils.fixClient(client, channelName);
+			}
 			return new ArrayList<>();
 		}
 	}

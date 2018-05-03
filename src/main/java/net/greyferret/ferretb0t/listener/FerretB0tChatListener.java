@@ -14,17 +14,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
+import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
+import org.kitteh.irc.client.library.exception.KittehServerMessageException;
 import org.kitteh.irc.client.library.feature.filter.CommandFilter;
 import org.kitteh.irc.client.library.feature.twitch.TwitchListener;
 import org.kitteh.irc.client.library.feature.twitch.event.GlobalUserStateEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
+import org.kitteh.irc.client.library.feature.twitch.event.UserStateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import java.util.Optional;
 
 @Component
 public class FerretB0tChatListener extends TwitchListener {
@@ -64,7 +68,7 @@ public class FerretB0tChatListener extends TwitchListener {
 
 	@CommandFilter("PRIVMSG")
 	@Handler(priority = Integer.MAX_VALUE - 2)
-	public void userState(ClientReceiveCommandEvent event) {
+	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper wrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
 		String userType = wrapper.getTag("user-type");
@@ -86,9 +90,7 @@ public class FerretB0tChatListener extends TwitchListener {
 			else
 				logger.error("Test");
 		}
-
 	}
-
 
 	@Handler
 	private void onUserNoticeEvent(UserNoticeEvent event) {
@@ -163,5 +165,24 @@ public class FerretB0tChatListener extends TwitchListener {
 		if (message.startsWith("!repair")) {
 			chatLogic.repair(event);
 		}
+	}
+
+	@Override
+	@CommandFilter("USERSTATE")
+	@Handler(priority = Integer.MAX_VALUE - 2)
+	public void userState(ClientReceiveCommandEvent event) {
+		if (this.ferretChatClient != null && this.ferretChatClient.getEventManager() != null) {
+			this.ferretChatClient.getEventManager().callEvent(new UserStateEvent(this.ferretChatClient, event.getOriginalMessages(), this.getChannel(event)));
+		}
+	}
+
+	@Nonnull
+	private Channel getChannel(ClientReceiveCommandEvent event) {
+		String channelName = event.getParameters().get(0);
+		Optional<Channel> channel = this.ferretChatClient.getChannel(channelName);
+		if (!channel.isPresent()) {
+			FerretB0tUtils.fixClient(this.ferretChatClient, channelName);
+		}
+		return channel.get();
 	}
 }

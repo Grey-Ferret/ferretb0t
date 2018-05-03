@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kitteh.irc.client.library.Client;
 
 /**
  * Created by GreyFerret on 18.12.2017.
@@ -90,5 +91,12 @@ public class FerretB0tUtils {
 			logger.error("Could not build Log based on the following message: " + message, e);
 			return "";
 		}
+	}
+
+	public static boolean fixClient(Client.WithManagement client, String channelName) {
+		client.getActorTracker().trackChannel(channelName);
+		if (client.getChannel(channelName).isPresent())
+			logger.info("FIXED IT YEAH");
+		return true;
 	}
 }
