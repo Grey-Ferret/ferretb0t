@@ -44,8 +44,8 @@ public class ViewerLootsMapService {
 		boolean isUpdated = false;
 		String res = "Something went wrong";
 		if (StringUtils.isNotBlank(lootsName) && StringUtils.isNotBlank(twitchName)) {
-			ViewerLootsMap viewerLootsMap = getViewerLootsMap(lootsName);
-			Viewer viewer = viewerService.getViewerByName(twitchName);
+			ViewerLootsMap viewerLootsMap = getViewerLootsMap(lootsName.toLowerCase());
+			Viewer viewer = viewerService.getViewerByName(twitchName.toLowerCase());
 			if (viewerLootsMap == null) {
 				res = "Не было найдено Лутса с такого ника...";
 				return res;
