@@ -65,10 +65,11 @@
             <version>42.1.4</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.kitteh.irc/client-lib -->
         <dependency>
             <groupId>org.kitteh.irc</groupId>
             <artifactId>client-lib</artifactId>
-            <version>4.0.0</version>
+            <version>4.0.2</version>
         </dependency>
 
         <!--Part of the spring-boot-autoconfigure-->
