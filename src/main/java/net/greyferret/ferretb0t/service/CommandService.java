@@ -41,7 +41,7 @@ public class CommandService {
 	}
 
 	@Transactional
-	public boolean proceedCommand(String code, ChannelMessageEventWrapper event) {
+	public boolean proceedTextCommand(String code, ChannelMessageEventWrapper event) {
 		if (code.startsWith("!"))
 			code = code.substring(1);
 

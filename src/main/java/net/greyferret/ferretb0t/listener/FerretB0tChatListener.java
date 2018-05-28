@@ -16,19 +16,22 @@ import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
-import org.kitteh.irc.client.library.exception.KittehServerMessageException;
 import org.kitteh.irc.client.library.feature.filter.CommandFilter;
 import org.kitteh.irc.client.library.feature.twitch.TwitchListener;
 import org.kitteh.irc.client.library.feature.twitch.event.GlobalUserStateEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserStateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @Component
 public class FerretB0tChatListener extends TwitchListener {
@@ -72,6 +75,13 @@ public class FerretB0tChatListener extends TwitchListener {
 		ChannelMessageEventWrapper wrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
 		String userType = wrapper.getTag("user-type");
+		Calendar registrationDate = wrapper.getRegistrationDate();
+		Calendar instance = Calendar.getInstance();
+		instance.add(Calendar.DATE, -2);
+		if (registrationDate.after(instance)) {
+//			wrapper.sendMessage("New fishy account: " + wrapper.getLogin() + "@drkiray @greyferret");
+		}
+
 		if (wrapper.getMessage().startsWith("!")) {
 			proceedCommandLogic(wrapper);
 			String badges = wrapper.getTag("badges");
@@ -131,8 +141,19 @@ public class FerretB0tChatListener extends TwitchListener {
 	 */
 	private void proceedCommandLogic(ChannelMessageEventWrapper event) {
 		String message = FerretB0tUtils.buildMessage(event.getMessage());
-		String[] split = message.split(" ");
-		commandService.proceedCommand(split[0], event);
+		if (message.startsWith("!go")) {
+			if (message.startsWith("!go remove")) {
+				chatLogic.proceedGoRemove(event);
+			} else {
+				message = message.replaceAll("\\s+", "");
+				if (message.equalsIgnoreCase("!go")) {
+					chatLogic.proceedGoAdd(event);
+				}
+			}
+		} else {
+			String[] split = message.split(" ");
+			commandService.proceedTextCommand(split[0], event);
+		}
 	}
 
 	/***
@@ -164,6 +185,18 @@ public class FerretB0tChatListener extends TwitchListener {
 
 		if (message.startsWith("!repair")) {
 			chatLogic.repair(event);
+		}
+
+		if (message.startsWith("!go")) {
+			if (message.startsWith("!go return")) {
+				chatLogic.proceedGoReturn(event);
+			}
+			if (message.startsWith("!go select")) {
+				chatLogic.proceedGoSelect(event);
+			}
+			if (message.startsWith("!go reset")) {
+				chatLogic.resetGoSelect(event);
+			}
 		}
 	}
 

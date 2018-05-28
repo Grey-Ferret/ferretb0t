@@ -2,6 +2,8 @@ package net.greyferret.ferretb0t.service;
 
 import net.greyferret.ferretb0t.entity.Viewer;
 import net.greyferret.ferretb0t.entity.ViewerLootsMap;
+import net.greyferret.ferretb0t.wrapper.ChannelMessageEventWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by GreyFerret on 27.12.2017.
@@ -122,5 +127,89 @@ public class ViewerService {
 			return null;
 		} else
 			return resultList.get(0);
+	}
+
+	@Transactional
+	public void addToGoList(Viewer viewer, ChannelMessageEventWrapper event) {
+		if (viewer.getGoStatus() == 0) {
+			viewer.setGoStatus(1);
+			entityManager.merge(viewer);
+			entityManager.flush();
+//			event.sendMessageWithMention("успешно добавлен в очередь!");
+		}
+	}
+
+	@Transactional
+	public void removeToGoList(Viewer viewer, ChannelMessageEventWrapper event) {
+		if (viewer.getGoStatus() == 1) {
+			viewer.setGoStatus(0);
+			entityManager.merge(viewer);
+			entityManager.flush();
+			event.sendMessageWithMention("успешно удален из очереди!");
+		}
+	}
+
+	@Transactional
+	public void selectGoList(int numberOfPeople, ChannelMessageEventWrapper event) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
+		Root<Viewer> root = criteria.from(Viewer.class);
+		criteria.select(root);
+
+		criteria.where(builder.equal(root.get("goStatus"), 1));
+
+		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
+		HashSet<Viewer> selectedList;
+
+		if (resultList.size() <= numberOfPeople) {
+			selectedList = new HashSet<>(resultList);
+		} else {
+			selectedList = new HashSet<>();
+			while (selectedList.size() < numberOfPeople) {
+				selectedList.add(resultList.get(ThreadLocalRandom.current().nextInt(resultList.size())));
+			}
+		}
+
+		String selectedViewersString = "";
+		for (Viewer viewer : selectedList) {
+			viewer.setGoStatus(0);
+			if (!StringUtils.isBlank(selectedViewersString)) {
+				selectedViewersString = selectedViewersString + ", ";
+			}
+			selectedViewersString = selectedViewersString + viewer.getLogin();
+			entityManager.merge(viewer);
+		}
+		event.sendMessageWithMention("Были выбраны: " + selectedViewersString);
+		entityManager.flush();
+	}
+
+	@Transactional
+	public void resetGoList(ChannelMessageEventWrapper event) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
+		Root<Viewer> root = criteria.from(Viewer.class);
+		criteria.select(root);
+
+		criteria.where(builder.notEqual(root.get("goStatus"), 0));
+
+		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
+		for (Viewer viewer : resultList) {
+			viewer.setGoStatus(0);
+			entityManager.merge(viewer);
+		}
+		entityManager.flush();
+		event.sendMessageWithMention("очередь была успешно очищена!");
+	}
+
+	@Transactional
+	public void returnToGoList(String login, ChannelMessageEventWrapper event) {
+		Viewer viewer = entityManager.find(Viewer.class, login);
+		if (viewer == null) {
+			event.sendMessageWithMention("Пользователь " + login + " не был найден");
+		} else {
+			viewer.setGoStatus(1);
+			entityManager.merge(viewer);
+			entityManager.flush();
+		}
 	}
 }

@@ -92,13 +92,8 @@ public class FerretChatClient extends DefaultClient {
 			Channel channel = _channel.get();
 			return channel.getNicknames();
 		} else {
-			logger.warn("No channel was found");
-			client.removeChannel(channelName);
-			client.addChannel(channelName);
+			logger.warn("No channel was found, fixing it by my method");
 			if (client.getChannel(channelName).isPresent()) {
-				logger.info("remove>add fixed it");
-			} else {
-				logger.info("remove>add DIDNT FIX IT");
 				FerretB0tUtils.fixClient(client, channelName);
 			}
 			return new ArrayList<>();

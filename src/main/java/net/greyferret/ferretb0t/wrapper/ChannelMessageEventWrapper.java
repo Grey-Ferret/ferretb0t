@@ -4,11 +4,14 @@ import net.greyferret.ferretb0t.client.FerretChatClient;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kitteh.irc.client.library.defaults.element.DefaultUser;
+import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.MessageTag;
 import org.kitteh.irc.client.library.element.ServerMessage;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
 import org.kitteh.irc.client.library.feature.MessageTagManager;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +29,21 @@ public class ChannelMessageEventWrapper {
 	}
 
 	public String getLogin() {
-		return event.getActor().getName();
+		Actor actor = event.getActor();
+		String res = actor.getName();
+		try {
+			DefaultUser defaultUser = (DefaultUser) actor;
+			res = defaultUser.getUserString();
+		} catch (Exception ex) {
+			logger.error("Can't cast Actor to DefaultUser " + actor);
+		}
+		return res;
+	}
+
+	public Calendar getRegistrationDate() {
+		Calendar c = Calendar.getInstance();
+		c.setTimeInMillis(event.getActor().getCreationTime());
+		return c;
 	}
 
 	public void sendMessageWithMention(String text) {
