@@ -140,4 +140,21 @@ public class LootsService {
 
 		return res;
 	}
+
+	@Transactional
+	public void deleteLootsForNickname(String lootsName) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Loots> query = builder.createQuery(Loots.class);
+		Root<Loots> root = query.from(Loots.class);
+
+		query.select(root);
+		ViewerLootsMap viewerLootsMap = new ViewerLootsMap(lootsName.toLowerCase());
+		query.where(builder.equal(root.get("viewerLootsMap"), viewerLootsMap));
+
+		List<Loots> resultList = entityManager.createQuery(query).getResultList();
+		for (Loots loots : resultList) {
+			entityManager.remove(loots);
+		}
+		entityManager.flush();
+	}
 }

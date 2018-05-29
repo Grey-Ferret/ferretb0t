@@ -86,4 +86,12 @@ public class ChatLogic {
 	public void resetGoSelect(ChannelMessageEventWrapper event) {
 		viewerService.resetGoList(event);
 	}
+
+	public void aliasDelete(ChannelMessageEventWrapper event, String message) {
+		String[] split = StringUtils.split(message, ' ');
+		if (split.length == 2) {
+			String answer = viewerLootsMapService.deleteViewerLootsMap(split[1]);
+			event.sendMessageWithMention(answer);
+		}
+	}
 }

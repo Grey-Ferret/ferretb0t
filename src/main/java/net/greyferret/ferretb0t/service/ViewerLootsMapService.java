@@ -5,6 +5,7 @@ import net.greyferret.ferretb0t.entity.ViewerLootsMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ public class ViewerLootsMapService {
 	private ApplicationContext context;
 	@Autowired
 	private ViewerService viewerService;
+	@Autowired
+	private LootsService lootsService;
 
 	/***
 	 * Method that updates Twitch Nick for Loots Nick
@@ -111,6 +114,25 @@ public class ViewerLootsMapService {
 			else
 				twitchNick = viewer.getLogin();
 			return "L:" + viewerLootsMap.getLootsName() + " T:" + twitchNick;
+		}
+	}
+
+	@Transactional
+	public String deleteViewerLootsMap(String lootsName) {
+		ViewerLootsMap viewerLootsMap = getViewerLootsMap(lootsName);
+		if (viewerLootsMap == null)
+			return lootsName + " не был найден в связях.";
+		if (viewerLootsMap.getViewer() != null) {
+			return " для ника " + lootsName + " был найден зритель " + viewerLootsMap.getViewer().getLogin() + ". Удаление запрещено, обратитесь к @GreyFerret";
+		}
+		lootsService.deleteLootsForNickname(lootsName);
+		entityManager.remove(viewerLootsMap);
+		try {
+			entityManager.flush();
+			return "Успешно удалено!";
+		} catch (ConstraintViolationException ex) {
+			logger.error(ex);
+			return "Что-то пошло не так...";
 		}
 	}
 }

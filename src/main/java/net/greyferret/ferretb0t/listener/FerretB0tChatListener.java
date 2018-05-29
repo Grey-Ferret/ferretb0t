@@ -163,7 +163,9 @@ public class FerretB0tChatListener extends TwitchListener {
 	 */
 	private void proceedModsCommandLogic(ChannelMessageEventWrapper event) {
 		String message = FerretB0tUtils.buildMessage(event.getMessage());
-		if (message.startsWith("!alias")) {
+		if (message.startsWith("!aliasoff")) {
+			chatLogic.aliasDelete(event, message);
+		} else if (message.startsWith("!alias")) {
 			chatLogic.alias(event, message);
 		}
 
