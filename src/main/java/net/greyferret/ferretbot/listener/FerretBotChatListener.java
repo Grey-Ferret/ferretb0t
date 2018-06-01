@@ -72,12 +72,7 @@ public class FerretBotChatListener extends TwitchListener {
 		ChannelMessageEventWrapper wrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
 		String userType = wrapper.getTag("user-type");
-		Calendar registrationDate = wrapper.getRegistrationDate();
-		Calendar instance = Calendar.getInstance();
-		instance.add(Calendar.DATE, -2);
-		if (registrationDate.after(instance)) {
-//			wrapper.sendMessage("New fishy account: " + wrapper.getLogin() + "@drkiray @greyferret");
-		}
+		logger.info(wrapper.getLogin() + ": " + wrapper.getMessage());
 
 		if (wrapper.getMessage().startsWith("!")) {
 			proceedCommandLogic(wrapper);

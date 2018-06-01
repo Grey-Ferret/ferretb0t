@@ -40,12 +40,6 @@ public class ChannelMessageEventWrapper {
 		return res;
 	}
 
-	public Calendar getRegistrationDate() {
-		Calendar c = Calendar.getInstance();
-		c.setTimeInMillis(event.getActor().getCreationTime());
-		return c;
-	}
-
 	public void sendMessageWithMention(String text) {
 		sendMessage("@" + getLogin() + " " + text);
 	}
