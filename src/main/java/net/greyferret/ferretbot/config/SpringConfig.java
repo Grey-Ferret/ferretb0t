@@ -31,7 +31,7 @@ import java.util.Properties;
 @EnableConfigurationProperties({ChatConfig.class, LootsConfig.class, DbConfig.class, ApplicationConfig.class, DiscordConfig.class})
 @EnableTransactionManagement
 public class SpringConfig {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(SpringConfig.class);
 
 	@Autowired
 	private DbConfig dbConfig;

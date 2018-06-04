@@ -26,7 +26,7 @@ import java.util.Set;
  */
 @Service
 public class LootsService {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(LootsService.class);
 
 	@PersistenceContext
 	private EntityManager entityManager;

@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
  * Created by GreyFerret on 18.12.2017.
  */
 public class FerretBotUtils {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(FerretBotUtils.class);
 
 	/***
 	 * Format message, delete whitespaces

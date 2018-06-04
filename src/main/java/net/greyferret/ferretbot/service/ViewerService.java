@@ -25,7 +25,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Service
 public class ViewerService {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ViewerService.class);
+
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired

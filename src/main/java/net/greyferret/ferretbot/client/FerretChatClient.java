@@ -28,7 +28,7 @@ import java.util.Optional;
 @Component("FerretChatClient")
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class FerretChatClient extends DefaultClient {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(FerretChatClient.class);
 
 	@Autowired
 	private ChatConfig chatConfig;

@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class LootsEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(LootsEngine.class);
 
 	@Autowired
 	private LootsConfig lootsConfig;

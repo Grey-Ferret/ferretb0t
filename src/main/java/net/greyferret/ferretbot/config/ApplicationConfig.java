@@ -14,7 +14,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "main")
 public class ApplicationConfig {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ApplicationConfig.class);
 
 	@NotEmpty
 	private String debug;

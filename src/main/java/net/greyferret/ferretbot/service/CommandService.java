@@ -22,7 +22,7 @@ import java.util.Set;
 
 @Service
 public class CommandService {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(CommandService.class);
 
 	@PersistenceContext
 	private EntityManager entityManager;

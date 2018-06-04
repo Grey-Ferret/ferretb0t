@@ -14,7 +14,7 @@ import org.kitteh.irc.client.library.feature.MessageTagManager;
 import java.util.Optional;
 
 public class ChannelMessageEventWrapper {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ChannelMessageEventWrapper.class);
 
 	private ClientReceiveCommandEvent event;
 	private boolean isDebug;

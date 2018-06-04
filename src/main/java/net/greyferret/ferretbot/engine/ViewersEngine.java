@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 public class ViewersEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ViewersEngine.class);
 
 	@Autowired
 	private ChatConfig chatConfig;

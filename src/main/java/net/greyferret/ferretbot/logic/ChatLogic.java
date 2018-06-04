@@ -16,7 +16,7 @@ import java.util.Set;
 
 @Component
 public class ChatLogic {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ChatLogic.class);
 
 	@Autowired
 	private ViewerService viewerService;

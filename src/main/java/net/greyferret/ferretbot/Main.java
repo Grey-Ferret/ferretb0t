@@ -12,7 +12,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  * Created by GreyFerret on 07.12.2017.
  */
 public class Main {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(Main.class);
 
 	/***
 	 * Main method for running jar application

@@ -30,7 +30,7 @@ import java.util.Map;
 
 @Component
 public class DiscordEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(DiscordEngine.class);
 
 	@Autowired
 	private ApplicationContext context;

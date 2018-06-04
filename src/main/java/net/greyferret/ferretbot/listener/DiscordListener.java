@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DiscordListener extends ListenerAdapter {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(DiscordListener.class);
 
 	@Autowired
 	private DiscordConfig discordConfig;

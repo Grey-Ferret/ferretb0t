@@ -22,7 +22,7 @@ import java.util.Set;
  */
 @Component
 public class ChatEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ChatEngine.class);
 
 	@Autowired
 	private ChatConfig chatConfig;

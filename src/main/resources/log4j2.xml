@@ -7,7 +7,7 @@
         <Console name="consoleLogger" target="SYSTEM_OUT">
             <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n}"/>
         </Console>
-        <RollingFile name="fileFileLogger" fileName="${log-path}/log.log"
+        <RollingFile name="infoFileLogger" fileName="${log-path}/log.log"
                      filePattern="${log-path}/log-%d{yyyy-MM-dd}.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n</pattern>
@@ -25,11 +25,23 @@
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
         </RollingFile>
+        <RollingFile name="chatFileLogger" fileName="${log-path}/log-chat.log"
+                     filePattern="${log-path}/log-chat-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
     </Appenders>
     <Loggers>
-        <Root level="info" additivity="false">
+        <Logger name="ChatLogger" additivity="false">
+            <AppenderRef ref="chatFileLogger"/>
+        </Logger>
+        <Root level="info">
             <AppenderRef ref="consoleLogger"/>
-            <AppenderRef ref="fileFileLogger" level="info"/>
+            <AppenderRef ref="infoFileLogger" level="info"/>
             <AppenderRef ref="errorFileLogger" level="error"/>
         </Root>
     </Loggers>

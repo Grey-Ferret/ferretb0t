@@ -29,7 +29,8 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class FerretBotChatListener extends TwitchListener {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(FerretBotChatListener.class);
+	private static final Logger chatLogger = LogManager.getLogger("ChatLogger");
 
 	@Autowired
 	private LootsConfig lootsConfig;
@@ -63,7 +64,7 @@ public class FerretBotChatListener extends TwitchListener {
 	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
-		logger.info(eventWrapper.getLogin() + ": " + eventWrapper.getMessage());
+		chatLogger.info(eventWrapper.getLogin() + ": " + eventWrapper.getMessage());
 
 		if (eventWrapper.getMessage().startsWith("!")) {
 			chatLogic.proceedCommandLogic(eventWrapper);
@@ -88,7 +89,7 @@ public class FerretBotChatListener extends TwitchListener {
 
 	@Handler
 	private void onUserNoticeEvent(UserNoticeEvent event) {
-		logger.info("UserNoticeEvent: " + event);
+		chatLogger.info("UserNoticeEvent: " + event);
 		boolean isSubAlert = false;
 		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 		String msgId = wrapper.getTag("msg-id");
@@ -121,16 +122,16 @@ public class FerretBotChatListener extends TwitchListener {
 
 	@Handler
 	private void onGlobalUserStateEvent(GlobalUserStateEvent globalUserStateEvent) {
-		logger.info("GlobalUserStateEvent: " + globalUserStateEvent);
+		chatLogger.info("GlobalUserStateEvent: " + globalUserStateEvent);
 	}
 
 	@Handler
 	private void onRoomStateEvent(RoomStateEvent roomStateEvent) {
-		logger.info("RoomStateEvent: " + roomStateEvent);
+		chatLogger.info("RoomStateEvent: " + roomStateEvent);
 	}
 
 	@Handler
 	private void onUserStateEvent(UserStateEvent userStateEvent) {
-		logger.info("UserStateEvent: " + userStateEvent);
+		chatLogger.info("UserStateEvent: " + userStateEvent);
 	}
 }

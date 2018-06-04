@@ -22,7 +22,7 @@ import java.util.Set;
 
 @Service
 public class ViewerLootsMapService {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(ViewerLootsMapService.class);
 
 	@PersistenceContext
 	private EntityManager entityManager;

@@ -9,7 +9,7 @@ import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
 import java.util.Optional;
 
 public class UserNoticeEventWrapper {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger(UserNoticeEventWrapper.class);
 
 	private UserNoticeEvent event;
 	private boolean isDebug;
