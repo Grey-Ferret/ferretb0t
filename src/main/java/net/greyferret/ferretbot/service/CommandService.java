@@ -23,14 +23,11 @@ import java.util.Set;
 @Service
 public class CommandService {
 	private static final Logger logger = LogManager.getLogger();
+
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
-
-	public static void proceedFoundCommand(Command command, ChannelMessageEventWrapper event) {
-		findAndSendMessageWithMention(command, event);
-	}
 
 	private static void findAndSendMessageWithMention(Command command, ChannelMessageEventWrapper event) {
 		String[] split = StringUtils.split(FerretBotUtils.buildMessage(event.getMessage()), ' ');
@@ -40,6 +37,10 @@ public class CommandService {
 			event.sendMessageWithMention(command.getResponse(), split[split.length - 1]);
 	}
 
+	public static void proceedTextCommand(Command command, ChannelMessageEventWrapper event) {
+		findAndSendMessageWithMention(command, event);
+	}
+
 	@Transactional
 	public boolean proceedTextCommand(String code, ChannelMessageEventWrapper event) {
 		if (code.startsWith("!"))
@@ -47,7 +48,7 @@ public class CommandService {
 
 		for (Command command : getAllCommands()) {
 			if (command.getAllCodes().contains(code)) {
-				proceedFoundCommand(command, event);
+				proceedTextCommand(command, event);
 				return true;
 			}
 		}

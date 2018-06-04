@@ -31,20 +31,26 @@ import java.util.Map;
 @Component
 public class DiscordEngine implements Runnable {
 	private static final Logger logger = LogManager.getLogger();
+
 	@Autowired
 	private ApplicationContext context;
 	@Autowired
 	private DiscordConfig discordConfig;
 	@Autowired
 	private ChatConfig chatConfig;
+
 	private String channelStatusUrl;
 	private JDA jda;
 	private TextChannel announcementChannel;
 	private TextChannel testChannel;
-	private boolean stop = false;
+	private boolean isOn;
 	private ChannelStatus currentChannelStatus = ChannelStatus.ONLINE;
+	private static final String twitchAPIPrefix = "https://api.twitch.tv/kraken/streams/";
+
+	enum ChannelStatus {ONLINE, OFFLINE}
 
 	public DiscordEngine() {
+		this.isOn = true;
 	}
 
 	@PostConstruct
@@ -56,7 +62,7 @@ public class DiscordEngine implements Runnable {
 		} catch (InterruptedException e) {
 			logger.error(e);
 		}
-		channelStatusUrl = "https://api.twitch.tv/kraken/streams/" + chatConfig.getChannel();
+		channelStatusUrl = this.twitchAPIPrefix + chatConfig.getChannel();
 		jda.addEventListener(context.getBean(DiscordListener.class));
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
@@ -67,7 +73,7 @@ public class DiscordEngine implements Runnable {
 		try {
 			Thread.sleep(discordConfig.getCheckTime());
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
-			while (!stop) {
+			while (!isOn) {
 				String channelStatusMessage = getChannelStatus();
 				if (StringUtils.isNotBlank(channelStatusMessage))
 					announcementChannel.sendMessage(channelStatusMessage).queue();
@@ -80,7 +86,7 @@ public class DiscordEngine implements Runnable {
 
 	private String getChannelStatus() {
 		String result = "";
-		Connection.Response response = null;
+		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("Client-ID", chatConfig.getClientId());
@@ -103,10 +109,10 @@ public class DiscordEngine implements Runnable {
 				if (streamType.equalsIgnoreCase("live")) {
 					if (this.currentChannelStatus.equals(ChannelStatus.OFFLINE)) {
 						if (StringUtils.isNotBlank(json.getStream().getGame())) {
-							result = "@here А мы тут запустили стримчик по " + json.getStream().getGame() + "! Приходи и смотри по ссылочке: https://www.twitch.tv/drkiray";
+							result = Messages.ANNOUNCE_MESSAGE_1 + json.getStream().getGame() + Messages.ANNOUNCE_MESSAGE_2 + chatConfig.getChannel();
 						} else {
 							logger.warn("Stream in JSON was not null, had Stream Type, but no Game was found");
-							result = "@here А мы тут запустили стримчик! Приходи и смотри по ссылочке: https://www.twitch.tv/drkiray";
+							result = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();
 						}
 					}
 					this.currentChannelStatus = ChannelStatus.ONLINE;
@@ -126,6 +132,4 @@ public class DiscordEngine implements Runnable {
 	public boolean getFerretBot() {
 		return this.currentChannelStatus == ChannelStatus.ONLINE;
 	}
-
-	enum ChannelStatus {ONLINE, OFFLINE}
 }

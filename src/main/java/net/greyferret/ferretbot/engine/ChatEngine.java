@@ -7,14 +7,10 @@ import net.greyferret.ferretbot.entity.Loots;
 import net.greyferret.ferretbot.service.LootsService;
 import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -27,6 +23,7 @@ import java.util.Set;
 @Component
 public class ChatEngine implements Runnable {
 	private static final Logger logger = LogManager.getLogger();
+
 	@Autowired
 	private ChatConfig chatConfig;
 	@Autowired
@@ -37,11 +34,13 @@ public class ChatEngine implements Runnable {
 	private LootsService lootsService;
 	@Autowired
 	private ViewerService viewerService;
+
 	private FerretChatClient FerretBot;
-	private boolean isStopped = false;
+	private boolean isOn;
 	private Thread viewersThread;
 
 	public ChatEngine() {
+		isOn = true;
 	}
 
 	/***
@@ -57,23 +56,21 @@ public class ChatEngine implements Runnable {
 		this.viewersThread.start();
 
 		try {
-			while (!isStopped) {
+			while (isOn) {
 				Thread.sleep(chatConfig.getRetryMs());
-				givePoints();
+				givePointsForLoots();
 			}
 		} catch (InterruptedException e) {
 			logger.error(e);
 		}
 	}
 
-	private void givePoints() {
-		Set<Loots> lootsEntries = lootsService.payForUnpaidLoots();
+	private void givePointsForLoots() {
+		Set<Loots> lootsEntries = lootsService.getUnpaidLoots();
 		for (Loots loots : lootsEntries) {
-			String message = FerretBotUtils.buildAddPointsMessage(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+			String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
 			viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
-			if (StringUtils.isNotBlank(message)) {
-				FerretBot.sendMessage(message);
-			}
+			FerretBot.sendMessage(message);
 		}
 	}
 }

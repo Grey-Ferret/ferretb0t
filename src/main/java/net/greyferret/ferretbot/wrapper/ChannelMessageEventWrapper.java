@@ -11,8 +11,6 @@ import org.kitteh.irc.client.library.element.ServerMessage;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
 import org.kitteh.irc.client.library.feature.MessageTagManager;
 
-import java.util.Calendar;
-import java.util.List;
 import java.util.Optional;
 
 public class ChannelMessageEventWrapper {
@@ -58,8 +56,7 @@ public class ChannelMessageEventWrapper {
 	}
 
 	public String getTag(String tag) {
-		List<ServerMessage> originalMessages = event.getOriginalMessages();
-		ServerMessage message = originalMessages.get(0);
+		ServerMessage message = event.getServerMessage();
 		Optional<MessageTag> messageTagOptional = message.getTag(tag);
 		if (messageTagOptional.isPresent()) {
 			MessageTagManager.DefaultMessageTag messageTag = (MessageTagManager.DefaultMessageTag) messageTagOptional.get();

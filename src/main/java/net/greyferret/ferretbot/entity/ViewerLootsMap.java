@@ -1,8 +1,5 @@
 package net.greyferret.ferretbot.entity;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -14,8 +11,6 @@ import java.io.Serializable;
 @Entity
 @Table(name = "viewer_loots_map")
 public class ViewerLootsMap implements Serializable {
-	private static final Logger logger = LogManager.getLogger();
-
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, optional = true)
 	@JoinColumn(name = "viewer_login", referencedColumnName = "login")
 	private Viewer viewer;

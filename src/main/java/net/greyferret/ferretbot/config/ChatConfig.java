@@ -5,6 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Created by GreyFerret on 15.12.2017.
  */
@@ -18,9 +20,13 @@ public class ChatConfig {
 	private String password;
 	@NotEmpty
 	private String channel;
+	@NotNull
 	private Integer retryMs;
+	@NotEmpty
 	private String clientId;
+	@NotNull
 	private Integer usersCheckMs;
+	@NotNull
 	private Integer usersCheckMsFailed;
 
 	public String getLogin() {

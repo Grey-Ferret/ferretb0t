@@ -5,8 +5,6 @@ import net.greyferret.ferretbot.config.SpringConfig;
 import net.greyferret.ferretbot.entity.json.loots.Ok;
 import net.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
 import net.greyferret.ferretbot.util.FerretBotUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -21,8 +19,6 @@ import java.util.Date;
 @Entity
 @Table(name = "loots")
 public class Loots implements Serializable {
-	private static final Logger logger = LogManager.getLogger();
-
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "message")
 	private String message;

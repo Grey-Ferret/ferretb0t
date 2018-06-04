@@ -26,9 +26,9 @@ public class LootsConfig {
 	private String key;
 	@NotNull
 	private Long pointsForLoots;
-
+	@NotNull
 	private Timer timer;
-
+	@NotNull
 	private SubPlan subPlan;
 
 	public String getLogin() {
@@ -96,8 +96,11 @@ public class LootsConfig {
 	}
 
 	public static class Timer {
+		@NotNull
 		private Long additionalRetryMs;
+		@NotNull
 		private Long defaultRetryMs;
+		@NotNull
 		private Long maxRetryMs;
 
 		public Long getAdditionalRetryMs() {
@@ -126,9 +129,13 @@ public class LootsConfig {
 	}
 
 	public static class SubPlan {
+		@NotNull
 		private Long prime;
+		@NotNull
 		private Long five;
+		@NotNull
 		private Long ten;
+		@NotNull
 		private Long twentyFive;
 
 		public Long getPrime() {

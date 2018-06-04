@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +18,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -32,10 +30,6 @@ public class ViewerService {
 	private EntityManager entityManager;
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
-	@Autowired
-	private ApplicationContext context;
-	@Autowired
-	private LootsService lootsService;
 
 	@Transactional
 	public void checkViewersAndAddPoints(List<String> users, boolean isChannelOnline) {
@@ -135,7 +129,6 @@ public class ViewerService {
 			viewer.setGoStatus(1);
 			entityManager.merge(viewer);
 			entityManager.flush();
-//			event.sendMessageWithMention("успешно добавлен в очередь!");
 		}
 	}
 

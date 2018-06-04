@@ -7,7 +7,6 @@ import net.greyferret.ferretbot.exception.TransactionRuntimeFerretBotException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +27,11 @@ import java.util.Set;
 @Service
 public class LootsService {
 	private static final Logger logger = LogManager.getLogger();
+
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
-	@Autowired
-	private ApplicationContext context;
 	@Autowired
 	private ViewerService viewerService;
 	@Autowired
@@ -87,7 +85,7 @@ public class LootsService {
 	 * @return unpaid loots
 	 */
 	@Transactional
-	public Set<Loots> payForUnpaidLoots() {
+	public Set<Loots> getUnpaidLoots() {
 		Set<Loots> res = new HashSet<>();
 		HashMap<String, ViewerLootsMap> mapOfMaps = new HashMap<>();
 

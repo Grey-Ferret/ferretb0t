@@ -33,12 +33,10 @@ import java.util.Properties;
 public class SpringConfig {
 	private static final Logger logger = LogManager.getLogger();
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
-
 	@Autowired
 	private DbConfig dbConfig;
-	@Autowired
-	private ApplicationConfig applicationConfig;
+
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
 
 	public static SimpleDateFormat getDateFormat() {
 		return dateFormat;
@@ -84,14 +82,7 @@ public class SpringConfig {
 		Properties properties = new Properties();
 		properties.setProperty("hibernate.hbm2ddl.auto", "update");
 		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
-//        properties.setProperty("hibernate.show_sql", String.valueOf(applicationConfig.isDebug()));
-//        properties.setProperty("hibernate.format_sql", String.valueOf(applicationConfig.isDebug()));
 		properties.setProperty("hibernate.connection.charSet", "UTF-8");
 		return properties;
 	}
-
-//    @Bean
-//    public PersistenceExceptionTranslationPostProcessor exceptionTranslation(){
-//        return new PersistenceExceptionTranslationPostProcessor();
-//    }
 }

@@ -1,9 +1,10 @@
 package net.greyferret.ferretbot.logic;
 
 import net.greyferret.ferretbot.entity.Viewer;
-import net.greyferret.ferretbot.service.LootsService;
+import net.greyferret.ferretbot.service.CommandService;
 import net.greyferret.ferretbot.service.ViewerLootsMapService;
 import net.greyferret.ferretbot.service.ViewerService;
+import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -22,9 +23,77 @@ public class ChatLogic {
 	@Autowired
 	private ViewerLootsMapService viewerLootsMapService;
 	@Autowired
-	private LootsService lootsService;
+	private CommandService commandService;
 
-	public void alias(ChannelMessageEventWrapper event, String message) {
+	/***
+	 * Logic for chat commands for everyone
+	 *
+	 * @param event
+	 */
+	public void proceedCommandLogic(ChannelMessageEventWrapper event) {
+		String message = FerretBotUtils.buildMessage(event.getMessage());
+		if (message.startsWith("!go")) {
+			if (message.startsWith("!go remove")) {
+				proceedGoRemove(event);
+			} else {
+				message = message.replaceAll("\\s+", "");
+				if (message.equalsIgnoreCase("!go")) {
+					proceedGoAdd(event);
+				}
+			}
+		} else {
+			String[] split = message.split(" ");
+			commandService.proceedTextCommand(split[0], event);
+		}
+	}
+
+	/***
+	 * Logic for chat commands for mods
+	 *
+	 * @param event
+	 */
+	public void proceedModsCommandLogic(ChannelMessageEventWrapper event) {
+		String message = FerretBotUtils.buildMessage(event.getMessage());
+		if (message.startsWith("!aliasoff")) {
+			aliasDelete(event, message);
+		} else if (message.startsWith("!alias")) {
+			alias(event, message);
+		}
+
+		if (message.startsWith("!info") || message.startsWith("!test") || message.startsWith("!status")) {
+			event.sendMessageWithMention("A marvel of technology - an engine of destruction!");
+		}
+
+		if (message.startsWith("!transfer")) {
+			String[] split = StringUtils.split(message, ' ');
+			if (split.length == 4 && StringUtils.isNumeric(split[3])) {
+				logger.info("Points transfer initiated by " + event.getLogin() + ", from " + split[1] + " to " + split[2] + " amount " + split[3]);
+				Long sum = Long.parseLong(split[3]);
+				event.sendMessage(FerretBotUtils.buildRemovePointsMessage(split[1], sum));
+				viewerService.removePoints(split[1], sum);
+				event.sendMessage(FerretBotUtils.buildMessageAddPoints(split[2], sum));
+				viewerService.addPoints(split[2], sum);
+			}
+		}
+
+		if (message.startsWith("!repair")) {
+			repair(event);
+		}
+
+		if (message.startsWith("!go")) {
+			if (message.startsWith("!go return")) {
+				proceedGoReturn(event);
+			}
+			if (message.startsWith("!go select")) {
+				proceedGoSelect(event);
+			}
+			if (message.startsWith("!go reset")) {
+				resetGoSelect(event);
+			}
+		}
+	}
+
+	protected void alias(ChannelMessageEventWrapper event, String message) {
 		String[] split = StringUtils.split(message, ' ');
 		if (split.length == 3) {
 			String answer = viewerLootsMapService.updateAlias(split[1], split[2]);
@@ -36,7 +105,15 @@ public class ChatLogic {
 		}
 	}
 
-	public void repair(ChannelMessageEventWrapper event) {
+	protected void aliasDelete(ChannelMessageEventWrapper event, String message) {
+		String[] split = StringUtils.split(message, ' ');
+		if (split.length == 2) {
+			String answer = viewerLootsMapService.deleteViewerLootsMap(split[1]);
+			event.sendMessageWithMention(answer);
+		}
+	}
+
+	protected void repair(ChannelMessageEventWrapper event) {
 		Set<String> lootsForRepair = viewerLootsMapService.getRepairList();
 		if (lootsForRepair == null || lootsForRepair.size() == 0) {
 			event.sendMessage("Nothing to repair! :)");
@@ -46,7 +123,7 @@ public class ChatLogic {
 		event.sendMessage("To fix: " + repairNames);
 	}
 
-	public void proceedGoAdd(ChannelMessageEventWrapper event) {
+	protected void proceedGoAdd(ChannelMessageEventWrapper event) {
 		Viewer viewer = viewerService.getViewerByName(event.getLogin());
 		if (viewer == null) {
 			return;
@@ -54,7 +131,7 @@ public class ChatLogic {
 		viewerService.addToGoList(viewer, event);
 	}
 
-	public void proceedGoRemove(ChannelMessageEventWrapper event) {
+	protected void proceedGoRemove(ChannelMessageEventWrapper event) {
 		Viewer viewer = viewerService.getViewerByName(event.getLogin());
 		if (viewer == null) {
 			return;
@@ -62,7 +139,7 @@ public class ChatLogic {
 		viewerService.removeToGoList(viewer, event);
 	}
 
-	public void proceedGoSelect(ChannelMessageEventWrapper event) {
+	protected void proceedGoSelect(ChannelMessageEventWrapper event) {
 		String[] split = StringUtils.split(event.getMessage(), " ");
 		int numberOfPeople = 0;
 		if (split.length >= 3) {
@@ -77,21 +154,13 @@ public class ChatLogic {
 		}
 	}
 
-	public void proceedGoReturn(ChannelMessageEventWrapper event) {
+	protected void proceedGoReturn(ChannelMessageEventWrapper event) {
 		String[] split = StringUtils.split(event.getMessage(), " ");
 		String login = split[2];
 		viewerService.returnToGoList(login, event);
 	}
 
-	public void resetGoSelect(ChannelMessageEventWrapper event) {
+	protected void resetGoSelect(ChannelMessageEventWrapper event) {
 		viewerService.resetGoList(event);
-	}
-
-	public void aliasDelete(ChannelMessageEventWrapper event, String message) {
-		String[] split = StringUtils.split(message, ' ');
-		if (split.length == 2) {
-			String answer = viewerLootsMapService.deleteViewerLootsMap(split[1]);
-			event.sendMessageWithMention(answer);
-		}
 	}
 }

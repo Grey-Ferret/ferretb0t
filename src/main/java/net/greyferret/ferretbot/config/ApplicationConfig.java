@@ -20,10 +20,6 @@ public class ApplicationConfig {
 	private String debug;
 	private boolean isDebug;
 
-	private String getDebug() {
-		return debug;
-	}
-
 	public boolean isDebug() {
 		return this.isDebug;
 	}

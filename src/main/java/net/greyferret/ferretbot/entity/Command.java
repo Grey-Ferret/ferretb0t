@@ -1,8 +1,6 @@
 package net.greyferret.ferretbot.entity;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -13,8 +11,6 @@ import java.util.List;
 @Entity
 @Table(name = "command")
 public class Command {
-	private static final Logger logger = LogManager.getLogger();
-
 	private static final String separator = ";";
 
 	@Id

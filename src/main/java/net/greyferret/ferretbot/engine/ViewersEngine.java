@@ -14,15 +14,18 @@ import java.util.List;
 @Component
 public class ViewersEngine implements Runnable {
 	private static final Logger logger = LogManager.getLogger();
+
 	@Autowired
 	private ChatConfig chatConfig;
 	@Autowired
 	private ViewerService viewerService;
 	@Autowired
 	private ApplicationContext context;
-	private boolean isOn = true;
+
+	private boolean isOn;
 
 	private ViewersEngine() {
+		isOn = true;
 	}
 
 	/***

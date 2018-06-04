@@ -19,8 +19,10 @@ import javax.annotation.PostConstruct;
 @Component
 public class FerretBot implements Runnable {
 	private static final Logger logger = LogManager.getLogger();
+
 	@Autowired
 	private ApplicationContext context;
+
 	private boolean isOn;
 	private LootsEngine lootsEngine;
 	private ChatEngine chatEngine;

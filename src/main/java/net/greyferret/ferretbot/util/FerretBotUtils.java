@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by GreyFerret on 18.12.2017.
  */
@@ -30,7 +32,7 @@ public class FerretBotUtils {
 	 * @param points
 	 * @return
 	 */
-	public static String buildAddPointsMessage(String nick, Long points) {
+	public static String buildMessageAddPoints(String nick, Long points) {
 		if (points == null || StringUtils.isBlank(nick))
 			return "";
 		return "!bonus " + nick + " " + points;
@@ -71,17 +73,21 @@ public class FerretBotUtils {
 	 * @param isGuest
 	 * @return parsed name
 	 */
-	public static String parseLootsAuthor(String authorUnparsed, boolean isGuest) {
-		try {
-			if (isGuest) {
-				String temp = authorUnparsed.substring(6);
-				String[] split = StringUtils.split(temp, "_");
-				return StringUtils.deleteWhitespace(split[0]);
+	public static String parseLootsAuthor(@Nonnull String authorUnparsed, boolean isGuest) {
+		if (StringUtils.isNotBlank(authorUnparsed)) {
+			try {
+				if (isGuest) {
+					String temp = authorUnparsed.substring(6);
+					String[] split = StringUtils.split(temp, "_");
+					return StringUtils.deleteWhitespace(split[0]);
+				}
+			} catch (Exception e) {
+				logger.error("Could not parse following name: " + authorUnparsed, e);
 			}
-		} catch (Exception e) {
-			logger.error("Could not parse following name: " + authorUnparsed, e);
+			return StringUtils.deleteWhitespace(authorUnparsed);
 		}
-		return StringUtils.deleteWhitespace(authorUnparsed);
+		logger.error("Author of loots was blank");
+		return "";
 	}
 
 	public static String buildDiscordMessageLog(Message message) {

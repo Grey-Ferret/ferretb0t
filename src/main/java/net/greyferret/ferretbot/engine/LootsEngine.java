@@ -29,15 +29,17 @@ import java.util.stream.Collectors;
 @Component
 public class LootsEngine implements Runnable {
 	private static final Logger logger = LogManager.getLogger();
-	private final String loginUrl = "https://loots.com/pub/auth/login";
-	private final String lootsUrl = "https://loots.com/api/v1/me/transactions/tips/broadcaster";
+
 	@Autowired
 	private LootsConfig lootsConfig;
 	@Autowired
 	private LootsService lootsService;
+
 	private long timeRetryMS;
 	private boolean isOn;
 	private Map<String, String> cookies;
+	private final String loginUrl = "https://loots.com/pub/auth/login";
+	private final String lootsUrl = "https://loots.com/api/v1/me/transactions/tips/broadcaster";
 
 	/***
 	 * Constructor with all params for Loots
@@ -101,8 +103,8 @@ public class LootsEngine implements Runnable {
 						.cookies(cookies)
 						.execute();
 			} catch (IOException e) {
-				increaseRetry();
 				logger.error("Could not request page", e);
+				increaseRetry();
 			}
 			if (response != null) {
 				if (response.url().toString().contains("/auth/login")) {
