@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration>
     <Properties>
         <Property name="log-path">logs</Property>
     </Properties>
@@ -32,11 +32,5 @@
             <AppenderRef ref="fileFileLogger" level="info"/>
             <AppenderRef ref="errorFileLogger" level="error"/>
         </Root>
-
-        <logger name="org.pircbotx.PircBotX" level="ERROR"/>
-        <logger name="org.pircbotx.InputParser" level="ERROR"/>
-        <logger name="org.pircbotx.output.OutputRaw" level="ERROR"/>
-        <logger name="org.pircbotx.dcc.Chat" level="ERROR"/>
-        <logger name="org.pircbotx.dcc.ReceiveChat" level="ERROR"/>
     </Loggers>
 </Configuration>
