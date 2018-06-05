@@ -1,12 +1,13 @@
 package net.greyferret.ferretbot.entity;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
 
 @Entity
 @Table(name = "command")
@@ -14,44 +15,43 @@ public class Command {
 	private static final String separator = ";";
 
 	@Id
-	@Column(name = "code")
-	private String code;
+	@GeneratedValue
+	@Column(name = "id", updatable = false, nullable = false)
+	private Long id;
 	@Type(type = "org.hibernate.type.TextType")
-	@Column(name = "alternative_codes")
-	private String alternativeCodes;
+	@Column(name = "codes")
+	private String codes;
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "response")
 	private String response;
 	@Column(name = "game")
 	private String game;
-	@Column(name = "personal")
-	private Boolean personal;
+	@Column(name = "response_type", nullable = false, columnDefinition = "int default 0")
+	private Integer responseType;
+	@Column(name = "disabled")
+	@ColumnDefault("false")
+	private boolean disabled;
 
 	public Command() {
-		this.personal = false;
+		this.responseType = 0;
+		this.disabled = false;
 	}
 
-	@PrePersist
-	public void prePersist() {
-		if (this.isPersonal() == null) {
-			setPersonal(false);
-		}
+	public Long getId() {
+		return id;
 	}
 
-	public String getCode() {
-		return code;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public void setCode(String code) {
-		this.code = code;
+	public HashSet<String> getCodes() {
+		String[] split = StringUtils.split(this.codes, this.separator);
+		return new HashSet<>(Arrays.asList(split));
 	}
 
-	public List<String> getAlternativeCodes() {
-		return Arrays.asList(StringUtils.split(this.alternativeCodes, separator));
-	}
-
-	public void setAlternativeCodes(List<String> alternativeCodesList) {
-		this.alternativeCodes = StringUtils.join(alternativeCodesList, separator);
+	public void setCodes(HashSet<String> codes) {
+		this.codes = StringUtils.join(codes, separator);
 	}
 
 	public String getResponse() {
@@ -70,26 +70,32 @@ public class Command {
 		this.game = game;
 	}
 
-	public Boolean isPersonal() {
-		if (personal == null)
-			return false;
-		return personal;
+	public Integer getResponseType() {
+		return responseType;
 	}
 
-	public void setPersonal(Boolean personal) {
-		if (personal == null)
-			this.personal = false;
-		this.personal = personal;
+	public void setResponseType(Integer responseType) {
+		this.responseType = responseType;
 	}
 
-	@Deprecated
-	public Boolean getPersonal() {
-		return isPersonal();
+	public boolean isDisabled() {
+		return disabled;
 	}
 
-	public List<String> getAllCodes() {
-		List<String> res = new ArrayList<>();
-		res.add(code);
-		return res;
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Command command = (Command) o;
+		return Objects.equals(id, command.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
 	}
 }

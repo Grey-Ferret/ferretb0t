@@ -48,6 +48,35 @@ public class ChatLogic {
 	}
 
 	/***
+	 * Logic for chat commands for admins
+	 *
+	 * @param event
+	 */
+	public void proceedAdminCommandLogic(ChannelMessageEventWrapper event) {
+		String message = FerretBotUtils.buildMessage(event.getMessage());
+		String[] split = StringUtils.split(message, " ");
+
+		if (split[0].toLowerCase().startsWith("!")) {
+			if (split[0].toLowerCase().startsWith("!command")) {
+				if (split[1].toLowerCase().startsWith("add") || split[1].toLowerCase().startsWith("edit")) {
+					if (split.length > 3) {
+						if (split[1].toLowerCase().startsWith("add"))
+							message = StringUtils.replace(message, "!command add " + split[2] + " ", "");
+						if (split[1].toLowerCase().startsWith("edit"))
+							message = StringUtils.replace(message, "!command edit " + split[2] + " ", "");
+						if (message.toLowerCase().startsWith("!command")) {
+							event.sendMessageWithMention("Что-то пошло не так...");
+						} else {
+							String res = commandService.addOrEditCommand(split[2], message);
+							event.sendMessageWithMention(res);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/***
 	 * Logic for chat commands for mods
 	 *
 	 * @param event

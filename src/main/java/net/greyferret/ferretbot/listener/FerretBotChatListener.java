@@ -74,6 +74,9 @@ public class FerretBotChatListener extends TwitchListener {
 			boolean isModerator = StringUtils.isNotBlank(userType) && userType.equalsIgnoreCase("mod");
 			if (isBroadcaster || isModerator) {
 				chatLogic.proceedModsCommandLogic(eventWrapper);
+				if (isBroadcaster || eventWrapper.getLogin().equalsIgnoreCase("greyferret")) {
+					chatLogic.proceedAdminCommandLogic(eventWrapper);
+				}
 			}
 		}
 

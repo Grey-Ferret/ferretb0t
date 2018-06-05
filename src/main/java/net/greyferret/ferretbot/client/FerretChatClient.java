@@ -73,7 +73,7 @@ public class FerretChatClient extends DefaultClient {
 		if (StringUtils.isNotBlank(target) && StringUtils.isNotBlank(message)) {
 			if (!target.startsWith("#")) //Fix for Twitch channel
 				target = "#" + target;
-			super.sendMessage(target, message);
+			client.sendMessage(target, message);
 		}
 	}
 

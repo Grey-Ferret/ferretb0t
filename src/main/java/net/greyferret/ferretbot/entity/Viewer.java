@@ -32,6 +32,7 @@ public class Viewer implements Serializable {
 	private int goStatus;
 
 	public Viewer() {
+		this.goStatus = 0;
 	}
 
 	public Viewer(String author) {
