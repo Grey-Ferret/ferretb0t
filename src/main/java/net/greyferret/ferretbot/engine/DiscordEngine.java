@@ -73,7 +73,7 @@ public class DiscordEngine implements Runnable {
 		try {
 			Thread.sleep(discordConfig.getCheckTime());
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
-			while (!isOn) {
+			while (isOn) {
 				String channelStatusMessage = getChannelStatus();
 				if (StringUtils.isNotBlank(channelStatusMessage))
 					announcementChannel.sendMessage(channelStatusMessage).queue();
