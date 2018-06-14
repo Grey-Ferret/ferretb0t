@@ -3,9 +3,7 @@ package net.greyferret.ferretbot.listener;
 import net.engio.mbassy.listener.Handler;
 import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.ApplicationConfig;
-import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.logic.ChatLogic;
-import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import net.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
@@ -33,13 +31,9 @@ public class FerretBotChatListener extends TwitchListener {
 	private static final Logger chatLogger = LogManager.getLogger("ChatLogger");
 
 	@Autowired
-	private LootsConfig lootsConfig;
-	@Autowired
 	private ChatLogic chatLogic;
 	@Autowired
 	private ApplicationConfig applicationConfig;
-	@Autowired
-	private ViewerService viewerService;
 	@Autowired
 	private ApplicationContext context;
 
@@ -93,32 +87,16 @@ public class FerretBotChatListener extends TwitchListener {
 	@Handler
 	private void onUserNoticeEvent(UserNoticeEvent event) {
 		chatLogger.info("UserNoticeEvent: " + event);
-		boolean isSubAlert = false;
 		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 		String msgId = wrapper.getTag("msg-id");
 
 		if (StringUtils.isNotBlank(msgId)) {
 			if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
-				isSubAlert = true;
+				chatLogic.proceedSubAlert(wrapper);
 			}
-		}
-		if (isSubAlert) {
-			String subPlan = wrapper.getTag("msg-param-sub-plan");
-			if (StringUtils.isNotBlank(subPlan)) {
-				Long points = null;
-				if (subPlan.equalsIgnoreCase("prime")) {
-					points = lootsConfig.getSubPlan().getPrime();
-				} else if (subPlan.equalsIgnoreCase("1000")) {
-					points = lootsConfig.getSubPlan().getFive();
-				} else if (subPlan.equalsIgnoreCase("2000")) {
-					points = lootsConfig.getSubPlan().getTen();
-				} else if (subPlan.equalsIgnoreCase("3000")) {
-					points = lootsConfig.getSubPlan().getTwentyFive();
-				}
-				String login = wrapper.getTag("login");
-				String paymentMessage = FerretBotUtils.buildMessageAddPoints(login, points);
-				viewerService.addPoints(login, points);
-				wrapper.sendMessage(paymentMessage);
+
+			if (msgId.equalsIgnoreCase("subgift")) {
+				chatLogic.proceedSubAlert(wrapper, true);
 			}
 		}
 	}

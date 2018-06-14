@@ -1,11 +1,13 @@
 package net.greyferret.ferretbot.logic;
 
+import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.CommandService;
 import net.greyferret.ferretbot.service.ViewerLootsMapService;
 import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
+import net.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +26,8 @@ public class ChatLogic {
 	private ViewerLootsMapService viewerLootsMapService;
 	@Autowired
 	private CommandService commandService;
+	@Autowired
+	private LootsConfig lootsConfig;
 
 	/***
 	 * Logic for chat commands for everyone
@@ -44,6 +48,37 @@ public class ChatLogic {
 		} else {
 			String[] split = message.split(" ");
 			commandService.proceedTextCommand(split[0], event);
+		}
+	}
+
+	public void proceedSubAlert(UserNoticeEventWrapper wrapper) {
+		this.proceedSubAlert(wrapper, false);
+	}
+
+	public void proceedSubAlert(UserNoticeEventWrapper wrapper, boolean isGift) {
+		String subPlan = wrapper.getTag("msg-param-sub-plan");
+		if (StringUtils.isNotBlank(subPlan)) {
+			Long points = null;
+			if (subPlan.equalsIgnoreCase("prime")) {
+				points = lootsConfig.getSubPlan().getPrime();
+			} else if (subPlan.equalsIgnoreCase("1000")) {
+				points = lootsConfig.getSubPlan().getFive();
+			} else if (subPlan.equalsIgnoreCase("2000")) {
+				points = lootsConfig.getSubPlan().getTen();
+			} else if (subPlan.equalsIgnoreCase("3000")) {
+				points = lootsConfig.getSubPlan().getTwentyFive();
+			}
+			String login = wrapper.getTag("login");
+			String loginForThanks;
+			if (isGift) {
+				loginForThanks = wrapper.getTag("param-recipient-display-name");
+			} else {
+				loginForThanks = login;
+			}
+			String paymentMessage = FerretBotUtils.buildMessageAddPoints(login, points);
+			viewerService.addPoints(login, points);
+			wrapper.sendMessage(paymentMessage);
+			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
 	}
 
