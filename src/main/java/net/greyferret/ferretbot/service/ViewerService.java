@@ -3,7 +3,6 @@ package net.greyferret.ferretbot.service;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.entity.ViewerLootsMap;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +143,7 @@ public class ViewerService {
 	}
 
 	@Transactional
-	public void selectGoList(int numberOfPeople, ChannelMessageEventWrapper event) {
+	public HashSet<Viewer> selectGoList(int numberOfPeople) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
 		Root<Viewer> root = criteria.from(Viewer.class);
@@ -163,18 +162,12 @@ public class ViewerService {
 				selectedList.add(resultList.get(ThreadLocalRandom.current().nextInt(resultList.size())));
 			}
 		}
-
-		String selectedViewersString = "";
 		for (Viewer viewer : selectedList) {
 			viewer.setGoStatus(0);
-			if (!StringUtils.isBlank(selectedViewersString)) {
-				selectedViewersString = selectedViewersString + ", ";
-			}
-			selectedViewersString = selectedViewersString + viewer.getLogin();
 			entityManager.merge(viewer);
 		}
-		event.sendMessageWithMention("Были выбраны: " + selectedViewersString);
 		entityManager.flush();
+		return selectedList;
 	}
 
 	@Transactional

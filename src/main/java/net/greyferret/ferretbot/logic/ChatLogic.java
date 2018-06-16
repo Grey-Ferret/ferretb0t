@@ -1,6 +1,7 @@
 package net.greyferret.ferretbot.logic;
 
 import net.greyferret.ferretbot.config.LootsConfig;
+import net.greyferret.ferretbot.engine.ReadyCheckEngine;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.CommandService;
 import net.greyferret.ferretbot.service.ViewerLootsMapService;
@@ -12,8 +13,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Component
@@ -28,6 +31,8 @@ public class ChatLogic {
 	private CommandService commandService;
 	@Autowired
 	private LootsConfig lootsConfig;
+	@Autowired
+	private ApplicationContext context;
 
 	/***
 	 * Logic for chat commands for everyone
@@ -210,10 +215,17 @@ public class ChatLogic {
 			try {
 				numberOfPeople = Integer.parseInt(split[2]);
 			} catch (NumberFormatException ex) {
-
+				logger.error(ex);
 			}
 			if (numberOfPeople != 0) {
-				viewerService.selectGoList(numberOfPeople, event);
+				HashSet<Viewer> viewers = viewerService.selectGoList(numberOfPeople);
+				ReadyCheckEngine readyCheckEngine = context.getBean(ReadyCheckEngine.class);
+				event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknames(viewers));
+				event.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(viewers) + " напишите в чат в течении минуты для подтверждения участия!");
+				readyCheckEngine.addReadyCheckList(viewers);
+				Thread readyCheckThread = new Thread(readyCheckEngine);
+				readyCheckThread.setName("ReadyCheck Thread");
+				readyCheckThread.start();
 			}
 		}
 	}

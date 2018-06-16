@@ -1,12 +1,14 @@
 package net.greyferret.ferretbot.util;
 
 import net.dv8tion.jda.core.entities.Message;
+import net.greyferret.ferretbot.entity.Viewer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
 
 import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
  * Created by GreyFerret on 18.12.2017.
@@ -104,5 +106,27 @@ public class FerretBotUtils {
 		if (client.getChannel(channelName).isPresent())
 			logger.info("FIXED IT YEAH");
 		return true;
+	}
+
+	public static String buildMergedViewersNicknames(Set<Viewer> viewers) {
+		String selectedViewersString = "";
+		for (Viewer viewer : viewers) {
+			if (!StringUtils.isBlank(selectedViewersString)) {
+				selectedViewersString = selectedViewersString + ", ";
+			}
+			selectedViewersString = selectedViewersString + viewer.getLogin();
+		}
+		return selectedViewersString;
+	}
+
+	public static String buildMergedViewersNicknamesWithMention(Set<Viewer> viewers) {
+		String selectedViewersString = "@";
+		for (Viewer viewer : viewers) {
+			if (selectedViewersString.length() > 1) {
+				selectedViewersString = selectedViewersString + ", @";
+			}
+			selectedViewersString = selectedViewersString + viewer.getLogin();
+		}
+		return selectedViewersString;
 	}
 }

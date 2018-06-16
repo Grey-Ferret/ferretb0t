@@ -19,13 +19,18 @@ import org.kitteh.irc.client.library.feature.twitch.event.RoomStateEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserStateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class FerretBotChatListener extends TwitchListener {
 	private static final Logger logger = LogManager.getLogger(FerretBotChatListener.class);
 	private static final Logger chatLogger = LogManager.getLogger("ChatLogger");
@@ -38,6 +43,7 @@ public class FerretBotChatListener extends TwitchListener {
 	private ApplicationContext context;
 
 	private FerretChatClient ferretChatClient;
+	private ConcurrentHashMap<String, Boolean> readyCheckList;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -51,6 +57,7 @@ public class FerretBotChatListener extends TwitchListener {
 	@PostConstruct
 	private void postConstruct() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+		readyCheckList = new ConcurrentHashMap<>();
 	}
 
 	@CommandFilter("PRIVMSG")
@@ -58,7 +65,16 @@ public class FerretBotChatListener extends TwitchListener {
 	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
-		chatLogger.info(eventWrapper.getLogin() + ": " + eventWrapper.getMessage());
+		String login = eventWrapper.getLogin();
+		chatLogger.info(login + ": " + eventWrapper.getMessage());
+		if (readyCheckList.size() > 0) {
+			for (String s : readyCheckList.keySet()) {
+				if (s.equalsIgnoreCase(login)) {
+					readyCheckList.put(s, true);
+					break;
+				}
+			}
+		}
 
 		if (eventWrapper.getMessage().startsWith("!")) {
 			chatLogic.proceedCommandLogic(eventWrapper);
@@ -68,7 +84,7 @@ public class FerretBotChatListener extends TwitchListener {
 			boolean isModerator = StringUtils.isNotBlank(userType) && userType.equalsIgnoreCase("mod");
 			if (isBroadcaster || isModerator) {
 				chatLogic.proceedModsCommandLogic(eventWrapper);
-				if (isBroadcaster || eventWrapper.getLogin().equalsIgnoreCase("greyferret")) {
+				if (isBroadcaster || login.equalsIgnoreCase("greyferret")) {
 					chatLogic.proceedAdminCommandLogic(eventWrapper);
 				}
 			}
@@ -114,5 +130,14 @@ public class FerretBotChatListener extends TwitchListener {
 	@Handler
 	private void onUserStateEvent(UserStateEvent userStateEvent) {
 		chatLogger.info("UserStateEvent: " + userStateEvent);
+	}
+
+	public ConcurrentHashMap<String, Boolean> getReadyCheckList() {
+		return readyCheckList;
+	}
+
+	public void setReadyCheckList(HashMap<String, Boolean> readyCheckList) {
+		this.readyCheckList = new ConcurrentHashMap<>();
+		this.readyCheckList.putAll(readyCheckList);
 	}
 }
