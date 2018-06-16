@@ -1,7 +1,6 @@
 package net.greyferret.ferretbot.engine;
 
 import net.greyferret.ferretbot.client.FerretChatClient;
-import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.listener.FerretBotChatListener;
 import net.greyferret.ferretbot.logic.ChatLogic;
@@ -27,16 +26,16 @@ public class ReadyCheckEngine implements Runnable {
 	private ApplicationContext context;
 	@Autowired
 	private ViewerService viewerService;
-	@Autowired
-	private ChatConfig chatConfig;
 
 	private FerretBotChatListener ferretBotChatListener;
 	private HashSet<String> acceptedList;
+	private String nickToReply;
 
 	@PostConstruct
 	private void postConstruct() {
 		ferretBotChatListener = context.getBean(FerretBotChatListener.class);
 		acceptedList = new HashSet<>();
+		nickToReply = "";
 	}
 
 	@Override
@@ -65,8 +64,16 @@ public class ReadyCheckEngine implements Runnable {
 			if (timeoutList.size() > 0) {
 				ferretChatClient.sendMessage(StringUtils.join(timeoutList, ", ") + " не подвердили участие");
 				HashSet<Viewer> goList = viewerService.selectGoList(timeoutList.size());
+				if (goList.size() == 0) {
+					if (acceptedList.size() == 0) {
+						ferretChatClient.sendMessage("@" + nickToReply + " никого не подтвердил готовность и больше в очереди никого нет...");
+						return;
+					} else {
+						ferretChatClient.sendMessage("@" + nickToReply + " " + StringUtils.join(acceptedList, ", ") + " подвердили участие!");
+					}
+				}
 				ferretChatClient.sendMessage("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknames(goList));
-				ferretChatClient.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(goList) + " напишите в чат в течении минуты для подтверждения участия!");
+				ferretChatClient.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(goList) + " напишите в чат в течение минуты для подтверждения участия!");
 				addReadyCheckList(goList);
 				try {
 					Thread.sleep(60000);
@@ -76,7 +83,7 @@ public class ReadyCheckEngine implements Runnable {
 				proceedReadyCheckAction();
 			} else {
 				ferretBotChatListener.setReadyCheckList(new HashMap<>());
-				ferretChatClient.sendMessage("@" + chatConfig.getChannel() + " " + StringUtils.join(acceptedList, ", ") + " подвердили участие!");
+				ferretChatClient.sendMessage("@" + nickToReply + " " + StringUtils.join(acceptedList, ", ") + " подвердили участие!");
 			}
 		}
 	}
@@ -87,5 +94,9 @@ public class ReadyCheckEngine implements Runnable {
 			readyCheckList.put(viewer.getLogin(), false);
 		}
 		ferretBotChatListener.setReadyCheckList(readyCheckList);
+	}
+
+	public void setNickForReply(String nickForReply) {
+		this.nickToReply = nickForReply;
 	}
 }

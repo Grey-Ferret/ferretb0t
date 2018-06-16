@@ -227,10 +227,15 @@ public class ChatLogic {
 			}
 			if (numberOfPeople != 0) {
 				HashSet<Viewer> viewers = viewerService.selectGoList(numberOfPeople);
+				if (viewers.size() == 0) {
+					event.sendMessageWithMention(" никого нет в очереди...");
+					return;
+				}
 				ReadyCheckEngine readyCheckEngine = context.getBean(ReadyCheckEngine.class);
 				event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknames(viewers));
-				event.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(viewers) + " напишите в чат в течении минуты для подтверждения участия!");
+				event.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(viewers) + " напишите в чат в течение минуты для подтверждения участия!");
 				readyCheckEngine.addReadyCheckList(viewers);
+				readyCheckEngine.setNickForReply(event.getLogin());
 				Thread readyCheckThread = new Thread(readyCheckEngine);
 				readyCheckThread.setName("ReadyCheck Thread");
 				readyCheckThread.start();
