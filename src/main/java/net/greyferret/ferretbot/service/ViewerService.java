@@ -129,6 +129,8 @@ public class ViewerService {
 			viewer.setGoStatus(1);
 			entityManager.merge(viewer);
 			entityManager.flush();
+		} else if (viewer.getGoStatus() != 1) {
+			event.sendMessageWithMention("Невозможно войти в очередь - вы уже играли! Попросите стримера вернуть в очередь или обновить ее!");
 		}
 	}
 
