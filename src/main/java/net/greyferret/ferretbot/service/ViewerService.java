@@ -138,7 +138,7 @@ public class ViewerService {
 			viewer.setGoStatus(0);
 			entityManager.merge(viewer);
 			entityManager.flush();
-			event.sendMessageWithMention("успешно удален из очереди!");
+			event.sendMessageWithMention(" успешно удален из очереди!");
 		}
 	}
 
