@@ -3,7 +3,9 @@ package net.greyferret.ferretbot.listener;
 import net.engio.mbassy.listener.Handler;
 import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.ApplicationConfig;
+import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.logic.ChatLogic;
+import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import net.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
@@ -41,6 +43,8 @@ public class FerretBotChatListener extends TwitchListener {
 	private ApplicationConfig applicationConfig;
 	@Autowired
 	private ApplicationContext context;
+	@Autowired
+	private ViewerService viewerService;
 
 	private FerretChatClient ferretChatClient;
 	private ConcurrentHashMap<String, Boolean> readyCheckList;
@@ -74,6 +78,15 @@ public class FerretBotChatListener extends TwitchListener {
 					break;
 				}
 			}
+		}
+
+		Viewer viewer = viewerService.getViewerByName(login);
+		if (viewer != null) {
+			String subscriber = eventWrapper.getTag("subscriber");
+			if (subscriber.equalsIgnoreCase("1"))
+				viewerService.setSubscriber(viewer, true);
+			else
+				viewerService.setSubscriber(viewer, false);
 		}
 
 		if (eventWrapper.getMessage().startsWith("!")) {

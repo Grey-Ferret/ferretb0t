@@ -15,9 +15,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by GreyFerret on 27.12.2017.
@@ -30,6 +31,15 @@ public class ViewerService {
 	private EntityManager entityManager;
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
+
+	@Transactional
+	public void setSubscriber(Viewer viewer, Boolean isSub) {
+		if (viewer.getSub() != isSub) {
+			viewer.setSub(isSub);
+			entityManager.merge(viewer);
+			entityManager.flush();
+		}
+	}
 
 	@Transactional
 	public void checkViewersAndAddPoints(List<String> users, boolean isChannelOnline) {
@@ -148,6 +158,7 @@ public class ViewerService {
 
 	@Transactional
 	public HashSet<Viewer> selectGoList(int numberOfPeople) {
+		final int subLuckModifier = 2;
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
 		Root<Viewer> root = criteria.from(Viewer.class);
@@ -155,22 +166,28 @@ public class ViewerService {
 
 		criteria.where(builder.equal(root.get("goStatus"), 1));
 
-		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
-		HashSet<Viewer> selectedList;
-
-		if (resultList.size() <= numberOfPeople) {
-			selectedList = new HashSet<>(resultList);
-		} else {
-			selectedList = new HashSet<>();
-			while (selectedList.size() < numberOfPeople) {
-				selectedList.add(resultList.get(ThreadLocalRandom.current().nextInt(resultList.size())));
+		List<Viewer> foundList = entityManager.createQuery(criteria).getResultList();
+		HashSet<Viewer> selectedList = new HashSet<>();
+		ArrayList<Viewer> randomList = new ArrayList<>();
+		for (Viewer viewer : foundList) {
+			randomList.add(viewer);
+			if (viewer.getSub()) {
+				for (int j = 1; j < subLuckModifier; j++) {
+					randomList.add(viewer);
+				}
 			}
 		}
-		for (Viewer viewer : selectedList) {
-			viewer.setGoStatus(2);
-			entityManager.merge(viewer);
+
+		if (foundList.size() <= numberOfPeople) {
+			selectedList = new HashSet<>(foundList);
+		} else {
+			while (selectedList.size() < numberOfPeople && randomList.size() > 0) {
+				Collections.shuffle(randomList);
+				Viewer selectedViewer = randomList.get(0);
+				selectedList.add(selectedViewer);
+				randomList.removeIf(selectedViewer::equals);
+			}
 		}
-		entityManager.flush();
 		return selectedList;
 	}
 

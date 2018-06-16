@@ -83,7 +83,7 @@ public class ReadyCheckEngine implements Runnable {
 				proceedReadyCheckAction();
 			} else {
 				ferretBotChatListener.setReadyCheckList(new HashMap<>());
-				ferretChatClient.sendMessage("@" + nickToReply + " " + StringUtils.join(acceptedList, ", ") + " подвердили участие!");
+				ferretChatClient.sendMessage("@" + nickToReply + " ИТОГ: " + StringUtils.join(acceptedList, ", ") + " подвердили участие!");
 			}
 		}
 	}

@@ -24,7 +24,7 @@ public class Viewer implements Serializable {
 	private Date created;
 	@Column(name = "updated")
 	private Date updated;
-	@Column(name = "sub")
+	@Column(name = "sub", nullable = false, columnDefinition = "boolean default 0")
 	private Boolean sub;
 	@Column(name = "sub_streak")
 	private int subStreak;
