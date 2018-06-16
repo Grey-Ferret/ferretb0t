@@ -163,7 +163,7 @@ public class ViewerService {
 			}
 		}
 		for (Viewer viewer : selectedList) {
-			viewer.setGoStatus(0);
+			viewer.setGoStatus(2);
 			entityManager.merge(viewer);
 		}
 		entityManager.flush();
