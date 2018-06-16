@@ -63,6 +63,7 @@ public class ReadyCheckEngine implements Runnable {
 			FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
 			if (timeoutList.size() > 0) {
 				ferretChatClient.sendMessage(StringUtils.join(timeoutList, ", ") + " не подвердили участие");
+				viewerService.returnToDefaultStatus(timeoutList);
 				HashSet<Viewer> goList = viewerService.selectGoList(timeoutList.size());
 				if (goList.size() == 0) {
 					if (acceptedList.size() == 0) {

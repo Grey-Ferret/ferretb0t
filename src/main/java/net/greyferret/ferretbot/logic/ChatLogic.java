@@ -46,6 +46,8 @@ public class ChatLogic {
 				proceedGoRemove(event);
 			} else if (message.startsWith("!go size")) {
 				proceedGoSize(event);
+			} else if (message.startsWith("!go status")) {
+				proceedGoStatus(event);
 			} else {
 				message = message.replaceAll("\\s+", "");
 				if (message.equalsIgnoreCase("!go")) {
@@ -55,6 +57,25 @@ public class ChatLogic {
 		} else {
 			String[] split = message.split(" ");
 			commandService.proceedTextCommand(split[0], event);
+		}
+	}
+
+	private void proceedGoStatus(ChannelMessageEventWrapper event) {
+		Viewer viewer = viewerService.getViewerByName(event.getLogin());
+		if (viewer != null) {
+			int goStatus = viewer.getGoStatus();
+			if (goStatus == 0) {
+				event.sendMessageWithMention(" сейчас не в очереди");
+				return;
+			}
+			if (goStatus == 1) {
+				event.sendMessageWithMention(" уже в очереди");
+				return;
+			}
+			if (goStatus == 2) {
+				event.sendMessageWithMention(" уже играл. Купи возврат за поинты или дождись обновления очереди!");
+				return;
+			}
 		}
 	}
 

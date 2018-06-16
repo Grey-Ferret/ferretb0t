@@ -242,4 +242,19 @@ public class ViewerService {
 		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
 		return resultList.size();
 	}
+
+	@Transactional
+	public void returnToDefaultStatus(HashSet<String> timeoutList) {
+		boolean isChanged = false;
+		for (String s : timeoutList) {
+			Viewer viewer = getViewerByName(s);
+			if (viewer != null) {
+				viewer.setGoStatus(0);
+				entityManager.merge(viewer);
+				isChanged = true;
+			}
+		}
+		if (isChanged)
+			entityManager.flush();
+	}
 }
