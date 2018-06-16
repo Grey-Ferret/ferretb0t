@@ -130,7 +130,7 @@ public class ViewerService {
 			entityManager.merge(viewer);
 			entityManager.flush();
 		} else if (viewer.getGoStatus() != 1) {
-			event.sendMessageWithMention("Невозможно войти в очередь - вы уже играли! Попросите стримера вернуть в очередь или обновить ее!");
+			event.sendMessageWithMention(" невозможно войти в очередь - вы уже играли! Попросите стримера вернуть в очередь или обновить ее!");
 		}
 	}
 
@@ -140,6 +140,8 @@ public class ViewerService {
 			viewer.setGoStatus(0);
 			entityManager.merge(viewer);
 			entityManager.flush();
+			event.sendMessageWithMention(" успешно удален из очереди!");
+		} else if (viewer.getGoStatus() == 0) {
 			event.sendMessageWithMention(" успешно удален из очереди!");
 		}
 	}
@@ -187,7 +189,7 @@ public class ViewerService {
 			entityManager.merge(viewer);
 		}
 		entityManager.flush();
-		event.sendMessageWithMention("очередь была успешно очищена!");
+		event.sendMessageWithMention(" очередь была успешно очищена!");
 	}
 
 	@Transactional
@@ -200,5 +202,27 @@ public class ViewerService {
 			entityManager.merge(viewer);
 			entityManager.flush();
 		}
+	}
+
+	public int goListSize(ChannelMessageEventWrapper event) {
+		return goListSizeByStatus(1);
+	}
+
+
+	public int goListBlockedSize(ChannelMessageEventWrapper event) {
+		return goListSizeByStatus(2);
+	}
+
+	@Transactional
+	protected int goListSizeByStatus(int statusId) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
+		Root<Viewer> root = criteria.from(Viewer.class);
+		criteria.select(root);
+
+		criteria.where(builder.equal(root.get("goStatus"), statusId));
+
+		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
+		return resultList.size();
 	}
 }

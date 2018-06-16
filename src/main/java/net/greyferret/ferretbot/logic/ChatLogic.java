@@ -44,6 +44,8 @@ public class ChatLogic {
 		if (message.startsWith("!go")) {
 			if (message.startsWith("!go remove")) {
 				proceedGoRemove(event);
+			} else if (message.startsWith("!go size")) {
+				proceedGoSize(event);
 			} else {
 				message = message.replaceAll("\\s+", "");
 				if (message.equalsIgnoreCase("!go")) {
@@ -206,6 +208,12 @@ public class ChatLogic {
 			return;
 		}
 		viewerService.removeToGoList(viewer, event);
+	}
+
+	protected void proceedGoSize(ChannelMessageEventWrapper event) {
+		int goListSize = viewerService.goListSize(event);
+		int goListBlockedSize = viewerService.goListBlockedSize(event);
+		event.sendMessageWithMention("Количество человек в очереди: " + goListSize + ", количество человек что уже играло: " + goListBlockedSize);
 	}
 
 	protected void proceedGoSelect(ChannelMessageEventWrapper event) {
