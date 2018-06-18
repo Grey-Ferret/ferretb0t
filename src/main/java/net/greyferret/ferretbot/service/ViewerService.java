@@ -247,11 +247,12 @@ public class ViewerService {
 	public void returnToGoList(String login, ChannelMessageEventWrapper event) {
 		Viewer viewer = entityManager.find(Viewer.class, login);
 		if (viewer == null) {
-			event.sendMessageWithMention("Пользователь " + login + " не был найден");
+			event.sendMessageWithMention(" Пользователь " + login + " не был найден");
 		} else {
-			viewer.setGoStatus(1);
+			viewer.setGoStatus(0);
 			entityManager.merge(viewer);
 			entityManager.flush();
+			event.sendMessageWithMention(" Успешно!");
 		}
 	}
 

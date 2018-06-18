@@ -136,6 +136,14 @@ public class ChatLogic {
 					}
 				}
 			}
+
+			if (message.startsWith("!go")) {
+				if (message.startsWith("!go select")) {
+					proceedGoSelect(event);
+				} else if (message.startsWith("!go reset")) {
+					resetGoSelect(event);
+				}
+			}
 		}
 	}
 
@@ -172,16 +180,8 @@ public class ChatLogic {
 			repair(event);
 		}
 
-		if (message.startsWith("!go")) {
-			if (message.startsWith("!go return")) {
-				proceedGoReturn(event);
-			}
-			if (message.startsWith("!go select")) {
-				proceedGoSelect(event);
-			}
-			if (message.startsWith("!go reset")) {
-				resetGoSelect(event);
-			}
+		if (message.startsWith("!go return")) {
+			proceedGoReturn(event);
 		}
 	}
 
