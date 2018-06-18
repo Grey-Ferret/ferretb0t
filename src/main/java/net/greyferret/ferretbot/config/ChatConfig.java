@@ -25,9 +25,7 @@ public class ChatConfig {
 	@NotEmpty
 	private String clientId;
 	@NotNull
-	private Integer usersCheckMs;
-	@NotNull
-	private Integer usersCheckMsFailed;
+	private Integer usersCheckMins;
 
 	public String getLogin() {
 		return login;
@@ -73,19 +71,11 @@ public class ChatConfig {
 		return "#" + this.getChannel();
 	}
 
-	public Integer getUsersCheckMs() {
-		return usersCheckMs;
+	public Integer getUsersCheckMins() {
+		return usersCheckMins;
 	}
 
-	public void setUsersCheckMs(Integer usersCheckMs) {
-		this.usersCheckMs = usersCheckMs;
-	}
-
-	public Integer getUsersCheckMsFailed() {
-		return usersCheckMsFailed;
-	}
-
-	public void setUsersCheckMsFailed(Integer usersCheckMsFailed) {
-		this.usersCheckMsFailed = usersCheckMsFailed;
+	public void setUsersCheckMins(Integer usersCheckMins) {
+		this.usersCheckMins = usersCheckMins;
 	}
 }

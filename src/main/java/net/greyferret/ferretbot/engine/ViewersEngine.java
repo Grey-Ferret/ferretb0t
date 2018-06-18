@@ -1,6 +1,7 @@
 package net.greyferret.ferretbot.engine;
 
 import net.greyferret.ferretbot.config.ChatConfig;
+import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.ViewerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -23,9 +25,17 @@ public class ViewersEngine implements Runnable {
 	private ApplicationContext context;
 
 	private boolean isOn;
+	private int checkNumber;
+	private HashSet<Viewer> viewersToAddPoints;
 
 	private ViewersEngine() {
 		isOn = true;
+		resetViewersToAddPoints();
+	}
+
+	private void resetViewersToAddPoints() {
+		checkNumber = 0;
+		viewersToAddPoints = new HashSet<>();
 	}
 
 	/***
@@ -33,30 +43,39 @@ public class ViewersEngine implements Runnable {
 	 */
 	@Override
 	public void run() {
-		try {
-			boolean lastResult = false;
-			while (isOn) {
-				Integer retryMs;
-				if (lastResult == true)
-					retryMs = chatConfig.getUsersCheckMs();
-				else
-					retryMs = chatConfig.getUsersCheckMsFailed();
+		boolean lastResult = false;
+		while (isOn) {
+			Integer retryMs;
+			if (lastResult == true)
+				retryMs = 60000;
+			else
+				retryMs = 5000;
 
+			try {
 				Thread.sleep(retryMs);
-
-				boolean isChannelOnline = context.getBean("isChannelOnline", boolean.class);
-				List<String> nicknames = context.getBean("getViewers", ArrayList.class);
-
-				if (nicknames.size() > 1) {
-					viewerService.checkViewersAndAddPoints(nicknames, isChannelOnline);
-					logger.info("User list (" + nicknames.size() + ") was refreshed!");
-					lastResult = true;
-				} else {
-					lastResult = false;
-				}
+			} catch (InterruptedException e) {
+				logger.error(e);
 			}
-		} catch (Exception e) {
 
+			boolean isChannelOnline = context.getBean("isChannelOnline", boolean.class);
+			List<String> nicknames = context.getBean("getViewers", ArrayList.class);
+
+			if (nicknames.size() > 1) {
+				HashSet<Viewer> viewers = viewerService.checkViewers(nicknames);
+				viewersToAddPoints.addAll(viewers);
+				logger.info("User list (" + nicknames.size() + ") was refreshed!");
+				checkNumber++;
+				if (checkNumber >= chatConfig.getUsersCheckMins()) {
+					if (isChannelOnline) {
+						viewerService.addPointsForViewers(viewersToAddPoints);
+						logger.info("Adding points for being on channel for " + viewersToAddPoints.size() + " users");
+					}
+					resetViewersToAddPoints();
+				}
+				lastResult = true;
+			} else {
+				lastResult = false;
+			}
 		}
 	}
 }

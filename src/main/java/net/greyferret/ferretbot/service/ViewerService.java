@@ -42,7 +42,8 @@ public class ViewerService {
 	}
 
 	@Transactional
-	public void checkViewersAndAddPoints(List<String> users, boolean isChannelOnline) {
+	public HashSet<Viewer> checkViewers(List<String> users) {
+		HashSet<Viewer> viewers = new HashSet<>();
 		boolean changed = false;
 		for (String user : users) {
 			Viewer viewer = entityManager.find(Viewer.class, user);
@@ -50,12 +51,45 @@ public class ViewerService {
 				viewer = new Viewer(user);
 				entityManager.persist(viewer);
 				changed = true;
-			} else {
-				if (isChannelOnline) {
+			}
+			viewers.add(viewer);
+		}
+		if (changed)
+			entityManager.flush();
+		return viewers;
+	}
+
+	@Transactional
+	public void addPointsForViewers(HashSet<Viewer> users) {
+		for (Viewer viewer : users) {
+			if (viewer != null) {
+				if (viewer.getSub())
+					viewer.addTruePoints(2L);
+				else
 					viewer.addTruePoints(1L);
-					entityManager.merge(viewer);
-					changed = true;
-				}
+				entityManager.merge(viewer);
+			}
+		}
+		entityManager.flush();
+	}
+
+	@Transactional
+	public void addPointsForViewers(List<String> users) {
+		boolean changed = false;
+		HashSet<Viewer> viewers = new HashSet<>();
+		for (String user : users) {
+			Viewer viewer = entityManager.find(Viewer.class, user);
+			if (viewer == null) {
+				viewer = new Viewer(user);
+				entityManager.persist(viewer);
+				changed = true;
+			} else {
+				if (viewer.getSub())
+					viewer.addTruePoints(2L);
+				else
+					viewer.addTruePoints(1L);
+				entityManager.merge(viewer);
+				changed = true;
 			}
 		}
 		if (changed)
