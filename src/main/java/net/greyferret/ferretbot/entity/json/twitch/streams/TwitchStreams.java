@@ -4,29 +4,31 @@ package net.greyferret.ferretbot.entity.json.twitch.streams;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class TwitchStreams {
 
-    @SerializedName("stream")
+    @SerializedName("data")
     @Expose
-    private Stream stream;
-    @SerializedName("_links")
+    private List<Datum> data = null;
+    @SerializedName("pagination")
     @Expose
-    private Links__ links;
+    private Pagination pagination;
 
-    public Stream getStream() {
-        return stream;
+    public List<Datum> getData() {
+        return data;
     }
 
-    public void setStream(Stream stream) {
-        this.stream = stream;
+    public void setData(List<Datum> data) {
+        this.data = data;
     }
 
-    public Links__ getLinks() {
-        return links;
+    public Pagination getPagination() {
+        return pagination;
     }
 
-    public void setLinks(Links__ links) {
-        this.links = links;
+    public void setPagination(Pagination pagination) {
+        this.pagination = pagination;
     }
 
 }
