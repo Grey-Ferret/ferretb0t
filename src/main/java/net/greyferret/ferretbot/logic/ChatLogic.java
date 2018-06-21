@@ -99,7 +99,7 @@ public class ChatLogic {
 			String login = wrapper.getTag("login");
 			String loginForThanks;
 			if (isGift) {
-				loginForThanks = wrapper.getTag("param-recipient-display-name");
+				loginForThanks = wrapper.getTag("msg-param-recipient-display-name");
 			} else {
 				loginForThanks = login;
 			}
