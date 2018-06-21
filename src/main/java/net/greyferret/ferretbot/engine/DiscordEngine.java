@@ -116,13 +116,13 @@ public class DiscordEngine implements Runnable {
 				if (streamType.equalsIgnoreCase("live")) {
 					if (this.currentChannelStatus.equals(ChannelStatus.OFFLINE)) {
 						if (StringUtils.isNotBlank(twitchInfo.getGameId())) {
-							String gameId = twitchInfo.getId();
+							String gameId = twitchInfo.getGameId();
 							TwitchGames gameInfo = getGameInfo(gameId);
-							if (gameInfo == null || gameInfo.getData() == null || gameInfo.getData().size() == 0) {
+							if (gameInfo == null || gameInfo.getData() == null || gameInfo.getData().size() == 0 || StringUtils.isBlank(gameInfo.getData().get(0).getName())) {
 								logger.warn("Stream in JSON was not null, had Stream Type, had Game Id, but could not parse games request");
 								result = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();
 							} else {
-								result = Messages.ANNOUNCE_MESSAGE_1 + gameInfo.getData().get(0) + Messages.ANNOUNCE_MESSAGE_2 + chatConfig.getChannel();
+								result = Messages.ANNOUNCE_MESSAGE_1 + gameInfo.getData().get(0).getName() + Messages.ANNOUNCE_MESSAGE_2 + chatConfig.getChannel();
 							}
 						} else {
 							logger.warn("Stream in JSON was not null, had Stream Type, but no Game was found");
@@ -146,8 +146,9 @@ public class DiscordEngine implements Runnable {
 		Connection.Response response;
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Client-ID", chatConfig.getClientId());
+		final String gameInfoUrlComplete = gameInfoUrl + gameId;
 		try {
-			response = Jsoup.connect(gameInfoUrl + gameId)
+			response = Jsoup.connect(gameInfoUrlComplete)
 					.method(Connection.Method.GET)
 					.ignoreContentType(true)
 					.headers(headers)
