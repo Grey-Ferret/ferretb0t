@@ -38,6 +38,7 @@ public class ChatEngine implements Runnable {
 	private FerretChatClient FerretBot;
 	private boolean isOn;
 	private Thread viewersThread;
+	private Thread raffleThread;
 
 	public ChatEngine() {
 		isOn = true;
@@ -54,6 +55,11 @@ public class ChatEngine implements Runnable {
 		this.viewersThread = new Thread(viewersEngine);
 		this.viewersThread.setName("Viewers Thread");
 		this.viewersThread.start();
+
+		RaffleEngine raffleEngine = context.getBean(RaffleEngine.class);
+		this.raffleThread = new Thread(raffleEngine);
+		this.raffleThread.setName("RaffleDate Thread");
+		this.raffleThread.start();
 
 		try {
 			while (isOn) {

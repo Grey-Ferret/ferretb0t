@@ -109,7 +109,7 @@ public class Viewer implements Serializable {
 		this.updated = date;
 	}
 
-	public Boolean getSub() {
+	public Boolean isSub() {
 		return sub;
 	}
 

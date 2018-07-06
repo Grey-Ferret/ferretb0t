@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -128,5 +130,18 @@ public class FerretBotUtils {
 			selectedViewersString = selectedViewersString + viewer.getLogin();
 		}
 		return selectedViewersString;
+	}
+
+	public static ArrayList<Viewer> combineViewerListWithSubluck(Collection<Viewer> viewerList, int subLuckModifier) {
+		ArrayList<Viewer> resList = new ArrayList<>();
+		for (Viewer viewer : viewerList) {
+			resList.add(viewer);
+			if (viewer.isSub()) {
+				for (int j = 1; j < subLuckModifier; j++) {
+					resList.add(viewer);
+				}
+			}
+		}
+		return resList;
 	}
 }

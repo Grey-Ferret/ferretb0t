@@ -2,6 +2,7 @@ package net.greyferret.ferretbot.service;
 
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.entity.ViewerLootsMap;
+import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +35,7 @@ public class ViewerService {
 
 	@Transactional
 	public void setSubscriber(Viewer viewer, Boolean isSub) {
-		if (viewer.getSub() != isSub) {
+		if (viewer.isSub() != isSub) {
 			viewer.setSub(isSub);
 			entityManager.merge(viewer);
 			entityManager.flush();
@@ -63,7 +64,7 @@ public class ViewerService {
 	public void addPointsForViewers(HashSet<Viewer> users) {
 		for (Viewer viewer : users) {
 			if (viewer != null) {
-				if (viewer.getSub())
+				if (viewer.isSub())
 					viewer.addTruePoints(2L);
 				else
 					viewer.addTruePoints(1L);
@@ -84,7 +85,7 @@ public class ViewerService {
 				entityManager.persist(viewer);
 				changed = true;
 			} else {
-				if (viewer.getSub())
+				if (viewer.isSub())
 					viewer.addTruePoints(2L);
 				else
 					viewer.addTruePoints(1L);
@@ -202,15 +203,7 @@ public class ViewerService {
 
 		List<Viewer> foundList = entityManager.createQuery(criteria).getResultList();
 		HashSet<Viewer> selectedList = new HashSet<>();
-		ArrayList<Viewer> randomList = new ArrayList<>();
-		for (Viewer viewer : foundList) {
-			randomList.add(viewer);
-			if (viewer.getSub()) {
-				for (int j = 1; j < subLuckModifier; j++) {
-					randomList.add(viewer);
-				}
-			}
-		}
+		ArrayList<Viewer> randomList = FerretBotUtils.combineViewerListWithSubluck(foundList, subLuckModifier);
 
 		if (foundList.size() <= numberOfPeople) {
 			selectedList = new HashSet<>(foundList);

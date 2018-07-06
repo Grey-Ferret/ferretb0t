@@ -21,6 +21,8 @@ public class DiscordConfig {
 	@NotNull
 	private Long testChannel;
 	@NotNull
+	private Long raffleChannel;
+	@NotNull
 	private Long checkTime;
 
 	private String escapeLogBotId;
@@ -63,5 +65,13 @@ public class DiscordConfig {
 
 	public void setEscapeLogBotId(String escapeLogBotId) {
 		this.escapeLogBotId = escapeLogBotId;
+	}
+
+	public Long getRaffleChannel() {
+		return raffleChannel;
+	}
+
+	public void setRaffleChannel(Long raffleChannel) {
+		this.raffleChannel = raffleChannel;
 	}
 }

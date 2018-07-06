@@ -45,8 +45,9 @@ public class DiscordEngine implements Runnable {
 	private String channelStatusUrl;
 	private String gameInfoUrl;
 	private JDA jda;
-	private TextChannel announcementChannel;
-	private TextChannel testChannel;
+	public TextChannel announcementChannel;
+	public TextChannel testChannel;
+	public TextChannel raffleChannel;
 	private boolean isOn;
 	private ChannelStatus currentChannelStatus = ChannelStatus.ONLINE;
 	private static final String twitchAPIPrefix = "https://api.twitch.tv/helix/";
@@ -71,6 +72,7 @@ public class DiscordEngine implements Runnable {
 		jda.addEventListener(context.getBean(DiscordListener.class));
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
+		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
 	}
 
 	@Override
