@@ -16,6 +16,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -114,12 +116,17 @@ public class RaffleEngine implements Runnable {
 			if (rand.nextInt(100) > 66) {
 				resPts = 100;
 			}
-			message = "Зритель " + viewer.getLogin() + " выиграл " + resPts + " поинтов! Поздравляем!";
+			message = " Зритель " + viewer.getLogin() + " выиграл " + resPts + " поинтов! Поздравляем! ";
 		} else {
-			message = "Зритель " + viewer.getLogin() + " выиграл " + prize.getName() + "! Поздравляем!";
+			message = " Зритель " + viewer.getLogin() + " выиграл " + prize.getName() + "! Поздравляем! ";
 		}
-		ferretChatClient.sendMessage(message);
-		discordEngine.raffleChannel.sendMessage(message).queue();
+		String smileCode = ":PepePls:";
+		LocalDateTime ldt = LocalDateTime.now();
+		DateTimeFormatter dateTimeFormatter =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
+		ferretChatClient.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt));
+		
+		smileCode = "<a:PepePls:452100407779393536>";
+		discordEngine.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
 	}
 
 	public void newMessage(String login) {
