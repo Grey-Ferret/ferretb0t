@@ -17,6 +17,7 @@ public class RaffleDate implements Serializable {
 	@Id
 	@Column(name = "date_id")
 	private int dateId;
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	@Column(name = "list_of_raffles")
 	private String mapOfRaffles;
 

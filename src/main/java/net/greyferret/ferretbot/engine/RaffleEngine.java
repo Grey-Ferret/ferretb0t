@@ -1,9 +1,11 @@
 package net.greyferret.ferretbot.engine;
 
 import net.greyferret.ferretbot.client.FerretChatClient;
+import net.greyferret.ferretbot.entity.Prize;
 import net.greyferret.ferretbot.entity.RaffleDate;
 import net.greyferret.ferretbot.entity.RaffleViewer;
 import net.greyferret.ferretbot.entity.Viewer;
+import net.greyferret.ferretbot.service.PrizePoolService;
 import net.greyferret.ferretbot.service.RaffleService;
 import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
@@ -26,6 +28,8 @@ public class RaffleEngine implements Runnable {
 	private RaffleService raffleService;
 	@Autowired
 	private ViewerService viewerService;
+	@Autowired
+	private PrizePoolService prizePoolService;
 
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
@@ -90,9 +94,7 @@ public class RaffleEngine implements Runnable {
 					Boolean isChannelOnline = context.getBean("isChannelOnline", boolean.class);
 					if (isChannelOnline && viewers.size() > 0) {
 						Viewer viewer = rollList.get(0);
-						String message = viewer.getLogin() + " выиграл!";
-						ferretChatClient.sendMessage(message);
-						discordEngine.raffleChannel.sendMessage(message).queue();
+						rollPresent(viewer);
 
 						mapOfRaffles.put(raffleNum, true);
 						raffleDate.setMapOfRaffles(mapOfRaffles);
@@ -101,6 +103,23 @@ public class RaffleEngine implements Runnable {
 				}
 			}
 		}
+	}
+
+	private void rollPresent(Viewer viewer) {
+		Prize prize = prizePoolService.rollPrize();
+		String message;
+		if (prize == null) {
+			Random rand = new Random();
+			int resPts = 50;
+			if (rand.nextInt(100) > 66) {
+				resPts = 100;
+			}
+			message = "Зритель " + viewer.getLogin() + " выиграл " + resPts + " поинтов! Поздравляем!";
+		} else {
+			message = "Зритель " + viewer.getLogin() + " выиграл " + prize.getName() + "! Поздравляем!";
+		}
+		ferretChatClient.sendMessage(message);
+		discordEngine.raffleChannel.sendMessage(message).queue();
 	}
 
 	public void newMessage(String login) {
