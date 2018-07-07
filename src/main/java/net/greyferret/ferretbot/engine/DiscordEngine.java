@@ -49,10 +49,10 @@ public class DiscordEngine implements Runnable {
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
 	private boolean isOn;
-	private ChannelStatus currentChannelStatus = ChannelStatus.ONLINE;
+	private ChannelStatus currentChannelStatus = ChannelStatus.UNDEFINED;
 	private static final String twitchAPIPrefix = "https://api.twitch.tv/helix/";
 
-	enum ChannelStatus {ONLINE, OFFLINE}
+	enum ChannelStatus {ONLINE, OFFLINE, UNDEFINED}
 
 	public DiscordEngine() {
 		this.isOn = true;
@@ -73,6 +73,8 @@ public class DiscordEngine implements Runnable {
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
+
+		getChannelStatus();
 	}
 
 	@Override
