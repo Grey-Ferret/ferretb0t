@@ -4,18 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
 @Entity
 @Table(name = "prize_pool")
 public class PrizePool {
-	@Column(name = "id", updatable = false, nullable = false)
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name = "type", updatable = false, nullable = false)
 	@Id
-	private Long id;
-	@Column(name = "type")
 	private int type;
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "prizeJson")
@@ -69,13 +69,5 @@ public class PrizePool {
 
 	public void setChance(double chance) {
 		this.chance = new BigDecimal(chance);
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 }
