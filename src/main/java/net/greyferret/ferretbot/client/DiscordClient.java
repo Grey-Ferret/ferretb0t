@@ -1,4 +1,4 @@
-package net.greyferret.ferretbot.engine;
+package net.greyferret.ferretbot.client;
 
 import com.google.gson.Gson;
 import net.dv8tion.jda.core.AccountType;
@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class DiscordEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger(DiscordEngine.class);
+public class DiscordClient implements Runnable {
+	private static final Logger logger = LogManager.getLogger(DiscordClient.class);
 
 	@Autowired
 	private ApplicationContext context;
@@ -54,7 +54,7 @@ public class DiscordEngine implements Runnable {
 
 	enum ChannelStatus {ONLINE, OFFLINE, UNDEFINED}
 
-	public DiscordEngine() {
+	public DiscordClient() {
 		this.isOn = true;
 	}
 

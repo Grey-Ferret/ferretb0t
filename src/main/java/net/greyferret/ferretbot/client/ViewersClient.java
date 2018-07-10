@@ -1,4 +1,4 @@
-package net.greyferret.ferretbot.engine;
+package net.greyferret.ferretbot.client;
 
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.entity.Viewer;
@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 
 @Component
-public class ViewersEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ViewersEngine.class);
+public class ViewersClient implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ViewersClient.class);
 
 	@Autowired
 	private ChatConfig chatConfig;
@@ -28,7 +28,7 @@ public class ViewersEngine implements Runnable {
 	private int checkNumber;
 	private HashSet<Viewer> viewersToAddPoints;
 
-	private ViewersEngine() {
+	private ViewersClient() {
 		isOn = true;
 		resetViewersToAddPoints();
 	}

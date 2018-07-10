@@ -24,7 +24,7 @@ public class PrizeDefault {
 		prizes = new ArrayList<>();
 		prizes.add(new Prize("Случайное простое желание", 10, 4));
 		prizes.add(new Prize("Случайное элитное желание", 5, 3));
-		prizes.add(new Prize("Заказной стрим на 1 час", 2, 2.25));
+		prizes.add(new Prize("Сыграть дуэтом", 2, 2.25));
 		prizes.add(new Prize("Заказной стрим на 2 часа", 1, 1));
 		prizePool = new PrizePool(type, Prize.calcChancesInsideListOfPrizes(prizes), 0.4971);
 		res.put(type, prizePool);

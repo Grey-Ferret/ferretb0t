@@ -2,8 +2,8 @@ package net.greyferret.ferretbot.listener;
 
 import net.engio.mbassy.listener.Handler;
 import net.greyferret.ferretbot.client.FerretChatClient;
+import net.greyferret.ferretbot.client.RaffleClient;
 import net.greyferret.ferretbot.config.ApplicationConfig;
-import net.greyferret.ferretbot.engine.RaffleEngine;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.logic.ChatLogic;
 import net.greyferret.ferretbot.service.ViewerService;
@@ -49,7 +49,7 @@ public class FerretBotChatListener extends TwitchListener {
 
 	private FerretChatClient ferretChatClient;
 	private ConcurrentHashMap<String, Boolean> readyCheckList;
-	private RaffleEngine raffleEngine;
+	private RaffleClient raffleClient;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -63,7 +63,7 @@ public class FerretBotChatListener extends TwitchListener {
 	@PostConstruct
 	private void postConstruct() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		raffleEngine = context.getBean(RaffleEngine.class);
+		raffleClient = context.getBean(RaffleClient.class);
 		readyCheckList = new ConcurrentHashMap<>();
 	}
 
@@ -72,7 +72,7 @@ public class FerretBotChatListener extends TwitchListener {
 	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
-		raffleEngine.newMessage(eventWrapper.getLogin().toLowerCase());
+		raffleClient.newMessage(eventWrapper.getLogin().toLowerCase());
 
 		String login = eventWrapper.getLogin();
 		chatLogger.info(login + ": " + eventWrapper.getMessage());

@@ -1,8 +1,8 @@
 package net.greyferret.ferretbot;
 
-import net.greyferret.ferretbot.engine.ChatEngine;
-import net.greyferret.ferretbot.engine.DiscordEngine;
-import net.greyferret.ferretbot.engine.LootsEngine;
+import net.greyferret.ferretbot.client.ChatClient;
+import net.greyferret.ferretbot.client.DiscordClient;
+import net.greyferret.ferretbot.client.LootsClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,9 @@ public class FerretBot implements Runnable {
 	private ApplicationContext context;
 
 	private boolean isOn;
-	private LootsEngine lootsEngine;
-	private ChatEngine chatEngine;
-	private DiscordEngine discordEngine;
+	private LootsClient lootsClient;
+	private ChatClient chatClient;
+	private DiscordClient discordClient;
 	private Thread lootsThread;
 	private Thread chatThread;
 	private Thread discordThread;
@@ -36,14 +36,14 @@ public class FerretBot implements Runnable {
 
 	@PostConstruct
 	private void postConstruct() {
-		this.lootsEngine = context.getBean(LootsEngine.class);
-		this.chatEngine = context.getBean(ChatEngine.class);
-		this.discordEngine = context.getBean(DiscordEngine.class);
-		this.lootsThread = new Thread(this.lootsEngine);
+		this.lootsClient = context.getBean(LootsClient.class);
+		this.chatClient = context.getBean(ChatClient.class);
+		this.discordClient = context.getBean(DiscordClient.class);
+		this.lootsThread = new Thread(this.lootsClient);
 		this.lootsThread.setName("Loots Bot");
-		this.chatThread = new Thread(this.chatEngine);
+		this.chatThread = new Thread(this.chatClient);
 		this.chatThread.setName("Chat Bot");
-		this.discordThread = new Thread(this.discordEngine);
+		this.discordThread = new Thread(this.discordClient);
 		this.discordThread.setName("Discord Bot");
 	}
 

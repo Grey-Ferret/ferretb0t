@@ -1,7 +1,7 @@
 package net.greyferret.ferretbot.logic;
 
+import net.greyferret.ferretbot.client.ReadyCheckClient;
 import net.greyferret.ferretbot.config.LootsConfig;
-import net.greyferret.ferretbot.engine.ReadyCheckEngine;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.CommandService;
 import net.greyferret.ferretbot.service.ViewerLootsMapService;
@@ -56,7 +56,7 @@ public class ChatLogic {
 			}
 		} else {
 			String[] split = message.split(" ");
-			commandService.proceedTextCommand(split[0], event);
+			commandService.proceedTextCommand(split[0].toLowerCase(), event);
 		}
 	}
 
@@ -252,12 +252,12 @@ public class ChatLogic {
 					event.sendMessageWithMention(" никого нет в очереди...");
 					return;
 				}
-				ReadyCheckEngine readyCheckEngine = context.getBean(ReadyCheckEngine.class);
+				ReadyCheckClient readyCheckClient = context.getBean(ReadyCheckClient.class);
 				event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknames(viewers));
 				event.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(viewers) + " напишите в чат в течение минуты для подтверждения участия!");
-				readyCheckEngine.addReadyCheckList(viewers);
-				readyCheckEngine.setNickForReply(event.getLogin());
-				Thread readyCheckThread = new Thread(readyCheckEngine);
+				readyCheckClient.addReadyCheckList(viewers);
+				readyCheckClient.setNickForReply(event.getLogin());
+				Thread readyCheckThread = new Thread(readyCheckClient);
 				readyCheckThread.setName("ReadyCheck Thread");
 				readyCheckThread.start();
 			}

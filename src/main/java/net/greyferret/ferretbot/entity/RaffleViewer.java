@@ -3,16 +3,17 @@ package net.greyferret.ferretbot.entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class RaffleViewer implements Serializable {
 	private String login;
-	private ArrayList<Calendar> messageTimes;
+	private Queue<Calendar> messageTimes;
 	private final int amountOfTimes = 2;
 
 	public RaffleViewer(String login) {
 		this.login = login;
-		messageTimes = new ArrayList<>();
+		messageTimes = new LinkedList<>();
 	}
 
 	public String getLogin() {
@@ -24,14 +25,13 @@ public class RaffleViewer implements Serializable {
 	}
 
 	public ArrayList<Calendar> getMessageTimes() {
-		return messageTimes;
+		return new ArrayList<>(messageTimes);
 	}
 
 	public void addMessageTime(Calendar calendar) {
 		this.messageTimes.add(calendar);
-		Collections.sort(messageTimes);
-		while (messageTimes.size() >= amountOfTimes) {
-			messageTimes.remove(0);
+		if (this.messageTimes.size() > amountOfTimes) {
+			this.messageTimes.poll();
 		}
 	}
 

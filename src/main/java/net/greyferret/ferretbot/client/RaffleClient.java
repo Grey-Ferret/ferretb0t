@@ -1,6 +1,5 @@
-package net.greyferret.ferretbot.engine;
+package net.greyferret.ferretbot.client;
 
-import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.entity.Prize;
 import net.greyferret.ferretbot.entity.RaffleDate;
 import net.greyferret.ferretbot.entity.RaffleViewer;
@@ -9,6 +8,7 @@ import net.greyferret.ferretbot.service.PrizePoolService;
 import net.greyferret.ferretbot.service.RaffleService;
 import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
-public class RaffleEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ViewersEngine.class);
+public class RaffleClient implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ViewersClient.class);
 
 	@Autowired
 	private ApplicationContext context;
@@ -36,7 +36,7 @@ public class RaffleEngine implements Runnable {
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
 	private FerretChatClient ferretChatClient;
-	private DiscordEngine discordEngine;
+	private DiscordClient discordClient;
 	private RaffleDate raffleDate;
 
 	@PostConstruct
@@ -48,7 +48,7 @@ public class RaffleEngine implements Runnable {
 	@Override
 	public void run() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		discordEngine = context.getBean(DiscordEngine.class);
+		discordClient = context.getBean(DiscordClient.class);
 		while (isOn) {
 			try {
 				Thread.sleep(60000);
@@ -120,13 +120,26 @@ public class RaffleEngine implements Runnable {
 		} else {
 			message = " Зритель " + viewer.getLogin() + " выиграл " + prize.getName() + "! Поздравляем! ";
 		}
-		String smileCode = ":PepePls:";
 		LocalDateTime ldt = LocalDateTime.now();
-		DateTimeFormatter dateTimeFormatter =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
-		ferretChatClient.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt));
-		
-		smileCode = "<a:PepePls:452100407779393536>";
-		discordEngine.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
+		ferretChatClient.sendMessage(message);
+
+		String smileCode = "<a:PepePls:452100407779393536>";
+		discordClient.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
+
+		if (message.contains(" поинтов!")) {
+			String[] split = StringUtils.split(message, ' ');
+			int i = 0;
+			int j = 0;
+			for (String s : split) {
+				if (s.equalsIgnoreCase("поинтов!")) {
+					i = j - 1;
+					break;
+				}
+				j++;
+			}
+			ferretChatClient.sendMessage(FerretBotUtils.buildMessageAddPoints(viewer.getLogin(), Long.valueOf(split[i])));
+		}
 	}
 
 	public void newMessage(String login) {

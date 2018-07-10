@@ -1,4 +1,4 @@
-package net.greyferret.ferretbot.engine;
+package net.greyferret.ferretbot.client;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
  * Created by GreyFerret on 07.12.2017.
  */
 @Component
-public class LootsEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger(LootsEngine.class);
+public class LootsClient implements Runnable {
+	private static final Logger logger = LogManager.getLogger(LootsClient.class);
 
 	@Autowired
 	private LootsConfig lootsConfig;
@@ -44,7 +44,7 @@ public class LootsEngine implements Runnable {
 	/***
 	 * Constructor with all params for Loots
 	 */
-	public LootsEngine() {
+	public LootsClient() {
 		this.isOn = true;
 		this.cookies = new HashMap<>();
 	}
@@ -63,7 +63,7 @@ public class LootsEngine implements Runnable {
 		try {
 			mainLoop();
 		} catch (InterruptedException e) {
-			logger.error("InterruptedException in LootsEngine.java", e);
+			logger.error("InterruptedException in LootsClient.java", e);
 		}
 	}
 
@@ -188,7 +188,7 @@ public class LootsEngine implements Runnable {
 	}
 
 	/***
-	 * Вход в аккаунт FerretBot.engine
+	 * Вход в аккаунт
 	 */
 	private void login() {
 		Connection.Response response = null;

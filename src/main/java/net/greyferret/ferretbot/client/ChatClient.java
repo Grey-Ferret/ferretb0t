@@ -1,6 +1,5 @@
-package net.greyferret.ferretbot.engine;
+package net.greyferret.ferretbot.client;
 
-import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Loots;
@@ -21,8 +20,8 @@ import java.util.Set;
  * Created by GreyFerret on 08.12.2017.
  */
 @Component
-public class ChatEngine implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ChatEngine.class);
+public class ChatClient implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ChatClient.class);
 
 	@Autowired
 	private ChatConfig chatConfig;
@@ -40,7 +39,7 @@ public class ChatEngine implements Runnable {
 	private Thread viewersThread;
 	private Thread raffleThread;
 
-	public ChatEngine() {
+	public ChatClient() {
 		isOn = true;
 	}
 
@@ -51,13 +50,13 @@ public class ChatEngine implements Runnable {
 	public void run() {
 		FerretBot = context.getBean(FerretChatClient.class);
 		FerretBot.connect();
-		ViewersEngine viewersEngine = context.getBean(ViewersEngine.class);
-		this.viewersThread = new Thread(viewersEngine);
+		ViewersClient viewersClient = context.getBean(ViewersClient.class);
+		this.viewersThread = new Thread(viewersClient);
 		this.viewersThread.setName("Viewers Thread");
 		this.viewersThread.start();
 
-		RaffleEngine raffleEngine = context.getBean(RaffleEngine.class);
-		this.raffleThread = new Thread(raffleEngine);
+		RaffleClient raffleClient = context.getBean(RaffleClient.class);
+		this.raffleThread = new Thread(raffleClient);
 		this.raffleThread.setName("RaffleDate Thread");
 		this.raffleThread.start();
 
