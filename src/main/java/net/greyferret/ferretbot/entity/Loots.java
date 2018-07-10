@@ -70,14 +70,13 @@ public class Loots implements Serializable {
 	@Override
 	public String toString() {
 		Date dateLatest = this.date;
-		String lootsName;
-		String twitchName;
+		String lootsName = this.lootsName;
+		String twitchName = this.lootsName;
 		if (viewerLootsMap != null) {
 			lootsName = viewerLootsMap.getLootsName();
-			twitchName = viewerLootsMap.getLootsName();
-		} else {
-			lootsName = this.lootsName;
-			twitchName = this.lootsName;
+			if (viewerLootsMap.getViewer() != null) {
+				twitchName = viewerLootsMap.getViewer().getLogin();
+			}
 		}
 		return "Loots(" + this.id + ") " + SpringConfig.getDateFormat().format(dateLatest) + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
 	}

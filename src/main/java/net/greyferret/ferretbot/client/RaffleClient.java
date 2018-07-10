@@ -97,7 +97,7 @@ public class RaffleClient implements Runnable {
 					if (isChannelOnline && viewers.size() > 0) {
 						Viewer viewer = rollList.get(0);
 						rollPresent(viewer);
-
+						
 						mapOfRaffles.put(raffleNum, true);
 						raffleDate.setMapOfRaffles(mapOfRaffles);
 						raffleService.put(raffleDate);
@@ -140,6 +140,8 @@ public class RaffleClient implements Runnable {
 			}
 			ferretChatClient.sendMessage(FerretBotUtils.buildMessageAddPoints(viewer.getLogin(), Long.valueOf(split[i])));
 		}
+
+		resetMessages();
 	}
 
 	public void newMessage(String login) {
@@ -152,5 +154,9 @@ public class RaffleClient implements Runnable {
 			raffleViewer.addMessageTime(Calendar.getInstance());
 		}
 		viewers.put(login, raffleViewer);
+	}
+
+	public void resetMessages() {
+		viewers = new HashMap<>();
 	}
 }

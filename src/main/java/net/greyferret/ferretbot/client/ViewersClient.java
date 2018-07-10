@@ -63,7 +63,7 @@ public class ViewersClient implements Runnable {
 			if (nicknames.size() > 1) {
 				HashSet<Viewer> viewers = viewerService.checkViewers(nicknames);
 				viewersToAddPoints.addAll(viewers);
-				logger.info("User list (" + nicknames.size() + ") was refreshed!");
+//				logger.info("User list (" + nicknames.size() + ") was refreshed!");
 				checkNumber++;
 				if (checkNumber >= chatConfig.getUsersCheckMins()) {
 					if (isChannelOnline) {

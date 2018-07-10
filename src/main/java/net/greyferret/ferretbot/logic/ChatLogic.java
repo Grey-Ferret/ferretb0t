@@ -160,10 +160,6 @@ public class ChatLogic {
 			alias(event, message);
 		}
 
-		if (message.startsWith("!info") || message.startsWith("!test") || message.startsWith("!status")) {
-			event.sendMessageWithMention("A marvel of technology - an engine of destruction!");
-		}
-
 		if (message.startsWith("!transfer")) {
 			String[] split = StringUtils.split(message, ' ');
 			if (split.length == 4 && StringUtils.isNumeric(split[3])) {
