@@ -5,7 +5,7 @@ import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.Messages;
 import net.greyferret.ferretbot.entity.json.twitch.games.TwitchGames;
 import net.greyferret.ferretbot.entity.json.twitch.streams.Datum;
-import net.greyferret.ferretbot.entity.json.twitch.streams.TwitchStreams;
+import net.greyferret.ferretbot.entity.json.twitch.streams.TwitchStreamsJson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,7 +67,7 @@ public class ApiClient implements Runnable {
 				logger.error("Could not request Channel Status, response was blank");
 			} else {
 				Gson g = new Gson();
-				TwitchStreams json = g.fromJson(body, TwitchStreams.class);
+				TwitchStreamsJson json = g.fromJson(body, TwitchStreamsJson.class);
 				List<Datum> datum = json.getData();
 				if (datum == null || datum.size() == 0) {
 					this.currentChannelStatus = ChannelStatus.OFFLINE;

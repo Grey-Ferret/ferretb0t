@@ -18,12 +18,6 @@ public class LootsConfig {
 	private String login;
 	@NotEmpty
 	private String password;
-	@NotEmpty
-	private String tokenChroma;
-	@NotEmpty
-	private String token;
-	@NotEmpty
-	private String key;
 	@NotNull
 	private Long pointsForLoots;
 	@NotNull
@@ -43,30 +37,6 @@ public class LootsConfig {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public String getTokenChroma() {
-		return tokenChroma;
-	}
-
-	public void setTokenChroma(String tokenChroma) {
-		this.tokenChroma = tokenChroma;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
-
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
 	}
 
 	public Timer getTimer() {
