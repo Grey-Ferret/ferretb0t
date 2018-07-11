@@ -37,18 +37,20 @@ public class PrizePoolService {
 		logger.info("Rolling raffle!");
 
 		for (Integer i : prizePoolMap.keySet()) {
+			PrizePool prizePool = prizePoolMap.get(i);
 			if (prize == null) {
-				PrizePool prizePool = prizePoolMap.get(i);
 				double randDouble = rand.nextDouble();
-				logger.info("Rolled (" + (randDouble < (prizePool.getCurrentChance() / 100)) + ") PrizePool #" + i + ": " + randDouble + " against " + prizePool.getCurrentChance() / 100);
-				if (randDouble < (prizePool.getCurrentChance() / 100)) {
+				boolean rollResult = randDouble < (prizePool.getCurrentChance() / 100);
+				logger.info("Rolled (" + rollResult + ") PrizePool #" + i + ": " + randDouble + " against " + prizePool.getCurrentChance() / 100);
+				if (rollResult) {
 					logger.info("Win! Current chance was: " + prizePool.getCurrentChance() / 100);
-					prize = selectPrize(prizePool); //marking that we won't roll other gifts, only increase their chances
+					prize = selectPrize(prizePool);
+					resetChance(prizePool);
 				} else {
 					increaseChance(prizePool);
 				}
 			} else {
-				increaseChance(prizePoolMap.get(i));
+				increaseChance(prizePool);
 			}
 		}
 		return prize;
@@ -71,7 +73,6 @@ public class PrizePoolService {
 			}
 		}
 		removePrizeFromPool(prizePool, res);
-		resetChance(prizePool);
 		return res;
 	}
 
@@ -112,8 +113,8 @@ public class PrizePoolService {
 
 	@Transactional
 	protected void increaseChance(PrizePool prizePool) {
-		Double currentChance = prizePool.getCurrentChance();
-		setChance(prizePool, currentChance + prizePool.getChance());
+		Double chance = prizePool.getCurrentChance() + prizePool.getChance();
+		setChance(prizePool, chance);
 
 	}
 
