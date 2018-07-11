@@ -30,6 +30,8 @@ public class Viewer implements Serializable {
 	private int subStreak;
 	@Column(name = "go_status", nullable = false, columnDefinition = "int default 0")
 	private int goStatus;
+	@Column(name = "suitable_for_raffle", nullable = false, columnDefinition = "boolean default 1")
+	private boolean suitableForRaffle;
 
 	public Viewer() {
 		this.goStatus = 0;
@@ -131,6 +133,14 @@ public class Viewer implements Serializable {
 
 	public void setGoStatus(int goStatus) {
 		this.goStatus = goStatus;
+	}
+
+	public boolean isSuitableForRaffle() {
+		return suitableForRaffle;
+	}
+
+	public void setSuitableForRaffle(boolean suitableForRaffle) {
+		this.suitableForRaffle = suitableForRaffle;
 	}
 
 	public boolean removePoints(Long points) {

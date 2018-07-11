@@ -36,7 +36,7 @@ public class RaffleViewer implements Serializable {
 	}
 
 	public boolean ifSuitable() {
-		if (this.messageTimes.size() < 2) {
+		if (this.messageTimes.size() < amountOfTimes) {
 			return false;
 		}
 		Calendar suitablePeriod = Calendar.getInstance();

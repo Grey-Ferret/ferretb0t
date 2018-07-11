@@ -89,7 +89,7 @@ public class RaffleClient implements Runnable {
 						for (RaffleViewer viewer : viewers.values()) {
 							if (viewer.ifSuitable()) {
 								Viewer viewerByName = viewerService.getViewerByName(viewer.getLogin());
-								if (viewerByName != null) {
+								if (viewerByName != null && viewerByName.isSuitableForRaffle()) {
 									raffleViewers.add(viewerByName);
 								}
 							}
