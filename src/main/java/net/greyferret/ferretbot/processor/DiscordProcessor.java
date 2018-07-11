@@ -1,4 +1,4 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -21,8 +21,8 @@ import javax.security.auth.login.LoginException;
 
 @Component
 @EnableConfigurationProperties({ChatConfig.class, DiscordConfig.class})
-public class DiscordClient implements Runnable {
-	private static final Logger logger = LogManager.getLogger(DiscordClient.class);
+public class DiscordProcessor implements Runnable {
+	private static final Logger logger = LogManager.getLogger(DiscordProcessor.class);
 
 	@Autowired
 	private ApplicationContext context;
@@ -34,9 +34,9 @@ public class DiscordClient implements Runnable {
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
 	private boolean isOn;
-	private ApiClient apiClient;
+	private ApiProcessor apiProcessor;
 
-	public DiscordClient() {
+	public DiscordProcessor() {
 		this.isOn = true;
 	}
 
@@ -54,7 +54,7 @@ public class DiscordClient implements Runnable {
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
 
-		apiClient = context.getBean(ApiClient.class);
+		apiProcessor = context.getBean(ApiProcessor.class);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class DiscordClient implements Runnable {
 			Thread.sleep(discordConfig.getCheckTime());
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
 			while (isOn) {
-				String channelStatusMessage = apiClient.getChannelStatusMessage();
+				String channelStatusMessage = apiProcessor.getChannelStatusMessage();
 				if (StringUtils.isNotBlank(channelStatusMessage))
 					announcementChannel.sendMessage(channelStatusMessage).queue();
 				Thread.sleep(discordConfig.getCheckTime());

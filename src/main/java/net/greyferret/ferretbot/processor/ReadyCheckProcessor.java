@@ -1,5 +1,6 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
+import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.listener.FerretBotChatListener;
 import net.greyferret.ferretbot.logic.ChatLogic;
@@ -18,7 +19,7 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class ReadyCheckClient implements Runnable {
+public class ReadyCheckProcessor implements Runnable {
 	private static final Logger logger = LogManager.getLogger(ChatLogic.class);
 
 	@Autowired

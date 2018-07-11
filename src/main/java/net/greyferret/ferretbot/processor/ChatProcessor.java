@@ -1,5 +1,6 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
+import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.BotConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,8 +17,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @EnableConfigurationProperties({BotConfig.class})
-public class ChatClient implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ChatClient.class);
+public class ChatProcessor implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ChatProcessor.class);
 
 	@Autowired
 	private ApplicationContext context;
@@ -31,7 +32,7 @@ public class ChatClient implements Runnable {
 	private Thread viewersThread;
 	private Thread raffleThread;
 
-	public ChatClient() {
+	public ChatProcessor() {
 		isOn = true;
 	}
 
@@ -41,20 +42,20 @@ public class ChatClient implements Runnable {
 	@Override
 	public void run() {
 		if (botConfig.getViewersServiceOn()) {
-			annotationConfigApplicationContext.register(ViewersClient.class);
-			ViewersClient viewersClient = context.getBean(ViewersClient.class);
-			this.viewersThread = new Thread(viewersClient);
+			annotationConfigApplicationContext.register(ViewersProcessor.class);
+			ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
+			this.viewersThread = new Thread(viewersProcessor);
 			this.viewersThread.setName("Viewers Thread");
 			this.viewersThread.start();
 
 			if (botConfig.getReadyCheckOn()) {
-				annotationConfigApplicationContext.register(ReadyCheckClient.class);
+				annotationConfigApplicationContext.register(ReadyCheckProcessor.class);
 			}
 
 			if (botConfig.getRaffleOn()) {
-				annotationConfigApplicationContext.register(RaffleClient.class);
-				RaffleClient raffleClient = context.getBean(RaffleClient.class);
-				this.raffleThread = new Thread(raffleClient);
+				annotationConfigApplicationContext.register(RaffleProcessor.class);
+				RaffleProcessor raffleProcessor = context.getBean(RaffleProcessor.class);
+				this.raffleThread = new Thread(raffleProcessor);
 				this.raffleThread.setName("RaffleDate Thread");
 				this.raffleThread.start();
 			}

@@ -1,5 +1,6 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
+import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.entity.Prize;
 import net.greyferret.ferretbot.entity.RaffleDate;
 import net.greyferret.ferretbot.entity.RaffleViewer;
@@ -21,8 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
-public class RaffleClient implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ViewersClient.class);
+public class RaffleProcessor implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ViewersProcessor.class);
 
 	@Autowired
 	private ApplicationContext context;
@@ -33,12 +34,12 @@ public class RaffleClient implements Runnable {
 	@Autowired
 	private PrizePoolService prizePoolService;
 	@Autowired
-	private ApiClient apiClient;
+	private ApiProcessor apiProcessor;
 
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
 	private FerretChatClient ferretChatClient;
-	private DiscordClient discordClient;
+	private DiscordProcessor discordProcessor;
 	private RaffleDate raffleDate;
 
 	@PostConstruct
@@ -46,13 +47,13 @@ public class RaffleClient implements Runnable {
 		viewers = new HashMap<>();
 		isOn = true;
 
-		apiClient = context.getBean(ApiClient.class);
+		apiProcessor = context.getBean(ApiProcessor.class);
 	}
 
 	@Override
 	public void run() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		discordClient = context.getBean(DiscordClient.class);
+		discordProcessor = context.getBean(DiscordProcessor.class);
 		while (isOn) {
 			try {
 				Thread.sleep(60000);
@@ -98,7 +99,7 @@ public class RaffleClient implements Runnable {
 						final int subLuckModifier = 2;
 						ArrayList<Viewer> rollList = FerretBotUtils.combineViewerListWithSubluck(raffleViewers, subLuckModifier);
 						Collections.shuffle(rollList);
-						boolean isChannelOnline = apiClient.getChannelStatus();
+						boolean isChannelOnline = apiProcessor.getChannelStatus();
 						if (isChannelOnline && rollList.size() > 0) {
 							Viewer viewer = rollList.get(0);
 							rollPresent(viewer);
@@ -131,7 +132,7 @@ public class RaffleClient implements Runnable {
 		ferretChatClient.sendMessage(message);
 
 		String smileCode = "<a:PepePls:452100407779393536>";
-		discordClient.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
+		discordProcessor.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
 
 		if (message.contains(" поинтов!")) {
 			String[] split = StringUtils.split(message, ' ');

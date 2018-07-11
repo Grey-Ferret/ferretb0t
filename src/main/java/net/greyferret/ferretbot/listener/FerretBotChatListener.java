@@ -2,11 +2,11 @@ package net.greyferret.ferretbot.listener;
 
 import net.engio.mbassy.listener.Handler;
 import net.greyferret.ferretbot.client.FerretChatClient;
-import net.greyferret.ferretbot.client.RaffleClient;
 import net.greyferret.ferretbot.config.ApplicationConfig;
 import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.logic.ChatLogic;
+import net.greyferret.ferretbot.processor.RaffleProcessor;
 import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
@@ -54,7 +54,7 @@ public class FerretBotChatListener extends TwitchListener {
 
 	private FerretChatClient ferretChatClient;
 	private ConcurrentHashMap<String, Boolean> readyCheckList;
-	private RaffleClient raffleClient;
+	private RaffleProcessor raffleProcessor;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -77,10 +77,10 @@ public class FerretBotChatListener extends TwitchListener {
 		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
 		if (botConfig.getRaffleOn()) {
-			if (raffleClient == null) {
-				raffleClient = context.getBean(RaffleClient.class);
+			if (raffleProcessor == null) {
+				raffleProcessor = context.getBean(RaffleProcessor.class);
 			}
-			raffleClient.newMessage(eventWrapper.getLogin().toLowerCase());
+			raffleProcessor.newMessage(eventWrapper.getLogin().toLowerCase());
 		}
 
 

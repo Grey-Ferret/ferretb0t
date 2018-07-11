@@ -1,13 +1,13 @@
 package net.greyferret.ferretbot;
 
-import net.greyferret.ferretbot.client.ApiClient;
-import net.greyferret.ferretbot.client.ChatClient;
-import net.greyferret.ferretbot.client.DiscordClient;
-import net.greyferret.ferretbot.client.LootsClient;
 import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.config.DiscordConfig;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.listener.DiscordListener;
+import net.greyferret.ferretbot.processor.ApiProcessor;
+import net.greyferret.ferretbot.processor.ChatProcessor;
+import net.greyferret.ferretbot.processor.DiscordProcessor;
+import net.greyferret.ferretbot.processor.LootsProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +36,10 @@ public class FerretBot implements Runnable {
 	private AnnotationConfigApplicationContext annotationConfigApplicationContext;
 
 	private boolean isOn;
-	private LootsClient lootsClient;
-	private ChatClient chatClient;
-	private DiscordClient discordClient;
-	private ApiClient apiClient;
+	private LootsProcessor lootsProcessor;
+	private ChatProcessor chatClient;
+	private DiscordProcessor discordProcessor;
+	private ApiProcessor apiProcessor;
 	private Thread lootsThread;
 	private Thread chatThread;
 	private Thread discordThread;
@@ -56,29 +56,29 @@ public class FerretBot implements Runnable {
 	public void run() {
 		this.isOn = true;
 
-		this.apiClient = context.getBean(ApiClient.class);
-		this.apiThread = new Thread(this.apiClient);
+		this.apiProcessor = context.getBean(ApiProcessor.class);
+		this.apiThread = new Thread(this.apiProcessor);
 		this.apiThread.setName("Twitch Api Bot");
 		this.apiThread.start();
 
 		if (botConfig.getDiscordOn()) {
 			annotationConfigApplicationContext.register(DiscordConfig.class);
-			annotationConfigApplicationContext.register(DiscordClient.class);
+			annotationConfigApplicationContext.register(DiscordProcessor.class);
 			annotationConfigApplicationContext.register(DiscordListener.class);
-			this.discordClient = context.getBean(DiscordClient.class);
-			this.discordThread = new Thread(this.discordClient);
+			this.discordProcessor = context.getBean(DiscordProcessor.class);
+			this.discordThread = new Thread(this.discordProcessor);
 			this.discordThread.setName("Discord Bot");
 			this.discordThread.start();
 		}
 		if (botConfig.getLootsOn()) {
 			annotationConfigApplicationContext.register(LootsConfig.class);
-			annotationConfigApplicationContext.register(LootsClient.class);
-			this.lootsClient = context.getBean(LootsClient.class);
-			this.lootsThread = new Thread(this.lootsClient);
+			annotationConfigApplicationContext.register(LootsProcessor.class);
+			this.lootsProcessor = context.getBean(LootsProcessor.class);
+			this.lootsThread = new Thread(this.lootsProcessor);
 			this.lootsThread.setName("Loots Bot");
 			this.lootsThread.start();
 		}
-		this.chatClient = context.getBean(ChatClient.class);
+		this.chatClient = context.getBean(ChatProcessor.class);
 		this.chatThread = new Thread(this.chatClient);
 		this.chatThread.setName("Chat Bot");
 		this.chatThread.start();

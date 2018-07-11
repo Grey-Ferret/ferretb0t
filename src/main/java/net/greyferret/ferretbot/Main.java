@@ -1,13 +1,13 @@
 package net.greyferret.ferretbot;
 
-import net.greyferret.ferretbot.client.ApiClient;
-import net.greyferret.ferretbot.client.ChatClient;
 import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.DbConfig;
 import net.greyferret.ferretbot.config.SpringConfig;
 import net.greyferret.ferretbot.listener.FerretBotChatListener;
 import net.greyferret.ferretbot.logic.ChatLogic;
+import net.greyferret.ferretbot.processor.ApiProcessor;
+import net.greyferret.ferretbot.processor.ChatProcessor;
 import net.greyferret.ferretbot.service.ViewerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,12 +33,12 @@ public class Main {
 		annotationConfigApplicationContext.register(SpringConfig.class);
 		annotationConfigApplicationContext.register(FerretBot.class);
 		annotationConfigApplicationContext.register(ChatConfig.class);
-		annotationConfigApplicationContext.register(ChatClient.class);
+		annotationConfigApplicationContext.register(ChatProcessor.class);
 		annotationConfigApplicationContext.register(FerretChatClient.class);
 		annotationConfigApplicationContext.register(FerretBotChatListener.class);
 		annotationConfigApplicationContext.register(ChatLogic.class);
 		annotationConfigApplicationContext.register(ViewerService.class);
-		annotationConfigApplicationContext.register(ApiClient.class);
+		annotationConfigApplicationContext.register(ApiProcessor.class);
 		annotationConfigApplicationContext.refresh();
 		SpringApplication.run(Main.class);
 

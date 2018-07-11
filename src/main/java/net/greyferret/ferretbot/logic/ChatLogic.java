@@ -1,10 +1,10 @@
 package net.greyferret.ferretbot.logic;
 
-import net.greyferret.ferretbot.client.ReadyCheckClient;
 import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Viewer;
+import net.greyferret.ferretbot.processor.ReadyCheckProcessor;
 import net.greyferret.ferretbot.service.CommandService;
 import net.greyferret.ferretbot.service.ViewerLootsMapService;
 import net.greyferret.ferretbot.service.ViewerService;
@@ -262,12 +262,12 @@ public class ChatLogic {
 					event.sendMessageWithMention(" никого нет в очереди...");
 					return;
 				}
-				ReadyCheckClient readyCheckClient = context.getBean(ReadyCheckClient.class);
+				ReadyCheckProcessor readyCheckProcessor = context.getBean(ReadyCheckProcessor.class);
 				event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknames(viewers));
 				event.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(viewers) + " напишите в чат в течение минуты для подтверждения участия!");
-				readyCheckClient.addReadyCheckList(viewers);
-				readyCheckClient.setNickForReply(event.getLogin());
-				Thread readyCheckThread = new Thread(readyCheckClient);
+				readyCheckProcessor.addReadyCheckList(viewers);
+				readyCheckProcessor.setNickForReply(event.getLogin());
+				Thread readyCheckThread = new Thread(readyCheckProcessor);
 				readyCheckThread.setName("ReadyCheck Thread");
 				readyCheckThread.start();
 			}

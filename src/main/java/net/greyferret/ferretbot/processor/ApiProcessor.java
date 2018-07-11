@@ -1,4 +1,4 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
 import com.google.gson.Gson;
 import net.greyferret.ferretbot.config.ChatConfig;
@@ -23,8 +23,8 @@ import java.util.Map;
 
 @Component
 @EnableConfigurationProperties({ChatConfig.class})
-public class ApiClient implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ApiClient.class);
+public class ApiProcessor implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ApiProcessor.class);
 
 	private static final String twitchAPIPrefix = "https://api.twitch.tv/helix/";
 	private String channelStatusUrl;

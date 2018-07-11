@@ -1,7 +1,8 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Loots;
 import net.greyferret.ferretbot.entity.json.account.AccountJson;
@@ -37,8 +38,8 @@ import java.util.stream.Collectors;
  */
 @Component
 @EnableConfigurationProperties({LootsConfig.class})
-public class LootsClient implements Runnable {
-	private static final Logger logger = LogManager.getLogger(LootsClient.class);
+public class LootsProcessor implements Runnable {
+	private static final Logger logger = LogManager.getLogger(LootsProcessor.class);
 
 	@Autowired
 	private LootsConfig lootsConfig;
@@ -62,7 +63,7 @@ public class LootsClient implements Runnable {
 	/***
 	 * Constructor with all params for Loots
 	 */
-	public LootsClient() {
+	public LootsProcessor() {
 		this.isOn = true;
 		this.cookies = new HashMap<>();
 	}
@@ -93,7 +94,7 @@ public class LootsClient implements Runnable {
 		try {
 			mainLoop();
 		} catch (InterruptedException e) {
-			logger.error("InterruptedException in LootsClient.java", e);
+			logger.error("InterruptedException in LootsProcessor.java", e);
 		}
 	}
 

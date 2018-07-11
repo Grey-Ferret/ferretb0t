@@ -1,4 +1,4 @@
-package net.greyferret.ferretbot.client;
+package net.greyferret.ferretbot.processor;
 
 import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
@@ -18,8 +18,8 @@ import java.util.List;
 
 @Component
 @EnableConfigurationProperties({ChatConfig.class, BotConfig.class})
-public class ViewersClient implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ViewersClient.class);
+public class ViewersProcessor implements Runnable {
+	private static final Logger logger = LogManager.getLogger(ViewersProcessor.class);
 
 	@Autowired
 	private ChatConfig chatConfig;
@@ -28,7 +28,7 @@ public class ViewersClient implements Runnable {
 	@Autowired
 	private ApplicationContext context;
 	@Autowired
-	private ApiClient apiClient;
+	private ApiProcessor apiProcessor;
 	@Autowired
 	private BotConfig botConfig;
 
@@ -36,13 +36,13 @@ public class ViewersClient implements Runnable {
 	private int checkNumber;
 	private HashSet<Viewer> viewersToAddPoints;
 
-	private ViewersClient() {
+	private ViewersProcessor() {
 	}
 
 	@PostConstruct
 	private void postConstruct() {
 		isOn = true;
-		apiClient = context.getBean(ApiClient.class);
+		apiProcessor = context.getBean(ApiProcessor.class);
 		resetViewersToAddPoints();
 	}
 
@@ -80,7 +80,7 @@ public class ViewersClient implements Runnable {
 
 	private boolean checkViewersAndAddPoints() {
 		boolean lastResult;
-		boolean isChannelOnline = apiClient.getChannelStatus();
+		boolean isChannelOnline = apiProcessor.getChannelStatus();
 		List<String> nicknames = context.getBean("getViewers", ArrayList.class);
 
 		if (nicknames.size() > 1) {
