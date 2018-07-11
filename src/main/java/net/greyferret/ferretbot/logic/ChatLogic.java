@@ -1,6 +1,8 @@
 package net.greyferret.ferretbot.logic;
 
 import net.greyferret.ferretbot.client.ReadyCheckClient;
+import net.greyferret.ferretbot.config.BotConfig;
+import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.CommandService;
@@ -13,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
+@EnableConfigurationProperties({LootsConfig.class, BotConfig.class})
 public class ChatLogic {
 	private static final Logger logger = LogManager.getLogger(ChatLogic.class);
 
@@ -28,11 +32,11 @@ public class ChatLogic {
 	@Autowired
 	private ViewerLootsMapService viewerLootsMapService;
 	@Autowired
-	private CommandService commandService;
-	@Autowired
-	private LootsConfig lootsConfig;
-	@Autowired
 	private ApplicationContext context;
+	@Autowired
+	private BotConfig botConfig;
+	@Autowired
+	private ChatConfig chatConfig;
 
 	/***
 	 * Logic for chat commands for everyone
@@ -41,72 +45,27 @@ public class ChatLogic {
 	 */
 	public void proceedCommandLogic(ChannelMessageEventWrapper event) {
 		String message = FerretBotUtils.buildMessage(event.getMessage());
-		if (message.startsWith("!go")) {
-			if (message.startsWith("!go remove")) {
-				proceedGoRemove(event);
-			} else if (message.startsWith("!go size")) {
-				proceedGoSize(event);
-			} else if (message.startsWith("!go status")) {
-				proceedGoStatus(event);
-			} else {
-				message = message.replaceAll("\\s+", "");
-				if (message.equalsIgnoreCase("!go")) {
-					proceedGoAdd(event);
+		if (botConfig.getReadyCheckOn()) {
+			if (message.startsWith("!go")) {
+				if (message.startsWith("!go remove")) {
+					proceedGoRemove(event);
+				} else if (message.startsWith("!go size")) {
+					proceedGoSize(event);
+				} else if (message.startsWith("!go status")) {
+					proceedGoStatus(event);
+				} else {
+					message = message.replaceAll("\\s+", "");
+					if (message.equalsIgnoreCase("!go")) {
+						proceedGoAdd(event);
+					}
 				}
 			}
-		} else {
+		}
+
+		if (botConfig.getCustomCommandsOn()) {
 			String[] split = message.split(" ");
+			CommandService commandService = context.getBean(CommandService.class);
 			commandService.proceedTextCommand(split[0].toLowerCase(), event);
-		}
-	}
-
-	private void proceedGoStatus(ChannelMessageEventWrapper event) {
-		Viewer viewer = viewerService.getViewerByName(event.getLogin());
-		if (viewer != null) {
-			int goStatus = viewer.getGoStatus();
-			if (goStatus == 0) {
-				event.sendMessageWithMention(" сейчас не в очереди");
-				return;
-			}
-			if (goStatus == 1) {
-				event.sendMessageWithMention(" уже в очереди");
-				return;
-			}
-			if (goStatus == 2) {
-				event.sendMessageWithMention(" уже играл. Купи возврат за поинты или дождись обновления очереди!");
-				return;
-			}
-		}
-	}
-
-	public void proceedSubAlert(UserNoticeEventWrapper wrapper) {
-		this.proceedSubAlert(wrapper, false);
-	}
-
-	public void proceedSubAlert(UserNoticeEventWrapper wrapper, boolean isGift) {
-		String subPlan = wrapper.getTag("msg-param-sub-plan");
-		if (StringUtils.isNotBlank(subPlan)) {
-			Long points = null;
-			if (subPlan.equalsIgnoreCase("prime")) {
-				points = lootsConfig.getSubPlan().getPrime();
-			} else if (subPlan.equalsIgnoreCase("1000")) {
-				points = lootsConfig.getSubPlan().getFive();
-			} else if (subPlan.equalsIgnoreCase("2000")) {
-				points = lootsConfig.getSubPlan().getTen();
-			} else if (subPlan.equalsIgnoreCase("3000")) {
-				points = lootsConfig.getSubPlan().getTwentyFive();
-			}
-			String login = wrapper.getTag("login");
-			String loginForThanks;
-			if (isGift) {
-				loginForThanks = wrapper.getTag("msg-param-recipient-display-name");
-			} else {
-				loginForThanks = login;
-			}
-			String paymentMessage = FerretBotUtils.buildMessageAddPoints(login, points);
-			viewerService.addPoints(login, points);
-			wrapper.sendMessage(paymentMessage);
-			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
 	}
 
@@ -120,28 +79,33 @@ public class ChatLogic {
 		String[] split = StringUtils.split(message, " ");
 
 		if (split[0].toLowerCase().startsWith("!")) {
-			if (split[0].toLowerCase().startsWith("!command")) {
-				if (split[1].toLowerCase().startsWith("add") || split[1].toLowerCase().startsWith("edit")) {
-					if (split.length > 3) {
-						if (split[1].toLowerCase().startsWith("add"))
-							message = StringUtils.replace(message, "!command add " + split[2] + " ", "");
-						if (split[1].toLowerCase().startsWith("edit"))
-							message = StringUtils.replace(message, "!command edit " + split[2] + " ", "");
-						if (message.toLowerCase().startsWith("!command")) {
-							event.sendMessageWithMention("Что-то пошло не так...");
-						} else {
-							String res = commandService.addOrEditCommand(split[2], message);
-							event.sendMessageWithMention(res);
+			if (botConfig.getCustomCommandsOn()) {
+				if (split[0].toLowerCase().startsWith("!command")) {
+					if (split[1].toLowerCase().startsWith("add") || split[1].toLowerCase().startsWith("edit")) {
+						if (split.length > 3) {
+							if (split[1].toLowerCase().startsWith("add"))
+								message = StringUtils.replace(message, "!command add " + split[2] + " ", "");
+							if (split[1].toLowerCase().startsWith("edit"))
+								message = StringUtils.replace(message, "!command edit " + split[2] + " ", "");
+							if (message.toLowerCase().startsWith("!command")) {
+								event.sendMessageWithMention("Что-то пошло не так...");
+							} else {
+								CommandService commandService = context.getBean(CommandService.class);
+								String res = commandService.addOrEditCommand(split[2], message);
+								event.sendMessageWithMention(res);
+							}
 						}
 					}
 				}
 			}
 
-			if (message.startsWith("!go")) {
-				if (message.startsWith("!go select")) {
-					proceedGoSelect(event);
-				} else if (message.startsWith("!go reset")) {
-					resetGoSelect(event);
+			if (botConfig.getReadyCheckOn()) {
+				if (message.startsWith("!go")) {
+					if (message.startsWith("!go select")) {
+						proceedGoSelect(event);
+					} else if (message.startsWith("!go reset")) {
+						resetGoSelect(event);
+					}
 				}
 			}
 		}
@@ -178,6 +142,56 @@ public class ChatLogic {
 
 		if (message.startsWith("!go return")) {
 			proceedGoReturn(event);
+		}
+	}
+
+	private void proceedGoStatus(ChannelMessageEventWrapper event) {
+		Viewer viewer = viewerService.getViewerByName(event.getLogin());
+		if (viewer != null) {
+			int goStatus = viewer.getGoStatus();
+			if (goStatus == 0) {
+				event.sendMessageWithMention(" сейчас не в очереди");
+				return;
+			}
+			if (goStatus == 1) {
+				event.sendMessageWithMention(" уже в очереди");
+				return;
+			}
+			if (goStatus == 2) {
+				event.sendMessageWithMention(" уже играл. Купи возврат за поинты или дождись обновления очереди!");
+				return;
+			}
+		}
+	}
+
+	public void proceedSubAlert(UserNoticeEventWrapper wrapper) {
+		this.proceedSubAlert(wrapper, false);
+	}
+
+	public void proceedSubAlert(UserNoticeEventWrapper wrapper, boolean isGift) {
+		String subPlan = wrapper.getTag("msg-param-sub-plan");
+		if (StringUtils.isNotBlank(subPlan)) {
+			Long points = null;
+			if (subPlan.equalsIgnoreCase("prime")) {
+				points = chatConfig.getSubPlan().getPrime();
+			} else if (subPlan.equalsIgnoreCase("1000")) {
+				points = chatConfig.getSubPlan().getFive();
+			} else if (subPlan.equalsIgnoreCase("2000")) {
+				points = chatConfig.getSubPlan().getTen();
+			} else if (subPlan.equalsIgnoreCase("3000")) {
+				points = chatConfig.getSubPlan().getTwentyFive();
+			}
+			String login = wrapper.getTag("login");
+			String loginForThanks;
+			if (isGift) {
+				loginForThanks = wrapper.getTag("msg-param-recipient-display-name");
+			} else {
+				loginForThanks = login;
+			}
+			String paymentMessage = FerretBotUtils.buildMessageAddPoints(login, points);
+			viewerService.addPoints(login, points);
+			wrapper.sendMessage(paymentMessage);
+			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
 	}
 

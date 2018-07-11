@@ -8,12 +8,16 @@ import net.greyferret.ferretbot.entity.json.loots.LootsJson;
 import net.greyferret.ferretbot.entity.json.loots.Ok;
 import net.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
 import net.greyferret.ferretbot.service.LootsService;
+import net.greyferret.ferretbot.service.ViewerService;
+import net.greyferret.ferretbot.util.FerretBotUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -27,6 +31,7 @@ import java.util.stream.Collectors;
  * Created by GreyFerret on 07.12.2017.
  */
 @Component
+@EnableConfigurationProperties({LootsConfig.class})
 public class LootsClient implements Runnable {
 	private static final Logger logger = LogManager.getLogger(LootsClient.class);
 
@@ -34,6 +39,10 @@ public class LootsClient implements Runnable {
 	private LootsConfig lootsConfig;
 	@Autowired
 	private LootsService lootsService;
+	@Autowired
+	private ViewerService viewerService;
+	@Autowired
+	private ApplicationContext context;
 
 	private long timeRetryMS;
 	private boolean isOn;
@@ -124,6 +133,7 @@ public class LootsClient implements Runnable {
 					if (lootsJson != null) {
 						Set<Loots> loots = parseLootsJson(lootsJson);
 						lootsService.checkOutLoots(loots);
+						givePointsForLoots();
 						resetRetry();
 					} else {
 						increaseRetry();
@@ -209,5 +219,15 @@ public class LootsClient implements Runnable {
 			logger.error("Could not login into Loots", e);
 		}
 		cookies = response.cookies();
+	}
+
+	private void givePointsForLoots() {
+		Set<Loots> lootsEntries = lootsService.getUnpaidLoots();
+		for (Loots loots : lootsEntries) {
+			String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+			viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+			FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+			ferretChatClient.sendMessage(message);
+		}
 	}
 }

@@ -32,6 +32,8 @@ public class RaffleClient implements Runnable {
 	private ViewerService viewerService;
 	@Autowired
 	private PrizePoolService prizePoolService;
+	@Autowired
+	private ApiClient apiClient;
 
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
@@ -43,6 +45,8 @@ public class RaffleClient implements Runnable {
 	private void postConstruct() {
 		viewers = new HashMap<>();
 		isOn = true;
+
+		apiClient = context.getBean(ApiClient.class);
 	}
 
 	@Override
@@ -93,11 +97,11 @@ public class RaffleClient implements Runnable {
 					final int subLuckModifier = 2;
 					ArrayList<Viewer> rollList = FerretBotUtils.combineViewerListWithSubluck(raffleViewers, subLuckModifier);
 					Collections.shuffle(rollList);
-					Boolean isChannelOnline = context.getBean("isChannelOnline", boolean.class);
+					boolean isChannelOnline = apiClient.getChannelStatus();
 					if (isChannelOnline && viewers.size() > 0) {
 						Viewer viewer = rollList.get(0);
 						rollPresent(viewer);
-						
+
 						mapOfRaffles.put(raffleNum, true);
 						raffleDate.setMapOfRaffles(mapOfRaffles);
 						raffleService.put(raffleDate);

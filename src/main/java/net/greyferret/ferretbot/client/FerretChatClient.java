@@ -14,6 +14,7 @@ import org.kitteh.irc.client.library.defaults.DefaultClient;
 import org.kitteh.irc.client.library.element.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
@@ -27,6 +28,7 @@ import java.util.Optional;
 
 @Component("FerretChatClient")
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+@EnableConfigurationProperties({ChatConfig.class, ApplicationConfig.class})
 public class FerretChatClient extends DefaultClient {
 	private static final Logger logger = LogManager.getLogger(FerretChatClient.class);
 

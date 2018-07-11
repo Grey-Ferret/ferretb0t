@@ -3,8 +3,10 @@ package net.greyferret.ferretbot.config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -26,9 +28,7 @@ import java.util.Properties;
  */
 @Configuration
 @PropertySource("file:config.properties")
-@ComponentScan(basePackages = {"net.greyferret.ferretbot"},
-		excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SpringConfig.class)})
-@EnableConfigurationProperties({ChatConfig.class, LootsConfig.class, DbConfig.class, ApplicationConfig.class, DiscordConfig.class})
+@ComponentScan(basePackages = {"net.greyferret.ferretbot.entity", "net.greyferret.ferretbot.service"})
 @EnableTransactionManagement
 public class SpringConfig {
 	private static final Logger logger = LogManager.getLogger(SpringConfig.class);
