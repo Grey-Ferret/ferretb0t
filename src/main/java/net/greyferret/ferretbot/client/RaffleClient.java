@@ -85,26 +85,28 @@ public class RaffleClient implements Runnable {
 
 				if (!raffleDone) {
 					HashSet<Viewer> raffleViewers = new HashSet<>();
-					for (RaffleViewer viewer : viewers.values()) {
-						if (viewer.ifSuitable()) {
-							Viewer viewerByName = viewerService.getViewerByName(viewer.getLogin());
-							if (viewerByName != null) {
-								raffleViewers.add(viewerByName);
+					synchronized (viewers) {
+						for (RaffleViewer viewer : viewers.values()) {
+							if (viewer.ifSuitable()) {
+								Viewer viewerByName = viewerService.getViewerByName(viewer.getLogin());
+								if (viewerByName != null) {
+									raffleViewers.add(viewerByName);
+								}
 							}
 						}
-					}
 
-					final int subLuckModifier = 2;
-					ArrayList<Viewer> rollList = FerretBotUtils.combineViewerListWithSubluck(raffleViewers, subLuckModifier);
-					Collections.shuffle(rollList);
-					boolean isChannelOnline = apiClient.getChannelStatus();
-					if (isChannelOnline && viewers.size() > 0) {
-						Viewer viewer = rollList.get(0);
-						rollPresent(viewer);
+						final int subLuckModifier = 2;
+						ArrayList<Viewer> rollList = FerretBotUtils.combineViewerListWithSubluck(raffleViewers, subLuckModifier);
+						Collections.shuffle(rollList);
+						boolean isChannelOnline = apiClient.getChannelStatus();
+						if (isChannelOnline && rollList.size() > 0) {
+							Viewer viewer = rollList.get(0);
+							rollPresent(viewer);
 
-						mapOfRaffles.put(raffleNum, true);
-						raffleDate.setMapOfRaffles(mapOfRaffles);
-						raffleService.put(raffleDate);
+							mapOfRaffles.put(raffleNum, true);
+							raffleDate.setMapOfRaffles(mapOfRaffles);
+							raffleService.put(raffleDate);
+						}
 					}
 				}
 			}
@@ -149,18 +151,22 @@ public class RaffleClient implements Runnable {
 	}
 
 	public void newMessage(String login) {
-		login = login.toLowerCase();
-		RaffleViewer raffleViewer;
-		if (!viewers.keySet().contains(login)) {
-			raffleViewer = new RaffleViewer(login);
-		} else {
-			raffleViewer = viewers.get(login);
-			raffleViewer.addMessageTime(Calendar.getInstance());
+		synchronized (viewers) {
+			login = login.toLowerCase();
+			RaffleViewer raffleViewer;
+			if (!viewers.keySet().contains(login)) {
+				raffleViewer = new RaffleViewer(login);
+			} else {
+				raffleViewer = viewers.get(login);
+				raffleViewer.addMessageTime(Calendar.getInstance());
+			}
+			viewers.put(login, raffleViewer);
 		}
-		viewers.put(login, raffleViewer);
 	}
 
 	public void resetMessages() {
-		viewers = new HashMap<>();
+		synchronized (viewers) {
+			viewers = new HashMap<>();
+		}
 	}
 }
