@@ -53,6 +53,7 @@ public class LootsClient implements Runnable {
 	private boolean isOn;
 	private Map<String, String> cookies;
 	private final String loginUrl = "https://loots.com/pub/auth/login";
+	private final String accountUrl = "https://loots.com/en/account";
 	private final String lootsUrl = "https://loots.com/api/v1/me/transactions/tips/broadcaster";
 	private String key;
 	private String token;
@@ -76,10 +77,13 @@ public class LootsClient implements Runnable {
 		while (retryLogin) {
 			if (cookies == null || cookies.size() == 0) {
 				logger.info("No cookies found, starting auth...");
+				retryLogin = true;
 				login();
 			}
 			if (StringUtils.isBlank(key) || StringUtils.isBlank(token) || StringUtils.isBlank(tokenChroma)) {
+				logger.info("No Key/Token/TokenChroma found, starting auth...");
 				retryLogin = true;
+				login();
 			} else {
 				retryLogin = false;
 				logger.info("Success! Loots are ready...");
@@ -228,7 +232,7 @@ public class LootsClient implements Runnable {
 		headers.put("Referer", "https://loots.com/en/auth/login");
 		try {
 			logger.info("Getting additional info for Loots");
-			response = Jsoup.connect("https://loots.com/en/account")
+			response = Jsoup.connect(this.accountUrl)
 					.headers(headers)
 					.cookies(cookies)
 					.method(Connection.Method.GET)
