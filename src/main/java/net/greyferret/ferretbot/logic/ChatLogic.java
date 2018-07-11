@@ -276,7 +276,7 @@ public class ChatLogic {
 
 	protected void proceedGoReturn(ChannelMessageEventWrapper event) {
 		String[] split = StringUtils.split(event.getMessage(), " ");
-		String login = split[2];
+		String login = split[2].toLowerCase();
 		viewerService.returnToGoList(login, event);
 	}
 

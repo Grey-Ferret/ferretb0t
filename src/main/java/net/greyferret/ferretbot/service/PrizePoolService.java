@@ -78,6 +78,7 @@ public class PrizePoolService {
 
 	@Transactional
 	protected void resetChance(PrizePool prizePool) {
+		logger.info("Resetting chance for PrizePool " + prizePool.getType());
 		setChance(prizePool, prizePool.getChance());
 	}
 
