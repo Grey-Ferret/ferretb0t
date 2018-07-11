@@ -26,6 +26,8 @@ public class BotConfig {
 	private Boolean bitsOn;
 	@NotNull
 	private Boolean viewersServiceOn;
+	@NotNull
+	private Boolean viewersPassivePointsOn;
 
 	public Boolean getReadyCheckOn() {
 		return readyCheckOn;
@@ -89,5 +91,13 @@ public class BotConfig {
 
 	public void setLootsOn(Boolean lootsOn) {
 		this.lootsOn = lootsOn;
+	}
+
+	public Boolean getViewersPassivePointsOn() {
+		return viewersPassivePointsOn;
+	}
+
+	public void setViewersPassivePointsOn(Boolean viewersPassivePointsOn) {
+		this.viewersPassivePointsOn = viewersPassivePointsOn;
 	}
 }

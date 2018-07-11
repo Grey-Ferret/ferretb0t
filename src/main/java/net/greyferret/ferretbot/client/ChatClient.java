@@ -30,7 +30,6 @@ public class ChatClient implements Runnable {
 	private boolean isOn;
 	private Thread viewersThread;
 	private Thread raffleThread;
-	private Thread commandThread;
 
 	public ChatClient() {
 		isOn = true;

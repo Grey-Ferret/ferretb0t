@@ -1,5 +1,6 @@
 package net.greyferret.ferretbot.client;
 
+import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.ViewerService;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Component
-@EnableConfigurationProperties({ChatConfig.class})
+@EnableConfigurationProperties({ChatConfig.class, BotConfig.class})
 public class ViewersClient implements Runnable {
 	private static final Logger logger = LogManager.getLogger(ViewersClient.class);
 
@@ -28,6 +29,8 @@ public class ViewersClient implements Runnable {
 	private ApplicationContext context;
 	@Autowired
 	private ApiClient apiClient;
+	@Autowired
+	private BotConfig botConfig;
 
 	private boolean isOn;
 	private int checkNumber;
@@ -67,25 +70,35 @@ public class ViewersClient implements Runnable {
 				logger.error(e);
 			}
 
-			boolean isChannelOnline = apiClient.getChannelStatus();
-			List<String> nicknames = context.getBean("getViewers", ArrayList.class);
-
-			if (nicknames.size() > 1) {
-				HashSet<Viewer> viewers = viewerService.checkViewers(nicknames);
-				viewersToAddPoints.addAll(viewers);
-//				logger.info("User list (" + nicknames.size() + ") was refreshed!");
-				checkNumber++;
-				if (checkNumber >= chatConfig.getUsersCheckMins()) {
-					if (isChannelOnline) {
-						viewerService.addPointsForViewers(viewersToAddPoints);
-						logger.info("Adding points for being on channel for " + viewersToAddPoints.size() + " users");
-					}
-					resetViewersToAddPoints();
-				}
-				lastResult = true;
+			if (botConfig.getViewersPassivePointsOn()) {
+				lastResult = checkViewersAndAddPoints();
 			} else {
-				lastResult = false;
+				lastResult = true;
 			}
 		}
+	}
+
+	private boolean checkViewersAndAddPoints() {
+		boolean lastResult;
+		boolean isChannelOnline = apiClient.getChannelStatus();
+		List<String> nicknames = context.getBean("getViewers", ArrayList.class);
+
+		if (nicknames.size() > 1) {
+			HashSet<Viewer> viewers = viewerService.checkViewers(nicknames);
+			viewersToAddPoints.addAll(viewers);
+//				logger.info("User list (" + nicknames.size() + ") was refreshed!");
+			checkNumber++;
+			if (checkNumber >= chatConfig.getUsersCheckMins()) {
+				if (isChannelOnline) {
+					viewerService.addPointsForViewers(viewersToAddPoints);
+					logger.info("Adding points for being on channel for " + viewersToAddPoints.size() + " users");
+				}
+				resetViewersToAddPoints();
+			}
+			lastResult = true;
+		} else {
+			lastResult = false;
+		}
+		return lastResult;
 	}
 }
