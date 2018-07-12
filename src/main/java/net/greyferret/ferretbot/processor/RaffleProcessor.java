@@ -2,7 +2,7 @@ package net.greyferret.ferretbot.processor;
 
 import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.entity.Prize;
-import net.greyferret.ferretbot.entity.RaffleDate;
+import net.greyferret.ferretbot.entity.Raffle;
 import net.greyferret.ferretbot.entity.RaffleViewer;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.service.PrizePoolService;
@@ -40,7 +40,6 @@ public class RaffleProcessor implements Runnable {
 	private HashMap<String, RaffleViewer> viewers;
 	private FerretChatClient ferretChatClient;
 	private DiscordProcessor discordProcessor;
-	private RaffleDate raffleDate;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -61,67 +60,62 @@ public class RaffleProcessor implements Runnable {
 				logger.error(e);
 			}
 
-			Calendar now = Calendar.getInstance();
-			int dateId = now.get(Calendar.DAY_OF_MONTH) + now.get(Calendar.MONTH) * 100 + now.get(Calendar.YEAR) * 10000;
-			raffleDate = raffleService.get(dateId);
-
-			int hour = now.get(Calendar.HOUR_OF_DAY);
-			int minute = now.get(Calendar.MINUTE);
-
-			if (hour >= 15 && hour <= 23) {
-				int raffleNum = 0;
-				if (hour >= 16 && hour <= 22) {
-					int add = 1;
-					if (minute >= 30) {
-						add = 2;
-					}
-					raffleNum = (hour - 16) * 2 + add;
-				} else if (hour == 15 && minute >= 30) {
-					raffleNum = 0;
+			if (apiProcessor.getChannelStatus()) {
+				Raffle lastTodayRaffle = raffleService.getLastToday();
+				if (lastTodayRaffle == null) {
+					rollRaffle();
 				} else {
-					raffleNum = 15;
-				}
-				HashMap<Integer, Boolean> mapOfRaffles = raffleDate.getMapOfRaffles();
-				Boolean raffleDone = mapOfRaffles.get(raffleNum);
-
-				if (!raffleDone) {
-					HashSet<Viewer> raffleViewers = new HashSet<>();
-					synchronized (viewers) {
-						for (RaffleViewer viewer : viewers.values()) {
-							if (viewer.ifSuitable()) {
-								Viewer viewerByName = viewerService.getViewerByName(viewer.getLogin());
-								if (viewerByName != null && viewerByName.isSuitableForRaffle()) {
-									raffleViewers.add(viewerByName);
-								}
-							}
-						}
-
-						final int subLuckModifier = 2;
-						ArrayList<Viewer> rollList = FerretBotUtils.combineViewerListWithSubluck(raffleViewers, subLuckModifier);
-						Collections.shuffle(rollList);
-						boolean isChannelOnline = apiProcessor.getChannelStatus();
-						if (isChannelOnline && rollList.size() > 0) {
-							Viewer viewer = rollList.get(0);
-							rollPresent(viewer);
-
-							mapOfRaffles.put(raffleNum, true);
-							raffleDate.setMapOfRaffles(mapOfRaffles);
-							raffleService.put(raffleDate);
-						}
+					Date date = lastTodayRaffle.getDate();
+					Calendar cal = Calendar.getInstance();
+					cal.add(Calendar.MINUTE, -30);
+					Calendar lastTodayCal = Calendar.getInstance();
+					lastTodayCal.setTime(date);
+					if (cal.after(lastTodayCal)) {
+						rollRaffle();
 					}
 				}
 			}
 		}
 	}
 
-	private void rollPresent(Viewer viewer) {
+	private void rollRaffle() {
+		HashSet<Viewer> raffleViewers = new HashSet<>();
+		synchronized (viewers) {
+			for (RaffleViewer viewer : viewers.values()) {
+				if (viewer.ifSuitable()) {
+					Viewer viewerByName = viewerService.getViewerByName(viewer.getLogin());
+					if (viewerByName != null && viewerByName.isSuitableForRaffle()) {
+						raffleViewers.add(viewerByName);
+					}
+				}
+			}
+
+			final int subLuckModifier = 2;
+			ArrayList<Viewer> rollList = FerretBotUtils.combineViewerListWithSubluck(raffleViewers, subLuckModifier);
+			Collections.shuffle(rollList);
+			boolean isChannelOnline = apiProcessor.getChannelStatus();
+			if (isChannelOnline && rollList.size() > 0) {
+				Viewer viewer = rollList.get(0);
+				Prize prize = rollPresent(viewer);
+				Raffle raffle = new Raffle(prize, viewer);
+
+				raffleService.put(raffle);
+			}
+		}
+	}
+
+	private Prize rollPresent(Viewer viewer) {
 		Prize prize = prizePoolService.rollPrize();
 		String message;
 		if (prize == null) {
 			Random rand = new Random();
 			int resPts = 50;
-			if (rand.nextInt(100) > 66) {
+			final int chance = 66;
+			if (rand.nextInt(100) > chance) {
 				resPts = 100;
+				prize = new Prize(resPts + " поинтов", 0, 100 - chance);
+			} else {
+				prize = new Prize(resPts + " поинтов", 0, chance);
 			}
 			message = " Зритель " + viewer.getLogin() + " выиграл " + resPts + " поинтов! Поздравляем! ";
 		} else {
@@ -149,6 +143,7 @@ public class RaffleProcessor implements Runnable {
 		}
 
 		resetMessages();
+		return prize;
 	}
 
 	public void newMessage(String login) {

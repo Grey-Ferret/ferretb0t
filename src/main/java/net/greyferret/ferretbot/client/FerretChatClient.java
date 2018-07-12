@@ -4,7 +4,6 @@ import net.greyferret.ferretbot.config.ApplicationConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.Messages;
 import net.greyferret.ferretbot.listener.FerretBotChatListener;
-import net.greyferret.ferretbot.util.FerretBotUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,10 +96,7 @@ public class FerretChatClient extends DefaultClient {
 		if (channel.isPresent()) {
 			return channel.get().getNicknames();
 		} else {
-			logger.warn("No channel was found, fixing it with my method...");
-			if (client.getChannel(channelName).isPresent()) {
-				FerretBotUtils.fixClient(client, channelName);
-			}
+			logger.warn("No channel was found!");
 			return new ArrayList<>();
 		}
 	}
