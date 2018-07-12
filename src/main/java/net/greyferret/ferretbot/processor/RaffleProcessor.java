@@ -65,11 +65,11 @@ public class RaffleProcessor implements Runnable {
 				if (lastTodayRaffle == null) {
 					rollRaffle();
 				} else {
-					Date date = lastTodayRaffle.getDate();
-					Calendar cal = Calendar.getInstance();
-					cal.add(Calendar.MINUTE, -30);
 					Calendar lastTodayCal = Calendar.getInstance();
-					lastTodayCal.setTime(date);
+					Calendar cal = Calendar.getInstance();
+					lastTodayCal.setTime(lastTodayRaffle.getDate());
+					lastTodayCal.add(Calendar.MINUTE, 30);
+
 					if (cal.after(lastTodayCal)) {
 						rollRaffle();
 					}

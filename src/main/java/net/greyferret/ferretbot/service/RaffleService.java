@@ -49,10 +49,17 @@ public class RaffleService {
 		criteria.where(builder.and(builder.lessThanOrEqualTo(root.get("date"), date2), builder.greaterThanOrEqualTo(root.get("date"), date1)));
 
 		List<Raffle> raffles = entityManager.createQuery(criteria).getResultList();
+		Raffle res = null;
 		if (raffles != null && raffles.size() > 0) {
-			return raffles.get(0);
+			for (Raffle raffle : raffles) {
+				if (res == null) {
+					res = raffle;
+				} else if (raffle.getDate().after(res.getDate())) {
+					res = raffle;
+				}
+			}
 		}
-		return null;
+		return res;
 	}
 
 	@Transactional
