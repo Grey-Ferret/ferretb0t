@@ -154,18 +154,7 @@ public class ViewerService {
 
 	@Transactional
 	public Viewer getViewerByName(String login) {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
-		Root<Viewer> root = criteria.from(Viewer.class);
-		criteria.select(root);
-
-		criteria.where(builder.equal(root.get("login"), login));
-
-		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
-		if (resultList == null || resultList.size() == 0) {
-			return null;
-		} else
-			return resultList.get(0);
+		return entityManager.find(Viewer.class, login.toLowerCase());
 	}
 
 	@Transactional

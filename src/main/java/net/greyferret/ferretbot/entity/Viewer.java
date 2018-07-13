@@ -24,13 +24,13 @@ public class Viewer implements Serializable {
 	private Date created;
 	@Column(name = "updated")
 	private Date updated;
-	@Column(name = "sub", nullable = false, columnDefinition = "boolean default 0")
+	@Column(name = "sub", nullable = false, columnDefinition = "boolean default false")
 	private Boolean sub;
 	@Column(name = "sub_streak")
 	private int subStreak;
 	@Column(name = "go_status", nullable = false, columnDefinition = "int default 0")
 	private int goStatus;
-	@Column(name = "suitable_for_raffle", nullable = false, columnDefinition = "boolean default 1")
+	@Column(name = "suitable_for_raffle", nullable = false, columnDefinition = "boolean default true")
 	private boolean suitableForRaffle;
 
 	public Viewer() {
