@@ -1,6 +1,6 @@
 package net.greyferret.ferretbot.service;
 
-import net.greyferret.ferretbot.entity.RaffleDate;
+import net.greyferret.ferretbot.entity.Raffle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class RaffleService {
@@ -21,19 +27,42 @@ public class RaffleService {
 	private EntityManagerFactory entityManagerFactory;
 
 	@Transactional
-	public RaffleDate get(int dateId) {
-		RaffleDate raffleDate = entityManager.find(RaffleDate.class, dateId);
-		if (raffleDate == null) {
-			raffleDate = new RaffleDate(dateId);
-			entityManager.persist(raffleDate);
-			entityManager.flush();
-		}
-		return raffleDate;
+	public Raffle get(int id) {
+		return entityManager.find(Raffle.class, id);
 	}
 
 	@Transactional
-	public void put(RaffleDate raffleDate) {
-		entityManager.merge(raffleDate);
+	public Raffle getLastToday() {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Raffle> criteria = builder.createQuery(Raffle.class);
+		Root<Raffle> root = criteria.from(Raffle.class);
+		criteria.select(root);
+
+		Calendar instance = Calendar.getInstance();
+		instance.set(Calendar.HOUR_OF_DAY, 0);
+		instance.set(Calendar.MINUTE, 0);
+		Date date1 = instance.getTime();
+		instance.set(Calendar.HOUR_OF_DAY, 23);
+		instance.set(Calendar.MINUTE, 59);
+		Date date2 = instance.getTime();
+
+		criteria.where(builder.and(builder.lessThanOrEqualTo(root.get("date"), date2), builder.greaterThanOrEqualTo(root.get("date"), date1)));
+
+		List<Raffle> raffles = entityManager.createQuery(criteria).getResultList();
+		Raffle res = null;
+		if (raffles != null && raffles.size() > 0) {
+			for (Raffle raffle : raffles) {
+				if (res == null || raffle.getDate().after(res.getDate())) {
+					res = raffle;
+				}
+			}
+		}
+		return res;
+	}
+
+	@Transactional
+	public void put(Raffle raffle) {
+		entityManager.persist(raffle);
 		entityManager.flush();
 	}
 }

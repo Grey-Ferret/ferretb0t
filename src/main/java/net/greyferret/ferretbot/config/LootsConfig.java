@@ -18,18 +18,10 @@ public class LootsConfig {
 	private String login;
 	@NotEmpty
 	private String password;
-	@NotEmpty
-	private String tokenChroma;
-	@NotEmpty
-	private String token;
-	@NotEmpty
-	private String key;
 	@NotNull
 	private Long pointsForLoots;
 	@NotNull
 	private Timer timer;
-	@NotNull
-	private SubPlan subPlan;
 
 	public String getLogin() {
 		return login;
@@ -47,30 +39,6 @@ public class LootsConfig {
 		this.password = password;
 	}
 
-	public String getTokenChroma() {
-		return tokenChroma;
-	}
-
-	public void setTokenChroma(String tokenChroma) {
-		this.tokenChroma = tokenChroma;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
-
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-
 	public Timer getTimer() {
 		return timer;
 	}
@@ -85,14 +53,6 @@ public class LootsConfig {
 
 	public void setPointsForLoots(Long pointsForLoots) {
 		this.pointsForLoots = pointsForLoots;
-	}
-
-	public SubPlan getSubPlan() {
-		return subPlan;
-	}
-
-	public void setSubPlan(SubPlan subPlan) {
-		this.subPlan = subPlan;
 	}
 
 	public static class Timer {
@@ -125,49 +85,6 @@ public class LootsConfig {
 
 		public void setMaxRetryMs(Long maxRetryMs) {
 			this.maxRetryMs = maxRetryMs;
-		}
-	}
-
-	public static class SubPlan {
-		@NotNull
-		private Long prime;
-		@NotNull
-		private Long five;
-		@NotNull
-		private Long ten;
-		@NotNull
-		private Long twentyFive;
-
-		public Long getPrime() {
-			return prime;
-		}
-
-		public void setPrime(Long prime) {
-			this.prime = prime;
-		}
-
-		public Long getFive() {
-			return five;
-		}
-
-		public void setFive(Long five) {
-			this.five = five;
-		}
-
-		public Long getTen() {
-			return ten;
-		}
-
-		public void setTen(Long ten) {
-			this.ten = ten;
-		}
-
-		public Long getTwentyFive() {
-			return twentyFive;
-		}
-
-		public void setTwentyFive(Long twentyFive) {
-			this.twentyFive = twentyFive;
 		}
 	}
 }

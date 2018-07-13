@@ -26,6 +26,8 @@ public class ChatConfig {
 	private String clientId;
 	@NotNull
 	private Integer usersCheckMins;
+	@NotNull
+	private SubPlan subPlan;
 
 	public String getLogin() {
 		return login;
@@ -77,5 +79,56 @@ public class ChatConfig {
 
 	public void setUsersCheckMins(Integer usersCheckMins) {
 		this.usersCheckMins = usersCheckMins;
+	}
+
+	public SubPlan getSubPlan() {
+		return subPlan;
+	}
+
+	public void setSubPlan(SubPlan subPlan) {
+		this.subPlan = subPlan;
+	}
+
+	public static class SubPlan {
+		@NotNull
+		private Long prime;
+		@NotNull
+		private Long five;
+		@NotNull
+		private Long ten;
+		@NotNull
+		private Long twentyFive;
+
+		public Long getPrime() {
+			return prime;
+		}
+
+		public void setPrime(Long prime) {
+			this.prime = prime;
+		}
+
+		public Long getFive() {
+			return five;
+		}
+
+		public void setFive(Long five) {
+			this.five = five;
+		}
+
+		public Long getTen() {
+			return ten;
+		}
+
+		public void setTen(Long ten) {
+			this.ten = ten;
+		}
+
+		public Long getTwentyFive() {
+			return twentyFive;
+		}
+
+		public void setTwentyFive(Long twentyFive) {
+			this.twentyFive = twentyFive;
+		}
 	}
 }

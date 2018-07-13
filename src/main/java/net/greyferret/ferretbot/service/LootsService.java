@@ -16,10 +16,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by GreyFerret on 19.12.2017.
@@ -69,6 +66,8 @@ public class LootsService {
 					res.add(loots);
 					logger.info("New Loots found!");
 					logger.info(loots);
+
+					removeOldLoots();
 				}
 			}
 		} catch (Exception e) {
@@ -77,6 +76,26 @@ public class LootsService {
 		}
 
 		return res;
+	}
+
+	@Transactional
+	public void removeOldLoots() {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<Loots> criteria = builder.createQuery(Loots.class);
+		Root<Loots> root = criteria.from(Loots.class);
+		criteria.select(root);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.MONTH, -3);
+		criteria.where(builder.lessThan(root.get("date"), calendar.getTime()));
+
+		List<Loots> oldList = entityManager.createQuery(criteria).getResultList();
+		for (Loots loots : oldList) {
+			entityManager.remove(loots);
+		}
+		if (oldList != null && oldList.size() > 0) {
+			entityManager.flush();
+		}
 	}
 
 	/***

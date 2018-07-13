@@ -2,10 +2,11 @@ package net.greyferret.ferretbot.listener;
 
 import net.engio.mbassy.listener.Handler;
 import net.greyferret.ferretbot.client.FerretChatClient;
-import net.greyferret.ferretbot.client.RaffleClient;
 import net.greyferret.ferretbot.config.ApplicationConfig;
+import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.logic.ChatLogic;
+import net.greyferret.ferretbot.processor.RaffleProcessor;
 import net.greyferret.ferretbot.service.ViewerService;
 import net.greyferret.ferretbot.util.FerretBotUtils;
 import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
@@ -23,6 +24,7 @@ import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserStateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -34,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+@EnableConfigurationProperties({BotConfig.class, ApplicationConfig.class})
 public class FerretBotChatListener extends TwitchListener {
 	private static final Logger logger = LogManager.getLogger(FerretBotChatListener.class);
 	private static final Logger chatLogger = LogManager.getLogger("ChatLogger");
@@ -46,10 +49,12 @@ public class FerretBotChatListener extends TwitchListener {
 	private ApplicationContext context;
 	@Autowired
 	private ViewerService viewerService;
+	@Autowired
+	private BotConfig botConfig;
 
 	private FerretChatClient ferretChatClient;
 	private ConcurrentHashMap<String, Boolean> readyCheckList;
-	private RaffleClient raffleClient;
+	private RaffleProcessor raffleProcessor;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -63,7 +68,6 @@ public class FerretBotChatListener extends TwitchListener {
 	@PostConstruct
 	private void postConstruct() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		raffleClient = context.getBean(RaffleClient.class);
 		readyCheckList = new ConcurrentHashMap<>();
 	}
 
@@ -72,27 +76,38 @@ public class FerretBotChatListener extends TwitchListener {
 	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 
-		raffleClient.newMessage(eventWrapper.getLogin().toLowerCase());
+		if (botConfig.getRaffleOn()) {
+			if (raffleProcessor == null) {
+				raffleProcessor = context.getBean(RaffleProcessor.class);
+			}
+			raffleProcessor.newMessage(eventWrapper.getLogin().toLowerCase());
+		}
+
 
 		String login = eventWrapper.getLogin();
-		chatLogger.info(login + ": " + eventWrapper.getMessage());
-		if (readyCheckList.size() > 0) {
-			for (String s : readyCheckList.keySet()) {
-				if (s.equalsIgnoreCase(login)) {
-					readyCheckList.put(s, true);
-					break;
+		if (botConfig.getReadyCheckOn()) {
+			chatLogger.info(login + ": " + eventWrapper.getMessage());
+			if (readyCheckList.size() > 0) {
+				for (String s : readyCheckList.keySet()) {
+					if (s.equalsIgnoreCase(login)) {
+						readyCheckList.put(s, true);
+						break;
+					}
 				}
 			}
 		}
 
-		Viewer viewer = viewerService.getViewerByName(login);
-		if (viewer != null) {
-			String subscriber = eventWrapper.getTag("subscriber");
-			if (subscriber.equalsIgnoreCase("1"))
-				viewerService.setSubscriber(viewer, true);
-			else
-				viewerService.setSubscriber(viewer, false);
+		if (botConfig.getViewersServiceOn()) {
+			Viewer viewer = viewerService.getViewerByName(login);
+			if (viewer != null) {
+				String subscriber = eventWrapper.getTag("subscriber");
+				if (subscriber.equalsIgnoreCase("1"))
+					viewerService.setSubscriber(viewer, true);
+				else
+					viewerService.setSubscriber(viewer, false);
+			}
 		}
+
 
 		if (eventWrapper.getMessage().startsWith("!")) {
 			chatLogic.proceedCommandLogic(eventWrapper);
@@ -108,13 +123,15 @@ public class FerretBotChatListener extends TwitchListener {
 			}
 		}
 
-		String bits = eventWrapper.getTag("bits");
-		if (StringUtils.isNotBlank(bits)) {
-			Long points = Long.valueOf(bits);
-			if (points != null)
-				eventWrapper.sendMessage(FerretBotUtils.buildMessageAddPoints(eventWrapper.getTag("display-name"), points));
-			else
-				logger.error("points == null");
+		if (botConfig.getBitsOn()) {
+			String bits = eventWrapper.getTag("bits");
+			if (StringUtils.isNotBlank(bits)) {
+				Long points = Long.valueOf(bits);
+				if (points != null)
+					eventWrapper.sendMessage(FerretBotUtils.buildMessageAddPoints(eventWrapper.getTag("display-name"), points));
+				else
+					logger.error("points == null");
+			}
 		}
 	}
 
@@ -124,13 +141,15 @@ public class FerretBotChatListener extends TwitchListener {
 		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
 		String msgId = wrapper.getTag("msg-id");
 
-		if (StringUtils.isNotBlank(msgId)) {
-			if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
-				chatLogic.proceedSubAlert(wrapper);
-			}
+		if (botConfig.getSubAlertOn()) {
+			if (StringUtils.isNotBlank(msgId)) {
+				if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
+					chatLogic.proceedSubAlert(wrapper);
+				}
 
-			if (msgId.equalsIgnoreCase("subgift")) {
-				chatLogic.proceedSubAlert(wrapper, true);
+				if (msgId.equalsIgnoreCase("subgift")) {
+					chatLogic.proceedSubAlert(wrapper, true);
+				}
 			}
 		}
 	}

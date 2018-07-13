@@ -5,7 +5,6 @@ import net.greyferret.ferretbot.entity.Viewer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.kitteh.irc.client.library.Client;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -101,13 +100,6 @@ public class FerretBotUtils {
 			logger.error("Could not build Log based on the following message: " + message, e);
 			return "";
 		}
-	}
-
-	public static boolean fixClient(Client.WithManagement client, String channelName) {
-		client.getActorTracker().trackChannel(channelName);
-		if (client.getChannel(channelName).isPresent())
-			logger.info("FIXED IT YEAH");
-		return true;
 	}
 
 	public static String buildMergedViewersNicknames(Set<Viewer> viewers) {
