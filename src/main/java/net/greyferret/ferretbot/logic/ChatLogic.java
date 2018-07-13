@@ -190,6 +190,17 @@ public class ChatLogic {
 			}
 			String paymentMessage = FerretBotUtils.buildMessageAddPoints(login, points);
 			viewerService.addPoints(login, points);
+			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
+				String msgParamMonth = wrapper.getTag("msg-param-months");
+				try {
+					Integer subStreak = Integer.valueOf(msgParamMonth);
+					if (subStreak != null) {
+						viewerService.setSubStreak(login, subStreak);
+					}
+				} catch (NumberFormatException ex) {
+					logger.warn("Could not parse sub streak to Integer. Value: " + msgParamMonth, ex);
+				}
+			}
 			wrapper.sendMessage(paymentMessage);
 			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}

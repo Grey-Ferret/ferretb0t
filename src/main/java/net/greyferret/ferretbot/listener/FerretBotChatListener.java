@@ -83,10 +83,10 @@ public class FerretBotChatListener extends TwitchListener {
 			raffleProcessor.newMessage(eventWrapper.getLogin().toLowerCase());
 		}
 
-
 		String login = eventWrapper.getLogin();
+		chatLogger.info(login + ": " + eventWrapper.getMessage());
+
 		if (botConfig.getReadyCheckOn()) {
-			chatLogger.info(login + ": " + eventWrapper.getMessage());
 			if (readyCheckList.size() > 0) {
 				for (String s : readyCheckList.keySet()) {
 					if (s.equalsIgnoreCase(login)) {

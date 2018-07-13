@@ -274,4 +274,15 @@ public class ViewerService {
 		if (isChanged)
 			entityManager.flush();
 	}
+
+	@Transactional
+	public void setSubStreak(String login, Integer subStreak) {
+		Viewer viewer = getViewerByName(login);
+		if (viewer != null) {
+			viewer.setSubStreak(subStreak);
+			logger.info("Updated sub streak for viewer " + viewer + ", value: " + subStreak);
+			entityManager.merge(viewer);
+			entityManager.flush();
+		}
+	}
 }

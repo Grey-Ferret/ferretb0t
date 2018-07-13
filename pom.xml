@@ -6,7 +6,7 @@
 
     <groupId>greyferret</groupId>
     <artifactId>ferretbot</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
