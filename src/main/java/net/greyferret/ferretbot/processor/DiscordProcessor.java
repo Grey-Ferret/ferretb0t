@@ -42,6 +42,10 @@ public class DiscordProcessor implements Runnable {
 
 	@PostConstruct
 	private void postConstruct() {
+	}
+
+	@Override
+	public void run() {
 		try {
 			jda = new JDABuilder(AccountType.BOT).setToken(discordConfig.getToken()).buildBlocking();
 		} catch (LoginException e) {
@@ -55,10 +59,7 @@ public class DiscordProcessor implements Runnable {
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
 
 		apiProcessor = context.getBean(ApiProcessor.class);
-	}
-
-	@Override
-	public void run() {
+		
 		try {
 			Thread.sleep(discordConfig.getCheckTime());
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();

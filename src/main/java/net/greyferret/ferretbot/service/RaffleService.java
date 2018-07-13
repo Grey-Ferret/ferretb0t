@@ -52,9 +52,7 @@ public class RaffleService {
 		Raffle res = null;
 		if (raffles != null && raffles.size() > 0) {
 			for (Raffle raffle : raffles) {
-				if (res == null) {
-					res = raffle;
-				} else if (raffle.getDate().after(res.getDate())) {
+				if (res == null || raffle.getDate().after(res.getDate())) {
 					res = raffle;
 				}
 			}

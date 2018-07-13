@@ -85,30 +85,22 @@ public class PrizePoolService {
 	@Transactional
 	protected void removePrizeFromPool(PrizePool pool, Prize prize) {
 		logger.info("Removing prize from pool");
-		Prize toRemovePrize = null;
-		for (Prize p : pool.getPrizes()) {
+
+		ArrayList<Prize> prizes = pool.getPrizes();
+		ArrayList<Prize> newPrizes = new ArrayList<>();
+		for (Prize p : prizes) {
 			if (p.getName().equalsIgnoreCase(prize.getName())) {
-				p.setAmount(p.getAmount() - 1);
-				if (p.getAmount() < 1) {
-					toRemovePrize = prize;
+				if (p.getAmount() > 1) {
+					p.setAmount(p.getAmount() - 1);
+					newPrizes.add(p);
 				}
-				break;
+			} else {
+				newPrizes.add(p);
 			}
 		}
-		Boolean removeEmptyPrizePool = false;
-		if (toRemovePrize != null) {
-			ArrayList<Prize> prizes = pool.getPrizes();
-			prizes.remove(toRemovePrize);
-			pool.setPrizes(prizes);
-			if (prizes.size() == 0) {
-				removeEmptyPrizePool = true;
-			}
-		}
-		if (removeEmptyPrizePool) {
-			entityManager.remove(pool);
-		} else {
-			entityManager.merge(pool);
-		}
+
+		pool.setPrizes(newPrizes);
+		entityManager.merge(pool);
 		entityManager.flush();
 	}
 
