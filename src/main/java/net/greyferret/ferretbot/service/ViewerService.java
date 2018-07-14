@@ -280,7 +280,7 @@ public class ViewerService {
 		Viewer viewer = getViewerByName(login);
 		if (viewer != null) {
 			viewer.setSubStreak(subStreak);
-			logger.info("Updated sub streak for viewer " + viewer + ", value: " + subStreak);
+			logger.info("Updated sub streak for viewer " + viewer.getLogin() + ", value: " + subStreak);
 			entityManager.merge(viewer);
 			entityManager.flush();
 		}
