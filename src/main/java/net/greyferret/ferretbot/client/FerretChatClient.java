@@ -2,7 +2,6 @@ package net.greyferret.ferretbot.client;
 
 import net.greyferret.ferretbot.config.ApplicationConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
-import net.greyferret.ferretbot.config.Messages;
 import net.greyferret.ferretbot.listener.FerretBotChatListener;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -58,7 +57,7 @@ public class FerretChatClient extends DefaultClient {
 
 	public void connect() {
 		client.connect();
-		client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
+//		client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
 	}
 
 	public void sendMessage(@Nonnull String text) {
