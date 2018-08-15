@@ -3,6 +3,7 @@ package net.greyferret.ferretbot.processor;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import net.greyferret.ferretbot.client.FerretChatClient;
+import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Loots;
 import net.greyferret.ferretbot.entity.json.account.AccountJson;
@@ -49,6 +50,8 @@ public class LootsProcessor implements Runnable {
 	private ViewerService viewerService;
 	@Autowired
 	private ApplicationContext context;
+	@Autowired
+	private ChatConfig chatConfig;
 
 	private long timeRetryMS;
 	private boolean isOn;
@@ -283,10 +286,14 @@ public class LootsProcessor implements Runnable {
 	private void givePointsForLoots() {
 		Set<Loots> lootsEntries = lootsService.getUnpaidLoots();
 		for (Loots loots : lootsEntries) {
-			String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
-			viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
-			FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-			ferretChatClient.sendMessage(message);
+			if (loots.getViewerLootsMap().getViewer().getLogin().equalsIgnoreCase(chatConfig.getChannel())) {
+
+			} else {
+				String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+				viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+				FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+				ferretChatClient.sendMessage(message);
+			}
 		}
 	}
 }

@@ -15,7 +15,7 @@ public class BotConfig {
 	@NotNull
 	private Boolean lootsOn;
 	@NotNull
-	private Boolean readyCheckOn;
+	private Boolean queueOn;
 	@NotNull
 	private Boolean raffleOn;
 	@NotNull
@@ -29,12 +29,12 @@ public class BotConfig {
 	@NotNull
 	private Boolean viewersPassivePointsOn;
 
-	public Boolean getReadyCheckOn() {
-		return readyCheckOn;
+	public Boolean getQueueOn() {
+		return queueOn;
 	}
 
-	public void setReadyCheckOn(Boolean readyCheckOn) {
-		this.readyCheckOn = readyCheckOn;
+	public void setQueueOn(Boolean queueOn) {
+		this.queueOn = queueOn;
 	}
 
 	public Boolean getRaffleOn() {

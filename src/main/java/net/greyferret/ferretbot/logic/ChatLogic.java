@@ -4,7 +4,8 @@ import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.LootsConfig;
 import net.greyferret.ferretbot.entity.Viewer;
-import net.greyferret.ferretbot.processor.ReadyCheckProcessor;
+import net.greyferret.ferretbot.processor.QueueProcessor;
+import net.greyferret.ferretbot.processor.ViewersProcessor;
 import net.greyferret.ferretbot.service.CommandService;
 import net.greyferret.ferretbot.service.ViewerLootsMapService;
 import net.greyferret.ferretbot.service.ViewerService;
@@ -45,27 +46,25 @@ public class ChatLogic {
 	 */
 	public void proceedCommandLogic(ChannelMessageEventWrapper event) {
 		String message = FerretBotUtils.buildMessage(event.getMessage());
-		if (botConfig.getReadyCheckOn()) {
-			if (message.startsWith("!go")) {
-				if (message.startsWith("!go remove")) {
-					proceedGoRemove(event);
-				} else if (message.startsWith("!go size")) {
-					proceedGoSize(event);
-				} else if (message.startsWith("!go status")) {
-					proceedGoStatus(event);
-				} else {
-					message = message.replaceAll("\\s+", "");
-					if (message.equalsIgnoreCase("!go")) {
-						proceedGoAdd(event);
-					}
-				}
-			}
-		}
+		String[] split = message.split(" ");
 
-		if (botConfig.getCustomCommandsOn()) {
-			String[] split = message.split(" ");
-			CommandService commandService = context.getBean(CommandService.class);
-			commandService.proceedTextCommand(split[0].toLowerCase(), event);
+		if (message.startsWith("!")) {
+			if (botConfig.getCustomCommandsOn()) {
+				CommandService commandService = context.getBean(CommandService.class);
+				commandService.proceedTextCommand(split[0].toLowerCase(), event);
+			}
+			if (botConfig.getQueueOn()) {
+				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
+				queueProcessor.proceed(event);
+			}
+			if (event.getMessage().startsWith("!обнять")) {
+				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
+				viewersProcessor.rollHug(event.getLogin());
+			}
+			if (event.getMessage().startsWith("!стукнуть")) {
+				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
+				viewersProcessor.rollSmack(event.getLogin());
+			}
 		}
 	}
 
@@ -98,13 +97,49 @@ public class ChatLogic {
 					}
 				}
 			}
+			if (botConfig.getQueueOn()) {
+				if (message.toLowerCase().startsWith("!queue")) {
+					if (message.toLowerCase().startsWith("!queue add ") && split.length >= 3) {
+						QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
+						boolean res = queueProcessor.registerQueue(split[2]);
+						if (res) {
+							event.sendMessageWithMention("Успешно создано!");
+						} else {
+							event.sendMessageWithMention("Уже есть очередь с таким названием");
+						}
+					} else if (message.toLowerCase().startsWith("!queue reset ") && split.length >= 3) {
+						QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
+						boolean res = queueProcessor.resetQueue(split[2]);
+						if (res) {
+							event.sendMessageWithMention("Очередь успешно сброшена!");
+						} else {
+							event.sendMessageWithMention("Очередь с таким названием не найдена");
+						}
+					} else if (message.toLowerCase().startsWith("!queue remove ") && split.length >= 3) {
+						QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
+						boolean res = queueProcessor.deleteQueue(split[2]);
+						if (res) {
+							event.sendMessageWithMention("Очередь успешно удалена!");
+						} else {
+							event.sendMessageWithMention("Очередь с таким названием не найдена");
+						}
+					}
+				} else if (message.toLowerCase().startsWith("!")) {
+					String[] split2 = message.split(" ");
+					if (split2.length >= 3 && split2[1].equalsIgnoreCase("select")) {
+						QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
+						HashSet<Viewer> selected = new HashSet<>();
+						try {
+							Integer numberOfPeople = Integer.valueOf(split2[2]);
+							selected = queueProcessor.roll(split2[0], numberOfPeople);
+						} catch (NumberFormatException e) {
+							logger.error(e);
+						}
+						if (selected == null || selected.size() == 0) {
 
-			if (botConfig.getReadyCheckOn()) {
-				if (message.startsWith("!go")) {
-					if (message.startsWith("!go select")) {
-						proceedGoSelect(event);
-					} else if (message.startsWith("!go reset")) {
-						resetGoSelect(event);
+						} else {
+							event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknamesWithMention(selected));
+						}
 					}
 				}
 			}
@@ -138,29 +173,6 @@ public class ChatLogic {
 
 		if (message.startsWith("!repair")) {
 			repair(event);
-		}
-
-		if (message.startsWith("!go return")) {
-			proceedGoReturn(event);
-		}
-	}
-
-	private void proceedGoStatus(ChannelMessageEventWrapper event) {
-		Viewer viewer = viewerService.getViewerByName(event.getLogin());
-		if (viewer != null) {
-			int goStatus = viewer.getGoStatus();
-			if (goStatus == 0) {
-				event.sendMessageWithMention(" сейчас не в очереди");
-				return;
-			}
-			if (goStatus == 1) {
-				event.sendMessageWithMention(" уже в очереди");
-				return;
-			}
-			if (goStatus == 2) {
-				event.sendMessageWithMention(" уже играл. Купи возврат за поинты или дождись обновления очереди!");
-				return;
-			}
 		}
 	}
 
@@ -234,64 +246,5 @@ public class ChatLogic {
 		}
 		String repairNames = StringUtils.join(lootsForRepair, ", ");
 		event.sendMessage("To fix: " + repairNames);
-	}
-
-	protected void proceedGoAdd(ChannelMessageEventWrapper event) {
-		Viewer viewer = viewerService.getViewerByName(event.getLogin());
-		if (viewer == null) {
-			return;
-		}
-		viewerService.addToGoList(viewer, event);
-	}
-
-	protected void proceedGoRemove(ChannelMessageEventWrapper event) {
-		Viewer viewer = viewerService.getViewerByName(event.getLogin());
-		if (viewer == null) {
-			return;
-		}
-		viewerService.removeToGoList(viewer, event);
-	}
-
-	protected void proceedGoSize(ChannelMessageEventWrapper event) {
-		int goListSize = viewerService.goListSize(event);
-		int goListBlockedSize = viewerService.goListBlockedSize(event);
-		event.sendMessageWithMention("Количество человек в очереди: " + goListSize + ", количество человек что уже играло: " + goListBlockedSize);
-	}
-
-	protected void proceedGoSelect(ChannelMessageEventWrapper event) {
-		String[] split = StringUtils.split(event.getMessage(), " ");
-		int numberOfPeople = 0;
-		if (split.length >= 3) {
-			try {
-				numberOfPeople = Integer.parseInt(split[2]);
-			} catch (NumberFormatException ex) {
-				logger.error(ex);
-			}
-			if (numberOfPeople != 0) {
-				HashSet<Viewer> viewers = viewerService.selectGoList(numberOfPeople);
-				if (viewers.size() == 0) {
-					event.sendMessageWithMention(" никого нет в очереди...");
-					return;
-				}
-				ReadyCheckProcessor readyCheckProcessor = context.getBean(ReadyCheckProcessor.class);
-				event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknames(viewers));
-				event.sendMessage(FerretBotUtils.buildMergedViewersNicknamesWithMention(viewers) + " напишите в чат в течение минуты для подтверждения участия!");
-				readyCheckProcessor.addReadyCheckList(viewers);
-				readyCheckProcessor.setNickForReply(event.getLogin());
-				Thread readyCheckThread = new Thread(readyCheckProcessor);
-				readyCheckThread.setName("ReadyCheck Thread");
-				readyCheckThread.start();
-			}
-		}
-	}
-
-	protected void proceedGoReturn(ChannelMessageEventWrapper event) {
-		String[] split = StringUtils.split(event.getMessage(), " ");
-		String login = split[2].toLowerCase();
-		viewerService.returnToGoList(login, event);
-	}
-
-	protected void resetGoSelect(ChannelMessageEventWrapper event) {
-		viewerService.resetGoList(event);
 	}
 }

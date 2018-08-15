@@ -31,8 +31,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.regex.Pattern;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -53,7 +54,6 @@ public class FerretBotChatListener extends TwitchListener {
 	private BotConfig botConfig;
 
 	private FerretChatClient ferretChatClient;
-	private ConcurrentHashMap<String, Boolean> readyCheckList;
 	private RaffleProcessor raffleProcessor;
 
 	/**
@@ -68,7 +68,6 @@ public class FerretBotChatListener extends TwitchListener {
 	@PostConstruct
 	private void postConstruct() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		readyCheckList = new ConcurrentHashMap<>();
 	}
 
 	@CommandFilter("PRIVMSG")
@@ -85,17 +84,6 @@ public class FerretBotChatListener extends TwitchListener {
 
 		String login = eventWrapper.getLogin();
 		chatLogger.info(login + ": " + eventWrapper.getMessage());
-
-		if (botConfig.getReadyCheckOn()) {
-			if (readyCheckList.size() > 0) {
-				for (String s : readyCheckList.keySet()) {
-					if (s.equalsIgnoreCase(login)) {
-						readyCheckList.put(s, true);
-						break;
-					}
-				}
-			}
-		}
 
 		if (botConfig.getViewersServiceOn()) {
 			Viewer viewer = viewerService.getViewerByName(login);
@@ -133,6 +121,62 @@ public class FerretBotChatListener extends TwitchListener {
 					logger.error("points == null");
 			}
 		}
+
+		String message = eventWrapper.getMessage();
+		message = message.replaceAll("([^\\p{L}\\s])", "");
+		String[] split = message.split(" ");
+		HashSet<String> regexManual = new HashSet<>();
+		for (String s : split) {
+			if (s.equalsIgnoreCase("без") || s.equalsIgnoreCase("по") || s.equalsIgnoreCase("нет") || s.equalsIgnoreCase("где")) {
+				regexManual.add("нет");
+			}
+			if (Pattern.matches("(в.бк).*", s.toLowerCase())) {
+				regexManual.add("вебка");
+			}
+			if (Pattern.matches("(кастом).*", s.toLowerCase())) {
+				regexManual.add("кастомка");
+			}
+			if (s.equalsIgnoreCase("когда") || s.equalsIgnoreCase("где") || s.equalsIgnoreCase("это") || Pattern.matches("(как..)", s.toLowerCase()) || s.equalsIgnoreCase("что") || s.equalsIgnoreCase("шо")) {
+				regexManual.add("когда");
+			}
+			if (Pattern.matches("(парол).*", s.toLowerCase())) {
+				regexManual.add("pass");
+			}
+		}
+		if (regexManual.contains("pass")) {
+//			eventWrapper.sendMessageWithMention("Пароль скидывается в чат на твиче.");
+		}
+		if (regexManual.contains("нет") && regexManual.contains("вебка")) {
+//			eventWrapper.sendMessageWithMention("Сегодня без вебки, так как просто адская жара и стример открыл все окна, выключил все лампы и сидит в чем мать родила KappaPride");
+		}
+		int hourOfCustom = 20;
+		int minuteOfCustom = 0;
+		if (regexManual.contains("кастомка")) {
+			Calendar instance = Calendar.getInstance();
+			if (instance.get(Calendar.HOUR_OF_DAY) >= hourOfCustom && instance.get(Calendar.MINUTE) >= minuteOfCustom) {
+//				eventWrapper.sendMessageWithMention("Кастомка уже начинается/идёт! Если не успел на эту - не беда, пароль на следующую будет в чате! Кастомки идут до 23:00 по Москве, все кроме первой игры будут в дуэтах.");
+				eventWrapper.sendMessageWithMention("Сегодня кастомок не будет BibleThump");
+			} else if (regexManual.contains("когда")) {
+				Calendar customTime = Calendar.getInstance();
+				customTime.set(Calendar.HOUR_OF_DAY, hourOfCustom);
+				customTime.set(Calendar.MINUTE, minuteOfCustom);
+				long seconds = (customTime.getTimeInMillis() - instance.getTimeInMillis()) / 1000;
+				int hours = (int) (seconds / 3600);
+				int minutes = (int) ((seconds - hours * 3600) / 60);
+				String time;
+				if (hours == 0) {
+					time = minutes + " минут";
+				} else {
+					time = hours + " час(а) и " + minutes + " минут";
+				}
+				String additionalZero = "";
+				if (customTime.get(Calendar.MINUTE) <= 9) {
+					additionalZero = "0";
+				}
+//				eventWrapper.sendMessageWithMention("Кастомка будет запущена через " + time + ", в " + customTime.get(Calendar.HOUR_OF_DAY) + ":" + additionalZero + customTime.get(Calendar.MINUTE) + " по Москве. Пароль будет в чате! Играем первую соло, остальные дуо.");
+				eventWrapper.sendMessageWithMention("Сегодня кастомок не будет BibleThump");
+			}
+		}
 	}
 
 	@Handler
@@ -167,14 +211,5 @@ public class FerretBotChatListener extends TwitchListener {
 	@Handler
 	private void onUserStateEvent(UserStateEvent userStateEvent) {
 		chatLogger.info("UserStateEvent: " + userStateEvent);
-	}
-
-	public ConcurrentHashMap<String, Boolean> getReadyCheckList() {
-		return readyCheckList;
-	}
-
-	public void setReadyCheckList(HashMap<String, Boolean> readyCheckList) {
-		this.readyCheckList = new ConcurrentHashMap<>();
-		this.readyCheckList.putAll(readyCheckList);
 	}
 }

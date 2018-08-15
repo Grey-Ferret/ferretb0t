@@ -2,8 +2,6 @@ package net.greyferret.ferretbot.service;
 
 import net.greyferret.ferretbot.entity.Viewer;
 import net.greyferret.ferretbot.entity.ViewerLootsMap;
-import net.greyferret.ferretbot.util.FerretBotUtils;
-import net.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +14,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -155,124 +151,6 @@ public class ViewerService {
 	@Transactional
 	public Viewer getViewerByName(String login) {
 		return entityManager.find(Viewer.class, login.toLowerCase());
-	}
-
-	@Transactional
-	public void addToGoList(Viewer viewer, ChannelMessageEventWrapper event) {
-		if (viewer.getGoStatus() == 0) {
-			viewer.setGoStatus(1);
-			entityManager.merge(viewer);
-			entityManager.flush();
-		} else if (viewer.getGoStatus() != 1) {
-			event.sendMessageWithMention(" невозможно войти в очередь - вы уже играли! Попросите стримера вернуть в очередь или обновить ее!");
-		}
-	}
-
-	@Transactional
-	public void removeToGoList(Viewer viewer, ChannelMessageEventWrapper event) {
-		if (viewer.getGoStatus() == 1) {
-			viewer.setGoStatus(0);
-			entityManager.merge(viewer);
-			entityManager.flush();
-			event.sendMessageWithMention(" успешно удален из очереди!");
-		} else if (viewer.getGoStatus() == 0) {
-			event.sendMessageWithMention(" успешно удален из очереди!");
-		}
-	}
-
-	@Transactional
-	public HashSet<Viewer> selectGoList(int numberOfPeople) {
-		final int subLuckModifier = 2;
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
-		Root<Viewer> root = criteria.from(Viewer.class);
-		criteria.select(root);
-
-		criteria.where(builder.equal(root.get("goStatus"), 1));
-
-		List<Viewer> foundList = entityManager.createQuery(criteria).getResultList();
-		HashSet<Viewer> selectedList = new HashSet<>();
-		ArrayList<Viewer> randomList = FerretBotUtils.combineViewerListWithSubluck(foundList, subLuckModifier);
-
-		if (foundList.size() <= numberOfPeople) {
-			selectedList = new HashSet<>(foundList);
-		} else {
-			while (selectedList.size() < numberOfPeople && randomList.size() > 0) {
-				Collections.shuffle(randomList);
-				Viewer selectedViewer = randomList.get(0);
-				selectedList.add(selectedViewer);
-				randomList.removeIf(selectedViewer::equals);
-			}
-		}
-		return selectedList;
-	}
-
-	@Transactional
-	public void resetGoList(ChannelMessageEventWrapper event) {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
-		Root<Viewer> root = criteria.from(Viewer.class);
-		criteria.select(root);
-
-		criteria.where(builder.notEqual(root.get("goStatus"), 0));
-
-		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
-		for (Viewer viewer : resultList) {
-			viewer.setGoStatus(0);
-			entityManager.merge(viewer);
-		}
-		entityManager.flush();
-		event.sendMessageWithMention(" очередь была успешно очищена!");
-	}
-
-	@Transactional
-	public void returnToGoList(String login, ChannelMessageEventWrapper event) {
-		Viewer viewer = entityManager.find(Viewer.class, login);
-		if (viewer == null) {
-			event.sendMessageWithMention(" Пользователь " + login + " не был найден");
-		} else {
-			viewer.setGoStatus(0);
-			entityManager.merge(viewer);
-			entityManager.flush();
-			event.sendMessageWithMention(" Успешно!");
-		}
-	}
-
-	public int goListSize(ChannelMessageEventWrapper event) {
-		return goListSizeByStatus(1);
-	}
-
-
-	public int goListBlockedSize(ChannelMessageEventWrapper event) {
-		return goListSizeByStatus(2);
-	}
-
-	@Transactional
-	protected int goListSizeByStatus(int statusId) {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Viewer> criteria = builder.createQuery(Viewer.class);
-		Root<Viewer> root = criteria.from(Viewer.class);
-		criteria.select(root);
-
-		criteria.where(builder.equal(root.get("goStatus"), statusId));
-
-		List<Viewer> resultList = entityManager.createQuery(criteria).getResultList();
-		return resultList.size();
-	}
-
-	@Transactional
-	public void returnToDefaultStatus(HashSet<String> timeoutList) {
-		boolean isChanged = false;
-		for (String s : timeoutList) {
-			Viewer viewer = getViewerByName(s);
-			if (viewer != null) {
-				viewer.setGoStatus(0);
-				entityManager.merge(viewer);
-				isChanged = true;
-			}
-		}
-		if (isChanged)
-			entityManager.flush();
 	}
 
 	@Transactional

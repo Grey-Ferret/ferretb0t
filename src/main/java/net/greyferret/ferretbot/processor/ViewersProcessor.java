@@ -1,5 +1,6 @@
 package net.greyferret.ferretbot.processor;
 
+import net.greyferret.ferretbot.client.FerretChatClient;
 import net.greyferret.ferretbot.config.BotConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.entity.Viewer;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -35,6 +37,7 @@ public class ViewersProcessor implements Runnable {
 	private boolean isOn;
 	private int checkNumber;
 	private HashSet<Viewer> viewersToAddPoints;
+	private ArrayList<Viewer> viewersToRoll;
 
 	private ViewersProcessor() {
 	}
@@ -76,6 +79,31 @@ public class ViewersProcessor implements Runnable {
 				lastResult = true;
 			}
 		}
+	}
+
+	public void rollSmack(String author) {
+		rollSelectedPeople(author, 2);
+	}
+
+	private void rollSelectedPeople(String author, int type) {
+		ArrayList<Viewer> temp = new ArrayList<>(viewersToAddPoints);
+		if (temp != null && temp.size() > 0) {
+			viewersToRoll = temp;
+		}
+		Collections.shuffle(viewersToRoll);
+		Viewer viewer = viewersToRoll.get(0);
+		FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+		if (viewer != null) {
+			if (type == 1) {
+				ferretChatClient.sendMessage(author + " по-дружески обнимает " + viewer.getLogin() + " KappaPride");
+			} else if (type == 2) {
+				ferretChatClient.sendMessage(author + " отвесил подзатыльник " + viewer.getLogin() + " SMOrc");
+			}
+		}
+	}
+
+	public void rollHug(String author) {
+		rollSelectedPeople(author, 1);
 	}
 
 	private boolean checkViewersAndAddPoints() {

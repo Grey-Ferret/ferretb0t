@@ -31,6 +31,8 @@ public class ChatProcessor implements Runnable {
 	private boolean isOn;
 	private Thread viewersThread;
 	private Thread raffleThread;
+	private QueueProcessor queueProcessor;
+	private Thread queueThread;
 
 	public ChatProcessor() {
 		isOn = true;
@@ -48,8 +50,12 @@ public class ChatProcessor implements Runnable {
 			this.viewersThread.setName("Viewers Thread");
 			this.viewersThread.start();
 
-			if (botConfig.getReadyCheckOn()) {
-				annotationConfigApplicationContext.register(ReadyCheckProcessor.class);
+			if (botConfig.getQueueOn()) {
+				annotationConfigApplicationContext.register(QueueProcessor.class);
+				this.queueProcessor = context.getBean(QueueProcessor.class);
+				this.queueThread = new Thread(this.queueProcessor);
+				this.queueThread.setName("Queue Bot");
+				this.queueThread.start();
 			}
 
 			if (botConfig.getRaffleOn()) {

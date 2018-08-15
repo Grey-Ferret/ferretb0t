@@ -99,7 +99,7 @@ public class PrizePoolService {
 			}
 		}
 
-		pool.setPrizes(newPrizes);
+		pool.setPrizes(Prize.calcChancesInsideListOfPrizes(newPrizes));
 		entityManager.merge(pool);
 		entityManager.flush();
 	}

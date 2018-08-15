@@ -43,10 +43,19 @@ public class ChannelMessageEventWrapper {
 	}
 
 	public void sendMessageWithMention(String text, String toWhom) {
-		if (StringUtils.isBlank(toWhom))
+		if (StringUtils.isBlank(toWhom)) {
 			sendMessageWithMention(text);
-		else
+		} else {
+			boolean removeGavGav = true;
+			while (removeGavGav) {
+				if (toWhom.startsWith("@")) {
+					toWhom = toWhom.substring(1);
+				} else {
+					removeGavGav = false;
+				}
+			}
 			sendMessage("@" + toWhom + " " + text);
+		}
 	}
 
 	public void sendMessage(String text) {
