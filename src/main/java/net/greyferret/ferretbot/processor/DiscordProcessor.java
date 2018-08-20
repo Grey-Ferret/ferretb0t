@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.greyferret.ferretbot.config.ApplicationConfig;
 import net.greyferret.ferretbot.config.ChatConfig;
 import net.greyferret.ferretbot.config.DiscordConfig;
 import net.greyferret.ferretbot.config.Messages;
@@ -28,6 +29,8 @@ public class DiscordProcessor implements Runnable {
 	private ApplicationContext context;
 	@Autowired
 	private DiscordConfig discordConfig;
+	@Autowired
+	private ApplicationConfig applicationConfig;
 
 	private JDA jda;
 	public TextChannel announcementChannel;
@@ -65,7 +68,7 @@ public class DiscordProcessor implements Runnable {
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
 			while (isOn) {
 				String channelStatusMessage = apiProcessor.getChannelStatusMessage();
-				if (StringUtils.isNotBlank(channelStatusMessage))
+				if (StringUtils.isNotBlank(channelStatusMessage) && !applicationConfig.isDebug())
 					announcementChannel.sendMessage(channelStatusMessage).queue();
 				Thread.sleep(discordConfig.getCheckTime());
 			}

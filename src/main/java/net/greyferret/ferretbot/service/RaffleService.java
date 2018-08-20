@@ -12,6 +12,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,7 +47,11 @@ public class RaffleService {
 		instance.set(Calendar.MINUTE, 59);
 		Date date2 = instance.getTime();
 
-		criteria.where(builder.and(builder.lessThanOrEqualTo(root.get("date"), date2), builder.greaterThanOrEqualTo(root.get("date"), date1)));
+		Predicate d1 = builder.lessThanOrEqualTo(root.get("date"), date2);
+		Predicate d2 = builder.greaterThanOrEqualTo(root.get("date"), date1);
+		Predicate and = builder.and(d1, d2);
+
+		criteria.where(and);
 
 		List<Raffle> raffles = entityManager.createQuery(criteria).getResultList();
 		Raffle res = null;

@@ -1,6 +1,7 @@
 package net.greyferret.ferretbot.processor;
 
 import net.greyferret.ferretbot.client.FerretChatClient;
+import net.greyferret.ferretbot.config.ApplicationConfig;
 import net.greyferret.ferretbot.entity.Prize;
 import net.greyferret.ferretbot.entity.Raffle;
 import net.greyferret.ferretbot.entity.RaffleViewer;
@@ -35,6 +36,8 @@ public class RaffleProcessor implements Runnable {
 	private PrizePoolService prizePoolService;
 	@Autowired
 	private ApiProcessor apiProcessor;
+	@Autowired
+	private ApplicationConfig applicationConfig;
 
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
@@ -126,7 +129,9 @@ public class RaffleProcessor implements Runnable {
 		ferretChatClient.sendMessage(message);
 
 		String smileCode = "<a:PepePls:452100407779393536>";
-		discordProcessor.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
+		if (!applicationConfig.isDebug()) {
+			discordProcessor.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
+		}
 
 		if (message.contains(" поинтов!")) {
 			String[] split = StringUtils.split(message, ' ');

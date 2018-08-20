@@ -15,6 +15,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.*;
 
@@ -87,7 +88,8 @@ public class LootsService {
 
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.MONTH, -3);
-		criteria.where(builder.lessThan(root.get("date"), calendar.getTime()));
+		Predicate oldDate = builder.lessThan(root.get("date"), calendar.getTime());
+		criteria.where(oldDate);
 
 		List<Loots> oldList = entityManager.createQuery(criteria).getResultList();
 		for (Loots loots : oldList) {
