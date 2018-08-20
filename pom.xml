@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>greyferret</groupId>
+    <groupId>it.greyferret</groupId>
     <artifactId>ferretbot</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -175,7 +175,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>net.greyferret.ferretbot.Main</mainClass>
+                            <mainClass>it.greyferret.ferretbot.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
