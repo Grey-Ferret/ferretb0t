@@ -12,10 +12,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -33,36 +30,16 @@ public class RaffleService {
 	}
 
 	@Transactional
-	public Raffle getLastToday() {
+	public Raffle getLast() {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<Raffle> criteria = builder.createQuery(Raffle.class);
 		Root<Raffle> root = criteria.from(Raffle.class);
-		criteria.select(root);
+		criteria.orderBy(builder.desc(root.get("date")));
+		List<Raffle> raffles = entityManager.createQuery(criteria).setMaxResults(10).getResultList();
 
-		Calendar instance = Calendar.getInstance();
-		instance.set(Calendar.HOUR_OF_DAY, 0);
-		instance.set(Calendar.MINUTE, 0);
-		Date date1 = instance.getTime();
-		instance.set(Calendar.HOUR_OF_DAY, 23);
-		instance.set(Calendar.MINUTE, 59);
-		Date date2 = instance.getTime();
-
-		Predicate d1 = builder.lessThanOrEqualTo(root.get("date"), date2);
-		Predicate d2 = builder.greaterThanOrEqualTo(root.get("date"), date1);
-		Predicate and = builder.and(d1, d2);
-
-		criteria.where(and);
-
-		List<Raffle> raffles = entityManager.createQuery(criteria).getResultList();
-		Raffle res = null;
-		if (raffles != null && raffles.size() > 0) {
-			for (Raffle raffle : raffles) {
-				if (res == null || raffle.getDate().after(res.getDate())) {
-					res = raffle;
-				}
-			}
-		}
-		return res;
+		if (raffles == null || raffles.size() == 0)
+			return null;
+		return raffles.get(0);
 	}
 
 	@Transactional

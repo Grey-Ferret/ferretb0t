@@ -19,7 +19,7 @@ public class Raffle implements Serializable {
 	@Column(name = "date")
 	private Date date;
 
-	private Raffle() {
+	public Raffle() {
 
 	}
 

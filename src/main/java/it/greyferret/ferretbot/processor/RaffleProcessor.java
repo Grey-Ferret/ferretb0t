@@ -56,6 +56,7 @@ public class RaffleProcessor implements Runnable {
 	public void run() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
 		discordProcessor = context.getBean(DiscordProcessor.class);
+		boolean lastChannelStatus = apiProcessor.getChannelStatus();
 		while (isOn) {
 			try {
 				Thread.sleep(60000);
@@ -63,22 +64,35 @@ public class RaffleProcessor implements Runnable {
 				logger.error(e);
 			}
 
-			if (apiProcessor.getChannelStatus()) {
-				Raffle lastTodayRaffle = raffleService.getLastToday();
-				if (lastTodayRaffle == null) {
+			boolean currentChannelStatus = apiProcessor.getChannelStatus();
+			if (currentChannelStatus) {
+				Raffle lastRaffle = raffleService.getLast();
+				if (lastRaffle == null) {
 					rollRaffle();
 				} else {
 					Calendar lastTodayCal = Calendar.getInstance();
-					Calendar cal = Calendar.getInstance();
-					lastTodayCal.setTime(lastTodayRaffle.getDate());
+					lastTodayCal.setTime(lastRaffle.getDate());
 					lastTodayCal.add(Calendar.MINUTE, 30);
 
-					if (cal.after(lastTodayCal)) {
-						rollRaffle();
+					if (lastTodayCal.before(Calendar.getInstance())) {
+						if (lastChannelStatus) {
+							rollRaffle();
+						} else {
+							createBlankRaffle();
+						}
 					}
 				}
 			}
+			lastChannelStatus = currentChannelStatus;
 		}
+	}
+
+	private void createBlankRaffle() {
+		Raffle raffle = new Raffle();
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MINUTE, -20);
+		raffle.setDate(cal.getTime());
+		raffleService.put(raffle);
 	}
 
 	private void rollRaffle() {
