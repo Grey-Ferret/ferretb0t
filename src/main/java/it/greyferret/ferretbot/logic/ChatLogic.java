@@ -59,11 +59,11 @@ public class ChatLogic {
 			}
 			if (event.getMessage().startsWith("!обнять")) {
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
-				viewersProcessor.rollHug(event.getLogin());
+				viewersProcessor.rollHug(event.getLoginVisual());
 			}
 			if (event.getMessage().startsWith("!стукнуть")) {
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
-				viewersProcessor.rollSmack(event.getLogin());
+				viewersProcessor.rollSmack(event.getLoginVisual());
 			}
 		}
 	}
