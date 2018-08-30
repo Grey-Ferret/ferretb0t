@@ -38,8 +38,12 @@ public class ChannelMessageEventWrapper {
 		return res;
 	}
 
+	public String getLoginVisual() {
+		return getTag("display-name");
+	}
+
 	public void sendMessageWithMention(String text) {
-		sendMessage("@" + getLogin() + " " + text);
+		sendMessage("@" + getLoginVisual() + " " + text);
 	}
 
 	public void sendMessageWithMention(String text, String toWhom) {

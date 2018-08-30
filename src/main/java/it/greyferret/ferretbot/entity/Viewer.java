@@ -2,6 +2,7 @@ package it.greyferret.ferretbot.entity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 
@@ -26,23 +27,32 @@ public class Viewer implements Serializable {
 	private Date created;
 	@Column(name = "updated")
 	private Date updated;
+	@Column(name = "updated_visual")
+	private Date updatedVisual;
 	@Column(name = "sub", nullable = false, columnDefinition = "boolean default false")
 	private Boolean sub;
 	@Column(name = "sub_streak")
 	private int subStreak;
-	@Column(name = "suitable_for_raffle", nullable = false, columnDefinition = "boolean default true")
+	@Column(name = "suitable_for_raffle", columnDefinition = "boolean default true")
 	private boolean suitableForRaffle;
+
+	public static int hoursToUpdateVisual = 168;
 
 	public Viewer() {
 
 	}
 
 	public Viewer(String author) {
-		this.login = author;
+		this.login = author.toLowerCase();
+		this.loginVisual = author;
 		this.points = 0L;
 		this.pointsTrue = 0l;
 		this.subStreak = 0;
 		this.sub = false;
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, -1 * hoursToUpdateVisual);
+		this.updatedVisual = cal.getTime();
+		this.suitableForRaffle = true;
 	}
 
 	public String getLogin() {
@@ -140,6 +150,15 @@ public class Viewer implements Serializable {
 
 	public void setLoginVisual(String loginVisual) {
 		this.loginVisual = loginVisual;
+		this.updatedVisual = new Date();
+	}
+
+	public Date getUpdatedVisual() {
+		return updatedVisual;
+	}
+
+	public void setUpdatedVisual(Date updatedVisual) {
+		this.updatedVisual = updatedVisual;
 	}
 
 	public boolean removePoints(Long points) {

@@ -2,6 +2,7 @@ package it.greyferret.ferretbot.service;
 
 import it.greyferret.ferretbot.entity.Viewer;
 import it.greyferret.ferretbot.entity.ViewerLootsMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,15 @@ public class ViewerService {
 	}
 
 	@Transactional
+	public void updateVisual(Viewer viewer, String visual) {
+		if (viewer == null || StringUtils.isBlank(visual))
+			return;
+		viewer.setLoginVisual(visual);
+		entityManager.merge(viewer);
+		entityManager.flush();
+	}
+
+	@Transactional
 	public void addPointsForViewers(HashSet<Viewer> users) {
 		for (Viewer viewer : users) {
 			if (viewer != null) {
@@ -68,29 +78,6 @@ public class ViewerService {
 			}
 		}
 		entityManager.flush();
-	}
-
-	@Transactional
-	public void addPointsForViewers(List<String> users) {
-		boolean changed = false;
-		HashSet<Viewer> viewers = new HashSet<>();
-		for (String user : users) {
-			Viewer viewer = entityManager.find(Viewer.class, user);
-			if (viewer == null) {
-				viewer = new Viewer(user);
-				entityManager.persist(viewer);
-				changed = true;
-			} else {
-				if (viewer.isSub())
-					viewer.addTruePoints(2L);
-				else
-					viewer.addTruePoints(1L);
-				entityManager.merge(viewer);
-				changed = true;
-			}
-		}
-		if (changed)
-			entityManager.flush();
 	}
 
 	@Transactional
@@ -158,7 +145,7 @@ public class ViewerService {
 		Viewer viewer = getViewerByName(login);
 		if (viewer != null) {
 			viewer.setSubStreak(subStreak);
-			logger.info("Updated sub streak for viewer " + viewer.getLogin() + ", value: " + subStreak);
+			logger.info("Updated sub streak for viewer " + viewer.getLoginVisual() + ", value: " + subStreak);
 			entityManager.merge(viewer);
 			entityManager.flush();
 		}

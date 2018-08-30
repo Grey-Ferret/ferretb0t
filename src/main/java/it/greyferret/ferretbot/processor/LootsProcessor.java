@@ -289,7 +289,7 @@ public class LootsProcessor implements Runnable {
 			if (loots.getViewerLootsMap().getViewer().getLogin().equalsIgnoreCase(chatConfig.getChannel())) {
 
 			} else {
-				String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+				String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLoginVisual(), lootsConfig.getPointsForLoots());
 				viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
 				FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
 				ferretChatClient.sendMessage(message);

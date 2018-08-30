@@ -147,7 +147,7 @@ public class LootsService {
 					loots.setPaid(true);
 					entityManager.merge(loots);
 					res.add(loots);
-					logger.info("Payment incoming for Loots " + loots.getId() + " from " + loots.getViewerLootsMap().getViewer().getLogin());
+					logger.info("Payment incoming for Loots " + loots.getId() + " from " + loots.getViewerLootsMap().getViewer().getLoginVisual());
 				}
 			}
 			if (res.size() > 0)

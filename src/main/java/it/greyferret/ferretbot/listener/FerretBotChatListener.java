@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
@@ -92,6 +93,20 @@ public class FerretBotChatListener extends TwitchListener {
 					viewerService.setSubscriber(viewer, true);
 				else
 					viewerService.setSubscriber(viewer, false);
+				Calendar cal = Calendar.getInstance();
+				boolean toUpdateVisual = false;
+				if (viewer.getUpdatedVisual() != null) {
+					cal.setTime(viewer.getUpdatedVisual());
+					cal.add(Calendar.HOUR, Viewer.hoursToUpdateVisual);
+					if (cal.before(Calendar.getInstance())) {
+						toUpdateVisual = true;
+					}
+				} else {
+					toUpdateVisual = true;
+				}
+				if (toUpdateVisual) {
+					viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
+				}
 			}
 		}
 
@@ -130,7 +145,7 @@ public class FerretBotChatListener extends TwitchListener {
 				regexManual.add("nofort");
 			}
 		}
-		if(regexManual.contains("nofort")){
+		if (regexManual.contains("nofort")) {
 			eventWrapper.sendMessageWithMention("Вся информация по фортнайту на стриме: https://pastebin.com/mZhE29cK");
 		}
 	}

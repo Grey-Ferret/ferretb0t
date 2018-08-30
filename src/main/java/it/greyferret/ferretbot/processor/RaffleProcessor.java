@@ -120,9 +120,9 @@ public class RaffleProcessor implements Runnable {
 			} else {
 				prize = new Prize(resPts + " поинтов", 0, chance);
 			}
-			message = " Зритель " + viewer.getLogin() + " выиграл " + resPts + " поинтов! Поздравляем! ";
+			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + resPts + " поинтов! Поздравляем! ";
 		} else {
-			message = " Зритель " + viewer.getLogin() + " выиграл " + prize.getName() + "! Поздравляем! ";
+			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + prize.getName() + "! Поздравляем! ";
 		}
 		LocalDateTime ldt = LocalDateTime.now();
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
@@ -144,7 +144,7 @@ public class RaffleProcessor implements Runnable {
 				}
 				j++;
 			}
-			ferretChatClient.sendMessage(FerretBotUtils.buildMessageAddPoints(viewer.getLogin(), Long.valueOf(split[i])));
+			ferretChatClient.sendMessage(FerretBotUtils.buildMessageAddPoints(viewer.getLoginVisual(), Long.valueOf(split[i])));
 		}
 
 		resetMessages();

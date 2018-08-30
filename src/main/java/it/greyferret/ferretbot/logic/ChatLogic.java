@@ -80,13 +80,17 @@ public class ChatLogic {
 		if (split[0].toLowerCase().startsWith("!")) {
 			if (botConfig.getCustomCommandsOn()) {
 				if (split[0].toLowerCase().startsWith("!command")) {
-					if (split[1].toLowerCase().startsWith("add") || split[1].toLowerCase().startsWith("edit")) {
+					if (split[1].toLowerCase().startsWith("add") || split[1].toLowerCase().startsWith("edit") || split[1].toLowerCase().startsWith("alias")) {
 						if (split.length > 3) {
 							if (split[1].toLowerCase().startsWith("add"))
 								message = StringUtils.replace(message, "!command add " + split[2] + " ", "");
 							if (split[1].toLowerCase().startsWith("edit"))
 								message = StringUtils.replace(message, "!command edit " + split[2] + " ", "");
-							if (message.toLowerCase().startsWith("!command")) {
+							if (split[1].toLowerCase().startsWith("alias")) {
+								CommandService commandService = context.getBean(CommandService.class);
+								String res = commandService.addCommandAlias(split[2], split[3]);
+								event.sendMessageWithMention(res);
+							} else if (message.toLowerCase().startsWith("!command")) {
 								event.sendMessageWithMention("Что-то пошло не так...");
 							} else {
 								CommandService commandService = context.getBean(CommandService.class);

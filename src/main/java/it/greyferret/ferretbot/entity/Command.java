@@ -1,26 +1,18 @@
 package it.greyferret.ferretbot.entity;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 
 @Entity
 @Table(name = "command")
 public class Command {
-	private static final String separator = ";";
-
 	@Id
 	@GeneratedValue
 	@Column(name = "id", updatable = false, nullable = false)
 	private Long id;
-	@Type(type = "org.hibernate.type.TextType")
-	@Column(name = "codes")
-	private String codes;
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "response")
 	private String response;
@@ -43,15 +35,6 @@ public class Command {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public HashSet<String> getCodes() {
-		String[] split = StringUtils.split(this.codes, this.separator);
-		return new HashSet<>(Arrays.asList(split));
-	}
-
-	public void setCodes(HashSet<String> codes) {
-		this.codes = StringUtils.join(codes, separator);
 	}
 
 	public String getResponse() {

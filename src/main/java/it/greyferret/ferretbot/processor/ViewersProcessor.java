@@ -47,6 +47,7 @@ public class ViewersProcessor implements Runnable {
 		isOn = true;
 		apiProcessor = context.getBean(ApiProcessor.class);
 		resetViewersToAddPoints();
+		viewersToRoll = new ArrayList<>();
 	}
 
 	private void resetViewersToAddPoints() {
@@ -91,13 +92,18 @@ public class ViewersProcessor implements Runnable {
 			viewersToRoll = temp;
 		}
 		Collections.shuffle(viewersToRoll);
-		Viewer viewer = viewersToRoll.get(0);
-		FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		if (viewer != null) {
-			if (type == 1) {
-				ferretChatClient.sendMessage(author + " по-дружески обнимает " + viewer.getLogin() + " KappaPride");
-			} else if (type == 2) {
-				ferretChatClient.sendMessage(author + " отвесил подзатыльник " + viewer.getLogin() + " SMOrc");
+		if (viewersToRoll.size() > 1) {
+			Viewer viewer = viewersToRoll.get(0);
+			if (!viewer.isSuitableForRaffle()) {
+				viewer = viewersToRoll.get(1);
+			}
+			FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+			if (viewer != null) {
+				if (type == 1) {
+					ferretChatClient.sendMessage(author + " по-дружески обнимает " + viewer.getLoginVisual() + " KappaPride");
+				} else if (type == 2) {
+					ferretChatClient.sendMessage(author + " отвесил подзатыльник " + viewer.getLoginVisual() + " SMOrc");
+				}
 			}
 		}
 	}

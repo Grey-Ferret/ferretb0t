@@ -77,17 +77,16 @@ public class FerretBotUtils {
 	 * @return parsed name
 	 */
 	public static String parseLootsAuthor(@Nonnull String authorUnparsed, boolean isGuest) {
+		String res = authorUnparsed;
 		if (StringUtils.isNotBlank(authorUnparsed)) {
 			try {
 				if (isGuest) {
-					String temp = authorUnparsed.substring(6);
-					String[] split = StringUtils.split(temp, "_");
-					return StringUtils.deleteWhitespace(split[0]);
+					res = authorUnparsed.substring(6, authorUnparsed.length() - 10);
 				}
 			} catch (Exception e) {
 				logger.error("Could not parse following name: " + authorUnparsed, e);
 			}
-			return StringUtils.deleteWhitespace(authorUnparsed);
+			return StringUtils.deleteWhitespace(res);
 		}
 		logger.error("Author of loots was blank");
 		return "";
@@ -108,7 +107,7 @@ public class FerretBotUtils {
 			if (!StringUtils.isBlank(selectedViewersString)) {
 				selectedViewersString = selectedViewersString + ", ";
 			}
-			selectedViewersString = selectedViewersString + viewer.getLogin();
+			selectedViewersString = selectedViewersString + viewer.getLoginVisual();
 		}
 		return selectedViewersString;
 	}
@@ -119,7 +118,7 @@ public class FerretBotUtils {
 			if (selectedViewersString.length() > 1) {
 				selectedViewersString = selectedViewersString + ", @";
 			}
-			selectedViewersString = selectedViewersString + viewer.getLogin();
+			selectedViewersString = selectedViewersString + viewer.getLoginVisual();
 		}
 		return selectedViewersString;
 	}
