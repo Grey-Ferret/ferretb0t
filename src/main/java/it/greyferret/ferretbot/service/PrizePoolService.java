@@ -135,6 +135,9 @@ public class PrizePoolService {
 				res = restorePrizePoolForType(i);
 			} else {
 				res = resultList.get(0);
+				if (res.getPrizes() == null || res.getPrizes().size() == 0) {
+					res = restorePrizePoolForType(i);
+				}
 			}
 			entireCurrentPrizePool.put(i, res);
 		}
@@ -144,9 +147,15 @@ public class PrizePoolService {
 	@Transactional
 	protected PrizePool restorePrizePoolForType(int type) {
 		logger.info("Restoring presents for type " + type);
+		PrizePool oldPrizePool = entityManager.find(PrizePool.class, type);
 		PrizePool prizePool = PrizeDefault.getPrizePoolForType(type);
 		if (prizePool != null) {
-			entityManager.persist(prizePool);
+			if(oldPrizePool == null){
+				entityManager.persist(prizePool);
+			} else {
+				oldPrizePool.setPrizes(prizePool.getPrizes());
+				entityManager.merge(oldPrizePool);
+			}
 			entityManager.flush();
 		}
 		return prizePool;

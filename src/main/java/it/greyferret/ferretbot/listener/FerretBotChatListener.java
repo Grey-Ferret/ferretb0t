@@ -32,8 +32,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.regex.Pattern;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -136,18 +134,18 @@ public class FerretBotChatListener extends TwitchListener {
 			}
 		}
 
-		String message = eventWrapper.getMessage();
-		message = message.replaceAll("([^\\p{L}\\s])", "");
-		String[] split = message.split(" ");
-		HashSet<String> regexManual = new HashSet<>();
-		for (String s : split) {
-			if (s.toLowerCase().contains("форт") || Pattern.matches("(кастом).*", s.toLowerCase())) {
-				regexManual.add("nofort");
-			}
-		}
-		if (regexManual.contains("nofort")) {
-			eventWrapper.sendMessageWithMention("Вся информация по фортнайту на стриме: https://pastebin.com/mZhE29cK");
-		}
+//		String message = eventWrapper.getMessage();
+//		message = message.replaceAll("([^\\p{L}\\s])", "");
+//		String[] split = message.split(" ");
+//		HashSet<String> regexManual = new HashSet<>();
+//		for (String s : split) {
+//			if (Pattern.matches("(мх|мхв|монст*р|хант*р|mh|mhw|monster|hunter)", s.toLowerCase())) {
+//				regexManual.add("mhw");
+//			}
+//		}
+//		if (regexManual.contains("mhw")) {
+//			eventWrapper.sendMessageWithMention("Завершаем активный стриминг MHW (все подробности в Discord: discord.gg/drkiray #анонсы или в группе ВК: s.drkiray.ru/pausing-mh )");
+//		}
 	}
 
 	@Handler

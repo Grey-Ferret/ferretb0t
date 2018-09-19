@@ -15,11 +15,6 @@ import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import java.util.HashSet;
-import java.util.List;
 
 @Service
 public class CommandService {
@@ -81,21 +76,6 @@ public class CommandService {
 			return true;
 		}
 		return false;
-	}
-
-	@Transactional
-	protected HashSet<Command> getLikeAllCommands(String code) {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<Command> criteria = builder.createQuery(Command.class);
-		Root<Command> root = criteria.from(Command.class);
-		criteria.select(root);
-
-		criteria.where(builder.like(root.get("codes"), code));
-
-		List<Command> commands = entityManager.createQuery(criteria).getResultList();
-		HashSet<Command> res = new HashSet<>();
-		res.addAll(commands);
-		return res;
 	}
 
 	@Transactional

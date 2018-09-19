@@ -32,7 +32,7 @@ public class PrizeDefault {
 		type = 2;
 		prizes = new ArrayList<>();
 		prizes.add(new Prize("Платная подписка на канал", 2, 0.75));
-		prizes.add(new Prize("Monster Hunter World PC", 1, 0.25));
+		prizes.add(new Prize("1000 рублей или 2000 V-баксов", 1, 0.25));
 		prizePool = new PrizePool(type, Prize.calcChancesInsideListOfPrizes(prizes), 0.017);
 		res.put(type, prizePool);
 
