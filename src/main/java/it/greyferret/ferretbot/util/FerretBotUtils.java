@@ -135,4 +135,10 @@ public class FerretBotUtils {
 		}
 		return resList;
 	}
+
+	public static String escapeNicknameForDiscord(String login) {
+		login = StringUtils.replace(login, "_", "\\_");
+		login = StringUtils.replace(login, "*", "\\*");
+		return login;
+	}
 }

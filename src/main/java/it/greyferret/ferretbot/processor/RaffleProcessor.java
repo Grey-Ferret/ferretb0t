@@ -124,19 +124,22 @@ public class RaffleProcessor implements Runnable {
 	private Prize rollPresent(Viewer viewer) {
 		Prize prize = prizePoolService.rollPrize();
 		String message;
+		String messageDiscord;
 		if (prize == null) {
 			Random rand = new Random();
 			int resPts = 50;
 			final int chance = 66;
 			if (rand.nextInt(100) > chance) {
 				resPts = 100;
-				prize = new Prize(resPts + " поинтов", 0, 100 - chance);
+				prize = new Prize(resPts + " поинтов", 0);
 			} else {
-				prize = new Prize(resPts + " поинтов", 0, chance);
+				prize = new Prize(resPts + " поинтов", 0);
 			}
 			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + resPts + " поинтов! Поздравляем! ";
+			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " выиграл " + prize.getName() + "! Поздравляем! ";
 		} else {
 			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + prize.getName() + "! Поздравляем! ";
+			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " выиграл " + prize.getName() + "! Поздравляем! ";
 		}
 		LocalDateTime ldt = LocalDateTime.now();
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
@@ -144,7 +147,7 @@ public class RaffleProcessor implements Runnable {
 
 		String smileCode = "<a:PepePls:452100407779393536>";
 		if (!applicationConfig.isDebug()) {
-			discordProcessor.raffleChannel.sendMessage(smileCode + message + smileCode + dateTimeFormatter.format(ldt)).queue();
+			discordProcessor.raffleChannel.sendMessage(smileCode + messageDiscord + smileCode + dateTimeFormatter.format(ldt)).queue();
 		}
 
 		if (message.contains(" поинтов!")) {

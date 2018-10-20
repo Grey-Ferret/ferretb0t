@@ -1,11 +1,8 @@
 package it.greyferret.ferretbot.entity;
 
-import java.util.ArrayList;
-
 public class Prize {
 	private String name;
 	private int amount;
-	private double chanceInsidePool;
 
 	public String getName() {
 		return name;
@@ -23,35 +20,12 @@ public class Prize {
 		this.amount = amount;
 	}
 
-	public double getChanceInsidePool() {
-		return chanceInsidePool;
-	}
-
-	public void setChanceInsidePool(double chanceInsidePool) {
-		this.chanceInsidePool = chanceInsidePool;
-	}
-
 	private Prize() {
 	}
 
-	public Prize(String name, int amount, double chanceInsidePool) {
+	public Prize(String name, int amount) {
 		this.name = name;
 		this.amount = amount;
-		this.chanceInsidePool = chanceInsidePool;
-	}
-
-	public static ArrayList<Prize> calcChancesInsideListOfPrizes(ArrayList<Prize> input) {
-		double sumChance = 0;
-		ArrayList<Prize> res = new ArrayList<>();
-		for (Prize p : input) {
-			sumChance = sumChance + p.getChanceInsidePool();
-		}
-		for (Prize p : input) {
-			Prize toAdd = p;
-			toAdd.setChanceInsidePool(p.getChanceInsidePool() / sumChance);
-			res.add(toAdd);
-		}
-		return res;
 	}
 
 	@Override

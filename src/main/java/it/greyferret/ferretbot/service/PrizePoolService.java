@@ -15,10 +15,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class PrizePoolService {
@@ -59,19 +56,14 @@ public class PrizePoolService {
 	@Transactional
 	protected Prize selectPrize(PrizePool prizePool) {
 		logger.info("Selecting prize...");
-		Prize res = null;
-		Random rand = new Random();
-		double randDouble = rand.nextDouble();
-		logger.info("Rolled: " + randDouble);
-		for (Prize prize : prizePool.getPrizes()) {
-			res = prize;
-			if (prize.getChanceInsidePool() < randDouble) {
-				logger.info("Selected " + prize.getName());
-				break;
-			} else {
-				randDouble = randDouble - prize.getChanceInsidePool();
+		ArrayList<Prize> allPrizes = new ArrayList<>();
+		for (Prize t : prizePool.getPrizes()) {
+			for (int i = 0; i < t.getAmount(); i++) {
+				allPrizes.add(t);
 			}
 		}
+		Collections.shuffle(allPrizes);
+		Prize res = allPrizes.get(0);
 		removePrizeFromPool(prizePool, res);
 		return res;
 	}
@@ -99,7 +91,7 @@ public class PrizePoolService {
 			}
 		}
 
-		pool.setPrizes(Prize.calcChancesInsideListOfPrizes(newPrizes));
+		pool.setPrizes(newPrizes);
 		entityManager.merge(pool);
 		entityManager.flush();
 	}
@@ -150,7 +142,7 @@ public class PrizePoolService {
 		PrizePool oldPrizePool = entityManager.find(PrizePool.class, type);
 		PrizePool prizePool = PrizeDefault.getPrizePoolForType(type);
 		if (prizePool != null) {
-			if(oldPrizePool == null){
+			if (oldPrizePool == null) {
 				entityManager.persist(prizePool);
 			} else {
 				oldPrizePool.setPrizes(prizePool.getPrizes());
