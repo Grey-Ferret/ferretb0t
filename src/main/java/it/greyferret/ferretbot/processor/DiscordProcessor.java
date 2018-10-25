@@ -8,6 +8,7 @@ import it.greyferret.ferretbot.listener.DiscordListener;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.TextChannel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.security.auth.login.LoginException;
+import java.util.List;
 
 @Component
 @EnableConfigurationProperties({ChatConfig.class, DiscordConfig.class})
@@ -36,6 +38,7 @@ public class DiscordProcessor implements Runnable {
 	public TextChannel announcementChannel;
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
+	public TextChannel subsChannel;
 	private boolean isOn;
 	private ApiProcessor apiProcessor;
 
@@ -60,6 +63,7 @@ public class DiscordProcessor implements Runnable {
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
+		subsChannel = jda.getTextChannelById(discordConfig.getSubsChannel());
 
 		apiProcessor = context.getBean(ApiProcessor.class);
 		
@@ -75,5 +79,9 @@ public class DiscordProcessor implements Runnable {
 		} catch (InterruptedException e) {
 			logger.error(e);
 		}
+	}
+
+	public List<Emote> getEmotes(){
+		return jda.getEmotes();
 	}
 }

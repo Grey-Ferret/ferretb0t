@@ -21,6 +21,8 @@ public class DiscordConfig {
 	@NotNull
 	private Long testChannel;
 	@NotNull
+	private Long subsChannel;
+	@NotNull
 	private Long raffleChannel;
 	@NotNull
 	private Long checkTime;
@@ -73,5 +75,13 @@ public class DiscordConfig {
 
 	public void setRaffleChannel(Long raffleChannel) {
 		this.raffleChannel = raffleChannel;
+	}
+
+	public Long getSubsChannel() {
+		return subsChannel;
+	}
+
+	public void setSubsChannel(Long subsChannel) {
+		this.subsChannel = subsChannel;
 	}
 }
