@@ -63,25 +63,25 @@ public class ChatLogic {
 				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
 				queueProcessor.proceed(event);
 			}
-			if (event.getMessage().startsWith("!обнять")) {
+			if (message.startsWith("!обнять")) {
 				foundCustomLogicCommand = true;
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollHug(event.getLoginVisual());
 			}
-			if (event.getMessage().startsWith("!стукнуть")) {
+			if (message.startsWith("!стукнуть")) {
 				foundCustomLogicCommand = true;
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollSmack(event.getLoginVisual());
 			}
-			if (event.getMessage().startsWith("!желание ")) {
-				String[] split1 = StringUtils.split(event.getMessage(), ' ');
+			if (message.startsWith("!желание ")) {
+				String[] split1 = StringUtils.split(message, ' ');
 				if (split1.length > 1) {
 					String categoryString = split1[1];
 					Integer category = null;
 					if (categoryString.equalsIgnoreCase("простое")) {
 						category = 0;
 					}
-					if (categoryString.equalsIgnoreCase("элитное")) {
+					if (categoryString.equalsIgnoreCase("сложное")) {
 						category = 1;
 					}
 					if (category != null) {
@@ -219,7 +219,7 @@ public class ChatLogic {
 						Integer category = null;
 						if (categoryString.equalsIgnoreCase("простое")) {
 							category = 1;
-						} else if (categoryString.equalsIgnoreCase("элитное")) {
+						} else if (categoryString.equalsIgnoreCase("сложное")) {
 							category = 2;
 						}
 						if (category != null) {
@@ -229,7 +229,7 @@ public class ChatLogic {
 							if (category == 0) {
 								event.sendMessageWithMention("Простое желание успешно добавлено!");
 							} else if (category == 1) {
-								event.sendMessageWithMention("Элитное желание успешно добавлено!");
+								event.sendMessageWithMention("Сложное желание успешно добавлено!");
 							} else {
 								event.sendMessageWithMention("Желание успешно добавлено!");
 							}

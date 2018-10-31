@@ -23,7 +23,7 @@ public class PrizeDefault {
 		type = 1;
 		prizes = new ArrayList<>();
 		prizes.add(new Prize("Случайное простое желание", 8));
-		prizes.add(new Prize("Случайное элитное желание", 4));
+		prizes.add(new Prize("Случайное сложное желание", 4));
 		prizes.add(new Prize("Сыграть дуэтом", 2));
 		prizes.add(new Prize("Заказной стрим на 2 часа", 1));
 		prizePool = new PrizePool(type, prizes, 0.318);
