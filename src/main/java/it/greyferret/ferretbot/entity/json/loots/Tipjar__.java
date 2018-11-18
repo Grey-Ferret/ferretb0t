@@ -8,13 +8,13 @@ public class Tipjar__ {
 
     @SerializedName("usd")
     @Expose
-    private Long usd;
+    private Double usd;
 
-    public Long getUsd() {
+    public Double getUsd() {
         return usd;
     }
 
-    public void setUsd(Long usd) {
+    public void setUsd(Double usd) {
         this.usd = usd;
     }
 
