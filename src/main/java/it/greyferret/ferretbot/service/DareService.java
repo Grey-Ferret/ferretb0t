@@ -50,7 +50,7 @@ public class DareService {
 		List<Dare> resultList = entityManager.createQuery(criteria).getResultList();
 		if (resultList != null && resultList.size() > 0) {
 			Collections.shuffle(resultList);
-			return "Было выбрано жалание: " + resultList.get(0).getText();
+			return "Было выбрано желание: " + resultList.get(0).getText();
 		}
 		return "";
 	}

@@ -43,7 +43,7 @@ public class CommandService {
 				Command command = new Command();
 				command.setResponse(text);
 				entityManager.persist(command);
-				commandAlias.setId(code);
+				commandAlias.setId(code.toLowerCase());
 				commandAlias.setCommand(command);
 				entityManager.persist(commandAlias);
 				entityManager.flush();
@@ -80,6 +80,8 @@ public class CommandService {
 
 	@Transactional
 	public String addCommandAlias(String commandToAddName, String commandAliasName) {
+		commandAliasName = commandAliasName.toLowerCase();
+		commandToAddName = commandToAddName.toLowerCase();
 		String res;
 		CommandAlias commandAlias = entityManager.find(CommandAlias.class, commandAliasName);
 		if (commandAlias == null) {
