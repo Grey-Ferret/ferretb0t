@@ -125,18 +125,23 @@ public class RaffleProcessor implements Runnable {
 		Prize prize = prizePoolService.rollPrize();
 		String message;
 		String messageDiscord;
+		int type = 0;
 		if (prize == null) {
 			Random rand = new Random();
 			int resPts = 50;
 			final int chance = 66;
 			if (rand.nextInt(100) > chance) {
 				resPts = 100;
-				prize = new Prize(resPts + " поинтов", 0);
+				prize = new Prize(resPts + " IQ", 0, type);
 			} else {
-				prize = new Prize(resPts + " поинтов", 0);
+				prize = new Prize(resPts + " IQ", 0, type);
 			}
-			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + resPts + " поинтов! Поздравляем! ";
-			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " выиграл " + prize.getName() + "! Поздравляем! ";
+		} else {
+			type = prize.getType();
+		}
+		if (type == 0) {
+			message = " Зритель " + viewer.getLoginVisual() + " стал умнее на " + prize.getName() + "! Поздравляем! ";
+			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " стал умнее на " + prize.getName() + "! Поздравляем! ";
 		} else {
 			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + prize.getName() + "! Поздравляем! ";
 			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " выиграл " + prize.getName() + "! Поздравляем! ";
@@ -150,12 +155,12 @@ public class RaffleProcessor implements Runnable {
 			discordProcessor.raffleChannel.sendMessage(smileCode + messageDiscord + smileCode + dateTimeFormatter.format(ldt)).queue();
 		}
 
-		if (message.contains(" поинтов!")) {
+		if (message.contains(" IQ!")) {
 			String[] split = StringUtils.split(message, ' ');
 			int i = 0;
 			int j = 0;
 			for (String s : split) {
-				if (s.equalsIgnoreCase("поинтов!")) {
+				if (s.equalsIgnoreCase("IQ!")) {
 					i = j - 1;
 					break;
 				}

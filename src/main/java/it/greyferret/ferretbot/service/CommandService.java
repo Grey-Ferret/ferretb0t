@@ -102,5 +102,32 @@ public class CommandService {
 
 		return res;
 	}
+
+	public String enableCommand(String code) {
+		return changeDisableFieldForCommand(code, false);
+	}
+
+	public String disableCommand(String code) {
+		return changeDisableFieldForCommand(code, true);
+	}
+
+	private String changeDisableFieldForCommand(String code, boolean b) {
+		if (StringUtils.isNotBlank(code) && StringUtils.isNotBlank(code)) {
+			if (code.startsWith("!")) {
+				code = code.substring(1);
+			}
+			CommandAlias commandAlias = entityManager.find(CommandAlias.class, code.toLowerCase());
+			if (commandAlias != null) {
+				Command command = commandAlias.getCommand();
+				command.setDisabled(b);
+				entityManager.merge(command);
+				entityManager.flush();
+				return "команда " + code + " успешно обновлена!";
+			} else {
+				return "команда " + code + " была не найдена.";
+			}
+		}
+		return "";
+	}
 }
 

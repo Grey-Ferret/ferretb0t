@@ -14,26 +14,26 @@ public class PrizeDefault {
 
 		type = 0;
 		prizes = new ArrayList<>();
-		prizes.add(new Prize("300 поинтов", 3));
-		prizes.add(new Prize("500 поинтов", 2));
-		prizes.add(new Prize("1000 поинтов", 1));
+		prizes.add(new Prize("300 IQ", 3, type));
+		prizes.add(new Prize("500 IQ", 2, type));
+		prizes.add(new Prize("1000 IQ", 1, type));
 		prizePool = new PrizePool(type, prizes, 0.055);
 		res.put(type, prizePool);
 
 		type = 1;
 		prizes = new ArrayList<>();
-		prizes.add(new Prize("Случайное простое желание", 8));
-		prizes.add(new Prize("Случайное сложное желание", 4));
-		prizes.add(new Prize("Сыграть дуэтом", 2));
-		prizes.add(new Prize("Заказной стрим на 2 часа", 1));
+		prizes.add(new Prize("Случайное простое желание", 8, type));
+		prizes.add(new Prize("Случайное сложное желание", 4, type));
+		prizes.add(new Prize("Сыграть дуэтом", 2, type));
+		prizes.add(new Prize("Заказной стрим на 2 часа", 1, type));
 		prizePool = new PrizePool(type, prizes, 0.318);
 		res.put(type, prizePool);
 
 		type = 2;
 		prizes = new ArrayList<>();
-		prizes.add(new Prize("Платная подписка на канал", 2));
-		prizes.add(new Prize("Маунт для BRR", 4));
-		prizes.add(new Prize("500 руб.", 2));
+		prizes.add(new Prize("Платная подписка на канал", 2, type));
+		prizes.add(new Prize("Маунт для BRR", 4, type));
+		prizes.add(new Prize("500 руб.", 2, type));
 		prizePool = new PrizePool(type, prizes, 0.096);
 		res.put(type, prizePool);
 

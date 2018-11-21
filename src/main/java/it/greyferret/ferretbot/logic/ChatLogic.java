@@ -120,7 +120,18 @@ public class ChatLogic {
 								CommandService commandService = context.getBean(CommandService.class);
 								String res = commandService.addCommandAlias(split[2], split[3]);
 								event.sendMessageWithMention(res);
-							} else if (message.toLowerCase().startsWith("!command")) {
+							}
+							if (split[1].toLowerCase().startsWith("enable")) {
+								CommandService commandService = context.getBean(CommandService.class);
+								String res = commandService.enableCommand(split[2]);
+								event.sendMessageWithMention(res);
+							}
+							if (split[1].toLowerCase().startsWith("disable")) {
+								CommandService commandService = context.getBean(CommandService.class);
+								String res = commandService.disableCommand(split[2]);
+								event.sendMessageWithMention(res);
+							}
+							else if (message.toLowerCase().startsWith("!command")) {
 								event.sendMessageWithMention("Что-то пошло не так...");
 							} else {
 								CommandService commandService = context.getBean(CommandService.class);
