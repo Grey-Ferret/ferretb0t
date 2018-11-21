@@ -62,7 +62,9 @@ public class CommandService {
 	}
 
 	public static void proceedTextCommand(Command command, ChannelMessageEventWrapper event) {
-		findAndSendMessageWithMention(command, event);
+		if(!command.isDisabled()) {
+			findAndSendMessageWithMention(command, event);
+		}
 	}
 
 	@Transactional
