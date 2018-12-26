@@ -157,7 +157,10 @@ public class LootsProcessor implements Runnable {
 					if (lootsJson != null) {
 						Set<Loots> loots = parseLootsJson(lootsJson);
 						lootsService.checkOutLoots(loots);
-						givePointsForLoots();
+						ApiProcessor apiProcessor = context.getBean(ApiProcessor.class);
+						if (apiProcessor.getChannelStatus()) {
+							givePointsForLoots();
+						}
 						resetRetry();
 					} else {
 						increaseRetry();
