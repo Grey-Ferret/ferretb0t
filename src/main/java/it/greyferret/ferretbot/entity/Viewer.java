@@ -83,7 +83,7 @@ public class Viewer implements Serializable {
 		Long temp = this.pointsTrue + i;
 		setPointsTrue(temp);
 
-		if (temp >= 3 * i * (60/5)) { //3 часа на стриме
+		if (!this.getApproved() && temp >= 3 * i * (60/5)) { //3 часа на стриме
 			setApproved(true);
 		}
 
