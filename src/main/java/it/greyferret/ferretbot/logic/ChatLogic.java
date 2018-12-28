@@ -130,8 +130,7 @@ public class ChatLogic {
 								CommandService commandService = context.getBean(CommandService.class);
 								String res = commandService.disableCommand(split[2]);
 								event.sendMessageWithMention(res);
-							}
-							else if (message.toLowerCase().startsWith("!command")) {
+							} else if (message.toLowerCase().startsWith("!command")) {
 								event.sendMessageWithMention("Что-то пошло не так...");
 							} else {
 								CommandService commandService = context.getBean(CommandService.class);
@@ -278,6 +277,24 @@ public class ChatLogic {
 
 		if (message.startsWith("!repair")) {
 			repair(event);
+		}
+
+		if (message.startsWith("!approve")) {
+			approve(event);
+		}
+	}
+
+	private void approve(ChannelMessageEventWrapper event) {
+		if (event.getMessage().split(" ").length >= 2) {
+			String login = event.getMessage().split(" ")[1];
+			Viewer viewer = viewerService.getViewerByName(login);
+			if (viewer == null) {
+				event.sendMessageWithMention("Зритель не был найден. Попробуйте позже..?");
+				return;
+			}
+			viewerService.updateApproved(viewer, true);
+			event.sendMessage("/unban " + login);
+			event.sendMessageWithMention("Зритель был отмечен как одобреный. Приятного общения!");
 		}
 	}
 

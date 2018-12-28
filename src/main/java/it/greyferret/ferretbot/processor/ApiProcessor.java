@@ -6,6 +6,7 @@ import it.greyferret.ferretbot.config.Messages;
 import it.greyferret.ferretbot.entity.json.twitch.games.TwitchGames;
 import it.greyferret.ferretbot.entity.json.twitch.streams.Datum;
 import it.greyferret.ferretbot.entity.json.twitch.streams.TwitchStreamsJson;
+import it.greyferret.ferretbot.entity.json.v5.user.UserV5Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,9 +18,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Component
 @EnableConfigurationProperties({ChatConfig.class})
@@ -27,6 +27,8 @@ public class ApiProcessor implements Runnable {
 	private static final Logger logger = LogManager.getLogger(ApiProcessor.class);
 
 	private static final String twitchAPIPrefix = "https://api.twitch.tv/helix/";
+	@Deprecated
+	private static final String twitchV5APIPrefix = "https://api.twitch.tv/kraken/";
 	private String channelStatusUrl;
 	private String gameInfoUrl;
 	private boolean isOn;
@@ -120,6 +122,37 @@ public class ApiProcessor implements Runnable {
 			return twitchGames;
 		}
 		return twitchGames;
+	}
+
+	public Boolean checkForFreshAcc(String login) {
+		logger.info("Checking for fresh acc of " + login);
+		Connection.Response response;
+		try {
+			Map<String, String> headers = new HashMap<>();
+			headers.put("Client-ID", chatConfig.getClientId());
+			response = Jsoup.connect(twitchV5APIPrefix + "users/" + login)
+					.method(Connection.Method.GET)
+					.ignoreContentType(true)
+					.headers(headers)
+					.execute();
+			String body = response.body();
+			Gson gson = new Gson();
+			UserV5Gson twitchUser = gson.fromJson(body, UserV5Gson.class);
+			logger.info("Date:" + twitchUser.getCreatedAt());
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			Date date = sdf.parse(twitchUser.getCreatedAt());
+			Calendar c = Calendar.getInstance();
+			c.add(Calendar.DAY_OF_MONTH, -7);
+			if (date.after(c.getTime())) {
+				logger.info("Fresh acc found");
+				return true;
+			}
+			logger.info("Everything is fine");
+			return false;
+		} catch (Exception ex) {
+			logger.error(ex);
+		}
+		return false;
 	}
 
 	public boolean getChannelStatus() {

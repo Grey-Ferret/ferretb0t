@@ -64,7 +64,7 @@ public class ViewersProcessor implements Runnable {
 		while (isOn) {
 			Integer retryMs;
 			if (lastResult == true)
-				retryMs = 60000;
+				retryMs = 300000;
 			else
 				retryMs = 5000;
 

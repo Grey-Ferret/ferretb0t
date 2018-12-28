@@ -150,4 +150,11 @@ public class ViewerService {
 			entityManager.flush();
 		}
 	}
+
+	public void updateApproved(Viewer viewer, boolean approved) {
+		logger.info("Viewer " + viewer.getLoginVisual() + " set as approved");
+		viewer.setApproved(approved);
+		entityManager.merge(viewer);
+		entityManager.flush();
+	}
 }

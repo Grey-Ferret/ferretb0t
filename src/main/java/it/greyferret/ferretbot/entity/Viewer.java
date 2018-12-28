@@ -35,6 +35,8 @@ public class Viewer implements Serializable {
 	private int subStreak;
 	@Column(name = "suitable_for_raffle", columnDefinition = "boolean default true")
 	private boolean suitableForRaffle;
+	@Column(name = "approved", columnDefinition = "boolean default false")
+	private Boolean approved;
 
 	public static int hoursToUpdateVisual = 168;
 
@@ -80,6 +82,11 @@ public class Viewer implements Serializable {
 	public void addTruePoints(long i) {
 		Long temp = this.pointsTrue + i;
 		setPointsTrue(temp);
+
+		if (temp >= 3 * i * (60/5)) { //3 часа на стриме
+			setApproved(true);
+		}
+
 		temp = this.points + i;
 		setPoints(temp);
 	}
@@ -168,6 +175,14 @@ public class Viewer implements Serializable {
 		temp = temp - points;
 		setPoints(temp);
 		return true;
+	}
+
+	public Boolean getApproved() {
+		return approved;
+	}
+
+	public void setApproved(Boolean approved) {
+		this.approved = approved;
 	}
 
 	@Override

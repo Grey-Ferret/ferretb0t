@@ -5,6 +5,7 @@ import it.greyferret.ferretbot.config.ApplicationConfig;
 import it.greyferret.ferretbot.config.BotConfig;
 import it.greyferret.ferretbot.entity.Viewer;
 import it.greyferret.ferretbot.logic.ChatLogic;
+import it.greyferret.ferretbot.processor.ApiProcessor;
 import it.greyferret.ferretbot.processor.RaffleProcessor;
 import it.greyferret.ferretbot.service.ViewerService;
 import it.greyferret.ferretbot.util.FerretBotUtils;
@@ -50,6 +51,8 @@ public class FerretBotChatListener extends TwitchListener {
 	private ViewerService viewerService;
 	@Autowired
 	private BotConfig botConfig;
+	@Autowired
+	private ApiProcessor apiProcessor;
 
 	private FerretChatClient ferretChatClient;
 	private RaffleProcessor raffleProcessor;
@@ -66,6 +69,7 @@ public class FerretBotChatListener extends TwitchListener {
 	@PostConstruct
 	private void postConstruct() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+		apiProcessor = context.getBean(ApiProcessor.class);
 	}
 
 	@CommandFilter("PRIVMSG")
@@ -105,6 +109,12 @@ public class FerretBotChatListener extends TwitchListener {
 				if (toUpdateVisual) {
 					viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
 				}
+
+				if (!viewer.getApproved()) {
+					checkingForFreshAcc(login);
+				}
+			} else {
+				checkingForFreshAcc(login);
 			}
 		}
 
@@ -146,6 +156,14 @@ public class FerretBotChatListener extends TwitchListener {
 //		if (regexManual.contains("mhw")) {
 //			eventWrapper.sendMessageWithMention("Завершаем активный стриминг MHW (все подробности в Discord: discord.gg/drkiray #анонсы или в группе ВК: s.drkiray.ru/pausing-mh )");
 //		}
+	}
+
+	private void checkingForFreshAcc(String login) {
+		Boolean isFresh = apiProcessor.checkForFreshAcc(login);
+		if (isFresh) {
+			ferretChatClient.sendMessage("/timeout " + login + "120");
+			ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
+		}
 	}
 
 	@Handler
