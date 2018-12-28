@@ -142,7 +142,7 @@ public class ApiProcessor implements Runnable {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			Date date = sdf.parse(twitchUser.getCreatedAt());
 			Calendar c = Calendar.getInstance();
-			c.add(Calendar.DAY_OF_MONTH, -7);
+			c.add(Calendar.DAY_OF_MONTH, -2);
 			if (date.after(c.getTime())) {
 				logger.info("Fresh acc found");
 				return true;

@@ -161,7 +161,7 @@ public class FerretBotChatListener extends TwitchListener {
 	private void checkingForFreshAcc(String login) {
 		Boolean isFresh = apiProcessor.checkForFreshAcc(login);
 		if (isFresh) {
-			ferretChatClient.sendMessage("/timeout " + login + "120");
+			ferretChatClient.sendMessage("/timeout " + login + " 120");
 			ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
 		}
 	}

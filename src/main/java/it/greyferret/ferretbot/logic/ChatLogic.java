@@ -293,8 +293,8 @@ public class ChatLogic {
 				return;
 			}
 			viewerService.updateApproved(viewer, true);
-			event.sendMessage("/unban " + login);
 			event.sendMessageWithMention("Зритель был отмечен как одобреный. Приятного общения!");
+			event.sendMessage("/unban " + login);
 		}
 	}
 

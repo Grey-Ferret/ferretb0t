@@ -151,6 +151,7 @@ public class ViewerService {
 		}
 	}
 
+	@Transactional
 	public void updateApproved(Viewer viewer, boolean approved) {
 		logger.info("Viewer " + viewer.getLoginVisual() + " set as approved");
 		viewer.setApproved(approved);
