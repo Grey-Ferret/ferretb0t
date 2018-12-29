@@ -133,6 +133,8 @@ public class FerretBotChatListener extends TwitchListener {
 		if (true) {
 			boolean antispamCatched = chatLogic.antispamByWords(eventWrapper);
 			if (antispamCatched) {
+				logger.info("Antispam caught following message: " + eventWrapper.getMessage());
+				logger.info("Ban for author: " + eventWrapper.getLoginVisual());
 				eventWrapper.sendMessage("/ban " + eventWrapper.getLoginVisual());
 			}
 		}
