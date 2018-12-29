@@ -27,15 +27,17 @@ public class Viewer implements Serializable {
 	private Date created;
 	@Column(name = "updated")
 	private Date updated;
+	@Column(name = "age")
+	private Date age;
 	@Column(name = "updated_visual")
 	private Date updatedVisual;
-	@Column(name = "sub", nullable = false, columnDefinition = "boolean default false")
+	@Column(name = "sub", columnDefinition = "boolean default false", nullable = false)
 	private Boolean sub;
 	@Column(name = "sub_streak")
 	private int subStreak;
-	@Column(name = "suitable_for_raffle", columnDefinition = "boolean default true")
+	@Column(name = "suitable_for_raffle", columnDefinition = "boolean default true", nullable = false)
 	private boolean suitableForRaffle;
-	@Column(name = "approved", columnDefinition = "boolean default false")
+	@Column(name = "approved", columnDefinition = "boolean default false", nullable = false)
 	private Boolean approved;
 
 	public static int hoursToUpdateVisual = 168;
@@ -51,6 +53,7 @@ public class Viewer implements Serializable {
 		this.pointsTrue = 0l;
 		this.subStreak = 0;
 		this.sub = false;
+		this.approved = false;
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, -1 * hoursToUpdateVisual);
 		this.updatedVisual = cal.getTime();
@@ -82,10 +85,6 @@ public class Viewer implements Serializable {
 	public void addTruePoints(long i) {
 		Long temp = this.pointsTrue + i;
 		setPointsTrue(temp);
-
-		if (!this.getApproved() && temp >= 3 * i * (60/5)) { //3 часа на стриме
-			setApproved(true);
-		}
 
 		temp = this.points + i;
 		setPoints(temp);
@@ -183,6 +182,14 @@ public class Viewer implements Serializable {
 
 	public void setApproved(Boolean approved) {
 		this.approved = approved;
+	}
+
+	public Date getAge() {
+		return age;
+	}
+
+	public void setAge(Date age) {
+		this.age = age;
 	}
 
 	@Override

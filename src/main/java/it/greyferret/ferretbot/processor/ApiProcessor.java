@@ -19,7 +19,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @EnableConfigurationProperties({ChatConfig.class})
@@ -124,7 +127,7 @@ public class ApiProcessor implements Runnable {
 		return twitchGames;
 	}
 
-	public Boolean checkForFreshAcc(String login) {
+	public Date checkForFreshAcc(String login) {
 		logger.info("Checking for fresh acc of " + login);
 		Connection.Response response;
 		try {
@@ -141,18 +144,11 @@ public class ApiProcessor implements Runnable {
 			logger.info("Date:" + twitchUser.getCreatedAt());
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			Date date = sdf.parse(twitchUser.getCreatedAt());
-			Calendar c = Calendar.getInstance();
-			c.add(Calendar.DAY_OF_MONTH, -2);
-			if (date.after(c.getTime())) {
-				logger.info("Fresh acc found");
-				return true;
-			}
-			logger.info("Everything is fine");
-			return false;
+			return date;
 		} catch (Exception ex) {
-			logger.error(ex);
+			logger.error("Error while checking for Fresh acc: " + ex);
+			return null;
 		}
-		return false;
 	}
 
 	public boolean getChannelStatus() {

@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.util.Calendar;
+import java.util.Date;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -109,12 +110,23 @@ public class FerretBotChatListener extends TwitchListener {
 				if (toUpdateVisual) {
 					viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
 				}
-
-				if (!viewer.getApproved()) {
-					checkingForFreshAcc(login);
-				}
 			} else {
-				checkingForFreshAcc(login);
+				viewer = viewerService.createViewer(login);
+			}
+			if (viewer.getAge() == null) {
+				Date ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
+				viewer.setAge(ageDate);
+				logger.info("Update incoming for account age for Viewer " + viewer.getLoginVisual());
+				Calendar c = Calendar.getInstance();
+				c.add(Calendar.DAY_OF_MONTH, -2);
+				if (ageDate.after(c.getTime())) {
+					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
+					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
+				} else {
+					viewer.setApproved(true);
+					logger.info("Update incoming for approved status for Viewer " + viewer.getLoginVisual());
+				}
+				viewerService.updateViewer(viewer);
 			}
 		}
 
@@ -156,14 +168,6 @@ public class FerretBotChatListener extends TwitchListener {
 //		if (regexManual.contains("mhw")) {
 //			eventWrapper.sendMessageWithMention("Завершаем активный стриминг MHW (все подробности в Discord: discord.gg/drkiray #анонсы или в группе ВК: s.drkiray.ru/pausing-mh )");
 //		}
-	}
-
-	private void checkingForFreshAcc(String login) {
-		Boolean isFresh = apiProcessor.checkForFreshAcc(login);
-		if (isFresh) {
-			ferretChatClient.sendMessage("/timeout " + login + " 120");
-			ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
-		}
 	}
 
 	@Handler

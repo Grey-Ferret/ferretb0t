@@ -40,14 +40,20 @@ public class ViewerService {
 	}
 
 	@Transactional
+	public Viewer createViewer(String login) {
+		Viewer viewer = new Viewer(login.toLowerCase());
+		entityManager.persist(viewer);
+		return viewer;
+	}
+
+	@Transactional
 	public HashSet<Viewer> checkViewers(List<String> users) {
 		HashSet<Viewer> viewers = new HashSet<>();
 		boolean changed = false;
 		for (String user : users) {
 			Viewer viewer = entityManager.find(Viewer.class, user);
 			if (viewer == null) {
-				viewer = new Viewer(user);
-				entityManager.persist(viewer);
+				viewer = createViewer(user);
 				changed = true;
 			}
 			viewers.add(viewer);
@@ -155,6 +161,13 @@ public class ViewerService {
 	public void updateApproved(Viewer viewer, boolean approved) {
 		logger.info("Viewer " + viewer.getLoginVisual() + " set as approved");
 		viewer.setApproved(approved);
+		entityManager.merge(viewer);
+		entityManager.flush();
+	}
+
+	@Transactional
+	public void updateViewer(Viewer viewer) {
+		logger.info("Viewer " + viewer.getLoginVisual() + " was updated");
 		entityManager.merge(viewer);
 		entityManager.flush();
 	}
