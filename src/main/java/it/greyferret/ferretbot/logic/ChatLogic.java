@@ -25,10 +25,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @EnableConfigurationProperties({LootsConfig.class, BotConfig.class})
@@ -129,7 +126,7 @@ public class ChatLogic {
 						if (split[1].toLowerCase().startsWith("enable") || split[1].toLowerCase().startsWith("disable")) {
 							CommandService commandService = context.getBean(CommandService.class);
 							String res;
-							if(split[1].toLowerCase().startsWith("enable")) {
+							if (split[1].toLowerCase().startsWith("enable")) {
 								res = commandService.enableCommand(split[2]);
 							} else {
 								res = commandService.disableCommand(split[2]);
@@ -373,4 +370,17 @@ public class ChatLogic {
 		String repairNames = StringUtils.join(lootsForRepair, ", ");
 		event.sendMessage("To fix: " + repairNames);
 	}
+
+	public boolean antispamByWords(ChannelMessageEventWrapper event) {
+		String message = event.getMessage().replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+		boolean result = false;
+		for (String word : tempBanWords) {
+			if (message.contains(word.toLowerCase())) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	private ArrayList<String> tempBanWords = new ArrayList<>(Arrays.asList("getViewerspro"));
 }
