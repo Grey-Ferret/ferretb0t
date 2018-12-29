@@ -111,29 +111,29 @@ public class ChatLogic {
 			if (botConfig.getCustomCommandsOn()) {
 				if (split[0].toLowerCase().startsWith("!command")) {
 					if (split.length >= 3) {
-						if (split[1].toLowerCase().startsWith("add"))
-							message = StringUtils.replace(message, "!command add " + split[2] + " ", "");
-						if (split[1].toLowerCase().startsWith("edit"))
-							message = StringUtils.replace(message, "!command edit " + split[2] + " ", "");
-						if (split.length > 3 && split[1].toLowerCase().startsWith("alias")) {
-							CommandService commandService = context.getBean(CommandService.class);
-							String res = commandService.addCommandAlias(split[2], split[3]);
-							event.sendMessageWithMention(res);
+						if (split.length > 3) {
+							if (split[1].toLowerCase().startsWith("add")) {
+								message = StringUtils.replace(message, "!command add " + split[2] + " ", "");
+								proceedAddOrEditCommand(event, message, split[2]);
+							}
+							if (split[1].toLowerCase().startsWith("edit")) {
+								message = StringUtils.replace(message, "!command edit " + split[2] + " ", "");
+								proceedAddOrEditCommand(event, message, split[2]);
+							}
+							if (split[1].toLowerCase().startsWith("alias")) {
+								CommandService commandService = context.getBean(CommandService.class);
+								String res = commandService.addCommandAlias(split[2], split[3]);
+								event.sendMessageWithMention(res);
+							}
 						}
-						if (split[1].toLowerCase().startsWith("enable")) {
+						if (split[1].toLowerCase().startsWith("enable") || split[1].toLowerCase().startsWith("disable")) {
 							CommandService commandService = context.getBean(CommandService.class);
-							String res = commandService.enableCommand(split[2]);
-							event.sendMessageWithMention(res);
-						}
-						if (split[1].toLowerCase().startsWith("disable")) {
-							CommandService commandService = context.getBean(CommandService.class);
-							String res = commandService.disableCommand(split[2]);
-							event.sendMessageWithMention(res);
-						} else if (message.toLowerCase().startsWith("!command")) {
-							event.sendMessageWithMention("Что-то пошло не так...");
-						} else {
-							CommandService commandService = context.getBean(CommandService.class);
-							String res = commandService.addOrEditCommand(split[2], message);
+							String res;
+							if(split[1].toLowerCase().startsWith("enable")) {
+								res = commandService.enableCommand(split[2]);
+							} else {
+								res = commandService.disableCommand(split[2]);
+							}
 							event.sendMessageWithMention(res);
 						}
 					}
@@ -246,6 +246,12 @@ public class ChatLogic {
 				}
 			}
 		}
+	}
+
+	private void proceedAddOrEditCommand(ChannelMessageEventWrapper event, String message, String code) {
+		CommandService commandService = context.getBean(CommandService.class);
+		String res = commandService.addOrEditCommand(code, message);
+		event.sendMessageWithMention(res);
 	}
 
 	/***
