@@ -1,5 +1,7 @@
 package it.greyferret.ferretbot.entity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
@@ -31,13 +33,16 @@ public class Viewer implements Serializable {
 	private Date age;
 	@Column(name = "updated_visual")
 	private Date updatedVisual;
-	@Column(name = "sub", columnDefinition = "boolean default false", nullable = false)
+	@Column(name = "sub", nullable = false)
+	@ColumnDefault("false")
 	private Boolean sub;
 	@Column(name = "sub_streak")
 	private int subStreak;
-	@Column(name = "suitable_for_raffle", columnDefinition = "boolean default true", nullable = false)
+	@Column(name = "suitable_for_raffle", nullable = false)
+	@ColumnDefault("true")
 	private boolean suitableForRaffle;
-	@Column(name = "approved", columnDefinition = "boolean default false", nullable = false)
+	@Column(name = "approved", nullable = false)
+	@ColumnDefault("false")
 	private Boolean approved;
 
 	public static int hoursToUpdateVisual = 168;

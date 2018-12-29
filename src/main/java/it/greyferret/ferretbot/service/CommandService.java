@@ -107,22 +107,25 @@ public class CommandService {
 		return res;
 	}
 
+	@Transactional
 	public String enableCommand(String code) {
 		return changeDisableFieldForCommand(code, false);
 	}
 
+	@Transactional
 	public String disableCommand(String code) {
 		return changeDisableFieldForCommand(code, true);
 	}
 
-	private String changeDisableFieldForCommand(String code, boolean b) {
+	@Transactional
+	protected String changeDisableFieldForCommand(String code, boolean b) {
 		if (StringUtils.isNotBlank(code) && StringUtils.isNotBlank(code)) {
 			if (code.startsWith("!")) {
 				code = code.substring(1);
 			}
 			CommandAlias commandAlias = entityManager.find(CommandAlias.class, code.toLowerCase());
 			if (commandAlias != null) {
-				Command command = commandAlias.getCommand();
+				Command command = entityManager.find(Command.class, commandAlias.getCommand().getId());
 				command.setDisabled(b);
 				entityManager.merge(command);
 				entityManager.flush();
