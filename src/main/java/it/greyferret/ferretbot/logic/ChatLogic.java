@@ -336,7 +336,9 @@ public class ChatLogic {
 					logger.warn("Could not parse sub streak to Integer. Value: " + msgParamMonth, ex);
 				}
 			}
-			wrapper.sendMessage(paymentMessage);
+			if (!login.equalsIgnoreCase("ananonymousgifter")) {
+				wrapper.sendMessage(paymentMessage);
+			}
 			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
 	}
