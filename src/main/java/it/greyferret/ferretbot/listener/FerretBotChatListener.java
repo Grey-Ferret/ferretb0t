@@ -7,8 +7,8 @@ import it.greyferret.ferretbot.entity.Viewer;
 import it.greyferret.ferretbot.logic.ChatLogic;
 import it.greyferret.ferretbot.processor.ApiProcessor;
 import it.greyferret.ferretbot.processor.RaffleProcessor;
+import it.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
 import it.greyferret.ferretbot.service.ViewerService;
-import it.greyferret.ferretbot.util.FerretBotUtils;
 import it.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import it.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import net.engio.mbassy.listener.Handler;
@@ -57,6 +57,7 @@ public class FerretBotChatListener extends TwitchListener {
 
 	private FerretChatClient ferretChatClient;
 	private RaffleProcessor raffleProcessor;
+	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -71,6 +72,7 @@ public class FerretBotChatListener extends TwitchListener {
 	private void postConstruct() {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
 		apiProcessor = context.getBean(ApiProcessor.class);
+		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
 	}
 
 	@CommandFilter("PRIVMSG")
@@ -157,25 +159,13 @@ public class FerretBotChatListener extends TwitchListener {
 			String bits = eventWrapper.getTag("bits");
 			if (StringUtils.isNotBlank(bits)) {
 				Long points = Long.valueOf(bits);
-				if (points != null)
-					eventWrapper.sendMessage(FerretBotUtils.buildMessageAddPoints(eventWrapper.getTag("display-name"), points));
-				else
+				if (points != null) {
+					streamElementsAPIProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
+				} else {
 					logger.error("points == null");
+				}
 			}
 		}
-
-//		String message = eventWrapper.getMessage();
-//		message = message.replaceAll("([^\\p{L}\\s])", "");
-//		String[] split = message.split(" ");
-//		HashSet<String> regexManual = new HashSet<>();
-//		for (String s : split) {
-//			if (Pattern.matches("(мх|мхв|монст*р|хант*р|mh|mhw|monster|hunter)", s.toLowerCase())) {
-//				regexManual.add("mhw");
-//			}
-//		}
-//		if (regexManual.contains("mhw")) {
-//			eventWrapper.sendMessageWithMention("Завершаем активный стриминг MHW (все подробности в Discord: discord.gg/drkiray #анонсы или в группе ВК: s.drkiray.ru/pausing-mh )");
-//		}
 	}
 
 	@Handler

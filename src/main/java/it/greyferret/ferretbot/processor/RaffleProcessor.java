@@ -43,6 +43,7 @@ public class RaffleProcessor implements Runnable {
 	private HashMap<String, RaffleViewer> viewers;
 	private FerretChatClient ferretChatClient;
 	private DiscordProcessor discordProcessor;
+	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -50,6 +51,7 @@ public class RaffleProcessor implements Runnable {
 		isOn = true;
 
 		apiProcessor = context.getBean(ApiProcessor.class);
+		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
 	}
 
 	@Override
@@ -166,7 +168,7 @@ public class RaffleProcessor implements Runnable {
 				}
 				j++;
 			}
-			ferretChatClient.sendMessage(FerretBotUtils.buildMessageAddPoints(viewer.getLoginVisual(), Long.valueOf(split[i])));
+			streamElementsAPIProcessor.updatePoints(viewer.getLoginVisual(), split[i]);
 		}
 
 		resetMessages();

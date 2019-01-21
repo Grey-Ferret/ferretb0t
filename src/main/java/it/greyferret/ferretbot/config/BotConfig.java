@@ -30,6 +30,8 @@ public class BotConfig {
 	private Boolean viewersPassivePointsOn;
 	@NotNull
 	private Boolean dareOn;
+	@NotNull
+	private Boolean streamElementsIntegrationOn;
 
 	public Boolean getQueueOn() {
 		return queueOn;
@@ -109,5 +111,13 @@ public class BotConfig {
 
 	public void setDareOn(Boolean dareOn) {
 		this.dareOn = dareOn;
+	}
+
+	public Boolean getStreamElementsIntegrationOn() {
+		return streamElementsIntegrationOn;
+	}
+
+	public void setStreamElementsIntegrationOn(Boolean streamElementsIntegrationOn) {
+		this.streamElementsIntegrationOn = streamElementsIntegrationOn;
 	}
 }

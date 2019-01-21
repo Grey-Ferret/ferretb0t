@@ -2,7 +2,6 @@ package it.greyferret.ferretbot.processor;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import it.greyferret.ferretbot.client.FerretChatClient;
 import it.greyferret.ferretbot.config.ChatConfig;
 import it.greyferret.ferretbot.config.LootsConfig;
 import it.greyferret.ferretbot.entity.Loots;
@@ -12,7 +11,6 @@ import it.greyferret.ferretbot.entity.json.loots.Ok;
 import it.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
 import it.greyferret.ferretbot.service.LootsService;
 import it.greyferret.ferretbot.service.ViewerService;
-import it.greyferret.ferretbot.util.FerretBotUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,6 +61,8 @@ public class LootsProcessor implements Runnable {
 	private String token;
 	private String tokenChroma;
 
+	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+
 	/***
 	 * Constructor with all params for Loots
 	 */
@@ -74,6 +74,7 @@ public class LootsProcessor implements Runnable {
 	@PostConstruct
 	private void postConstruct() {
 		this.timeRetryMS = lootsConfig.getTimer().getDefaultRetryMs();
+		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
 	}
 
 	public void run() {
@@ -292,10 +293,8 @@ public class LootsProcessor implements Runnable {
 			if (loots.getViewerLootsMap().getViewer().getLogin().equalsIgnoreCase(chatConfig.getChannel())) {
 
 			} else {
-				String message = FerretBotUtils.buildMessageAddPoints(loots.getViewerLootsMap().getViewer().getLoginVisual(), lootsConfig.getPointsForLoots());
 				viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
-				FerretChatClient ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-				ferretChatClient.sendMessage(message);
+				streamElementsAPIProcessor.updatePoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
 			}
 		}
 	}

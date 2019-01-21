@@ -6,6 +6,7 @@ import it.greyferret.ferretbot.config.LootsConfig;
 import it.greyferret.ferretbot.entity.Viewer;
 import it.greyferret.ferretbot.processor.DiscordProcessor;
 import it.greyferret.ferretbot.processor.QueueProcessor;
+import it.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
 import it.greyferret.ferretbot.processor.ViewersProcessor;
 import it.greyferret.ferretbot.service.CommandService;
 import it.greyferret.ferretbot.service.DareService;
@@ -25,6 +26,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Component
@@ -45,6 +47,13 @@ public class ChatLogic {
 	@Autowired
 	private DareService dareService;
 
+	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+
+	@PostConstruct
+	private void postConstruct() {
+		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
+	}
+
 	/***
 	 * Logic for chat commands for everyone
 	 *
@@ -56,6 +65,9 @@ public class ChatLogic {
 
 		if (message.startsWith("!")) {
 			boolean foundCustomLogicCommand = false;
+			if (message.toLowerCase().startsWith("!иду") && botConfig.getStreamElementsIntegrationOn()) {
+				streamElementsAPIProcessor.updatePoints(event.getLogin(), "-5");
+			}
 			if (botConfig.getQueueOn()) {
 				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
 				queueProcessor.proceed(event);
@@ -269,10 +281,10 @@ public class ChatLogic {
 			if (split.length == 4 && StringUtils.isNumeric(split[3])) {
 				logger.info("Points transfer initiated by " + event.getLogin() + ", from " + split[1] + " to " + split[2] + " amount " + split[3]);
 				Long sum = Long.parseLong(split[3]);
-				event.sendMessage(FerretBotUtils.buildRemovePointsMessage(split[1], sum));
 				viewerService.removePoints(split[1], sum);
-				event.sendMessage(FerretBotUtils.buildMessageAddPoints(split[2], sum));
+				streamElementsAPIProcessor.updatePoints(split[1], sum);
 				viewerService.addPoints(split[2], sum);
+				streamElementsAPIProcessor.updatePoints(split[1], (sum * -1));
 			}
 		}
 
@@ -323,7 +335,6 @@ public class ChatLogic {
 			} else {
 				loginForThanks = login;
 			}
-			String paymentMessage = FerretBotUtils.buildMessageAddPoints(login, points);
 			viewerService.addPoints(login, points);
 			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
 				String msgParamMonth = wrapper.getTag("msg-param-months");
@@ -337,7 +348,7 @@ public class ChatLogic {
 				}
 			}
 			if (!login.equalsIgnoreCase("ananonymousgifter")) {
-				wrapper.sendMessage(paymentMessage);
+				streamElementsAPIProcessor.updatePoints(login, points);
 			}
 			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
