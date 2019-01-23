@@ -282,9 +282,9 @@ public class ChatLogic {
 				logger.info("Points transfer initiated by " + event.getLogin() + ", from " + split[1] + " to " + split[2] + " amount " + split[3]);
 				Long sum = Long.parseLong(split[3]);
 				viewerService.removePoints(split[1], sum);
-				streamElementsAPIProcessor.updatePoints(split[1], sum);
-				viewerService.addPoints(split[2], sum);
 				streamElementsAPIProcessor.updatePoints(split[1], (sum * -1));
+				viewerService.addPoints(split[2], sum);
+				streamElementsAPIProcessor.updatePoints(split[2], sum);
 			}
 		}
 
