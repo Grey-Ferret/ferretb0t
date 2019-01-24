@@ -9,7 +9,6 @@ import it.greyferret.ferretbot.processor.ApiProcessor;
 import it.greyferret.ferretbot.processor.RaffleProcessor;
 import it.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
 import it.greyferret.ferretbot.service.ViewerService;
-import it.greyferret.ferretbot.util.FerretBotUtils;
 import it.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import it.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import net.engio.mbassy.listener.Handler;
@@ -142,35 +141,16 @@ public class FerretBotChatListener extends TwitchListener {
 			}
 		}
 
-		String badges = eventWrapper.getTag("badges");
-		boolean isBroadcaster = badges.toLowerCase().contains("broadcaster/1".toLowerCase());
-		String userType = eventWrapper.getTag("user-type");
-		boolean isModerator = StringUtils.isNotBlank(userType) && userType.equalsIgnoreCase("mod");
-
 		if (eventWrapper.getMessage().startsWith("!")) {
 			chatLogic.proceedCommandLogic(eventWrapper);
+			String badges = eventWrapper.getTag("badges");
+			boolean isBroadcaster = badges.toLowerCase().contains("broadcaster/1".toLowerCase());
+			String userType = eventWrapper.getTag("user-type");
+			boolean isModerator = StringUtils.isNotBlank(userType) && userType.equalsIgnoreCase("mod");
 			if (isBroadcaster || isModerator) {
 				chatLogic.proceedModsCommandLogic(eventWrapper);
 				if (isBroadcaster || login.equalsIgnoreCase("greyferret")) {
 					chatLogic.proceedAdminCommandLogic(eventWrapper);
-				}
-			}
-		}
-
-		if (isModerator) {
-			if (eventWrapper.getLogin().equalsIgnoreCase("greyferret")) {
-				String message = FerretBotUtils.buildMessage(eventWrapper.getMessage()).toLowerCase();
-				if (message.contains("Для получения снаряжения придется отдать мастерской ".toLowerCase())) {
-					Long temp = 0L;
-					try {
-						String _message = StringUtils.substringBetween(message, "мастерской ", " iq.");
-						temp = Long.valueOf(_message.trim());
-					} catch (Exception ex) {
-						logger.warn("Could not extract adventure price. " + message, ex);
-					}
-					if (temp != 0L) {
-						chatLogic.setPointsForAdventure(temp);
-					}
 				}
 			}
 		}
