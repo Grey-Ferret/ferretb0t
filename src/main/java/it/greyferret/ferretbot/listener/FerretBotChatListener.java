@@ -158,7 +158,7 @@ public class FerretBotChatListener extends TwitchListener {
 		}
 
 		if (isModerator) {
-			if (eventWrapper.getLogin().equalsIgnoreCase("greyferret")) {
+			if (eventWrapper.getLogin().equalsIgnoreCase("laborantlady")) {
 				String message = FerretBotUtils.buildMessage(eventWrapper.getMessage()).toLowerCase();
 				if (message.contains("Для получения снаряжения придется отдать мастерской ".toLowerCase())) {
 					Long temp = 0L;
