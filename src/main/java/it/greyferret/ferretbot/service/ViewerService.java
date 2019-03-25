@@ -128,7 +128,7 @@ public class ViewerService {
 			if (viewer == null) {
 				Viewer viewerByName = getViewerByName(lootsName.toLowerCase());
 				if (viewerByName != null) {
-					logger.info("Found Viewer by name: " + viewerByName);
+					logger.info("Found Viewer by name: " + viewerByName.getLoginVisual());
 					viewerLootsMap.setViewer(viewerByName);
 					entityManager.merge(viewerLootsMap);
 					entityManager.flush();
