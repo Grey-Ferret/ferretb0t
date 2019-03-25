@@ -9,7 +9,6 @@ import it.greyferret.ferretbot.processor.QueueProcessor;
 import it.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
 import it.greyferret.ferretbot.processor.ViewersProcessor;
 import it.greyferret.ferretbot.service.CommandService;
-import it.greyferret.ferretbot.service.DareService;
 import it.greyferret.ferretbot.service.ViewerLootsMapService;
 import it.greyferret.ferretbot.service.ViewerService;
 import it.greyferret.ferretbot.util.FerretBotUtils;
@@ -44,8 +43,6 @@ public class ChatLogic {
 	private BotConfig botConfig;
 	@Autowired
 	private ChatConfig chatConfig;
-	@Autowired
-	private DareService dareService;
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	private Long pointsForAdventure = 5L;
@@ -82,24 +79,6 @@ public class ChatLogic {
 				foundCustomLogicCommand = true;
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollSmack(event.getLoginVisual());
-			}
-			if (message.startsWith("!желание ")) {
-				String[] split1 = StringUtils.split(message, ' ');
-				if (split1.length > 1) {
-					String categoryString = split1[1];
-					Integer category = null;
-					if (categoryString.equalsIgnoreCase("простое")) {
-						category = 0;
-					}
-					if (categoryString.equalsIgnoreCase("сложное")) {
-						category = 1;
-					}
-					if (category != null) {
-						foundCustomLogicCommand = true;
-						String res = dareService.rollDare(category);
-						event.sendMessageWithMention(res);
-					}
-				}
 			}
 			if (!foundCustomLogicCommand && botConfig.getCustomCommandsOn()) {
 				CommandService commandService = context.getBean(CommandService.class);
@@ -225,32 +204,6 @@ public class ChatLogic {
 
 						} else {
 							event.sendMessageWithMention("Были выбраны: " + FerretBotUtils.buildMergedViewersNicknamesWithMention(selected));
-						}
-					}
-				}
-			}
-			if (botConfig.getDareOn()) {
-				if (message.equalsIgnoreCase("!желание add")) {
-					String[] split1 = StringUtils.split(message, ' ');
-					if (split1.length >= 4) {
-						String categoryString = split1[2];
-						Integer category = null;
-						if (categoryString.equalsIgnoreCase("простое")) {
-							category = 1;
-						} else if (categoryString.equalsIgnoreCase("сложное")) {
-							category = 2;
-						}
-						if (category != null) {
-							String text = message;
-							text = text.replace("!желание add " + categoryString + ' ', "");
-							dareService.addOrEditDare(category, text);
-							if (category == 0) {
-								event.sendMessageWithMention("Простое желание успешно добавлено!");
-							} else if (category == 1) {
-								event.sendMessageWithMention("Сложное желание успешно добавлено!");
-							} else {
-								event.sendMessageWithMention("Желание успешно добавлено!");
-							}
 						}
 					}
 				}
