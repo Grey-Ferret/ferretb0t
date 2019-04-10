@@ -92,6 +92,9 @@ public class ChatLogic {
 						}
 						List<Card> allCards = CardAPI.getAllCards(f);
 						if (allCards != null && allCards.size() > 0) {
+							if (allCards.size() > 1) {
+								event.sendMessageWithMention("Было найдено несколько результатов. Выбираем первый...");
+							}
 							Card card = allCards.get(0);
 							String res = "";
 							if (isRussianCard) {
