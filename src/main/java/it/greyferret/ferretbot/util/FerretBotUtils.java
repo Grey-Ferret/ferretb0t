@@ -1,5 +1,6 @@
 package it.greyferret.ferretbot.util;
 
+import io.magicthegathering.javasdk.resource.Card;
 import it.greyferret.ferretbot.entity.Viewer;
 import net.dv8tion.jda.core.entities.Message;
 import org.apache.commons.lang3.StringUtils;
@@ -140,5 +141,18 @@ public class FerretBotUtils {
 		login = StringUtils.replace(login, "_", "\\_");
 		login = StringUtils.replace(login, "*", "\\*");
 		return login;
+	}
+
+	public static String formCardText(Card card, String name, String text) {
+		String res;
+		res = name;
+		if (card.getToughness() != null && card.getPower() != null) {
+			res = res + " " + card.getPower() + "/" + card.getToughness();
+		}
+		res = res + " " + card.getManaCost();
+		if (text != null && text.length() > 0) {
+			res = res + " " + text;
+		}
+		return res;
 	}
 }

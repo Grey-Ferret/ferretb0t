@@ -99,21 +99,13 @@ public class ChatLogic {
 							String res = "";
 							if (isRussianCard) {
 								for (ForeignData foreignData : card.getForeignNames()) {
-									if (foreignData.getLanguage().equalsIgnoreCase("russian")) {
-										res = foreignData.getName();
-										if (card.getToughness() != null && card.getPower() != null) {
-											res = res + " " + card.getPower() + "/" + card.getToughness();
-										}
-										res = res + " " + card.getManaCost() + " " + foreignData.getText();
+									if (foreignData.getLanguage().equalsIgnoreCase("Russian")) {
+										res = FerretBotUtils.formCardText(card, foreignData.getName(), foreignData.getText());
 										break;
 									}
 								}
 							} else {
-								res = card.getName();
-								if (card.getToughness() != null && card.getPower() != null) {
-									res = res + " " + card.getPower() + "/" + card.getToughness();
-								}
-								res = res + " " + card.getManaCost() + " " + card.getText();
+								res = FerretBotUtils.formCardText(card, card.getName(), card.getText());
 							}
 							res = StringUtils.replaceAll(res, "\n", "; ");
 							event.sendMessageWithMention(res);
