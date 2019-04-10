@@ -79,6 +79,10 @@ public class ChatLogic {
 				if (message.contains(" ") && message.length() > message.indexOf(" ") + 1) {
 					String keyword = message.substring(message.indexOf(" ") + 1);
 					if (keyword != null && keyword.length() > 0) {
+						if (keyword.length() < 4) {
+							event.sendMessageWithMention("Введите текст для поиска длиннее 3 символов.");
+							return;
+						}
 						ArrayList<String> f = new ArrayList<>();
 						Pattern p = Pattern.compile("/*[а-яА-Я]/*");
 						Matcher m = p.matcher(keyword);
@@ -93,7 +97,7 @@ public class ChatLogic {
 						List<Card> allCards = CardAPI.getAllCards(f);
 						if (allCards != null && allCards.size() > 0) {
 							if (allCards.size() > 1) {
-								event.sendMessageWithMention("Было найдено несколько результатов. Выбираем первый...");
+								event.sendMessageWithMention("Было найдено несколько результатов (" + allCards.size() + "). Выбираем первый...");
 							}
 							Card card = allCards.get(0);
 							String res = "";
