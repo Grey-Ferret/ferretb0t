@@ -5,6 +5,7 @@ import it.greyferret.ferretbot.config.ApplicationConfig;
 import it.greyferret.ferretbot.config.BotConfig;
 import it.greyferret.ferretbot.entity.Viewer;
 import it.greyferret.ferretbot.logic.ChatLogic;
+import it.greyferret.ferretbot.logic.MTGACardFinder;
 import it.greyferret.ferretbot.processor.ApiProcessor;
 import it.greyferret.ferretbot.processor.RaffleProcessor;
 import it.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
@@ -154,6 +155,14 @@ public class FerretBotChatListener extends TwitchListener {
 				if (isBroadcaster || login.equalsIgnoreCase("greyferret")) {
 					chatLogic.proceedAdminCommandLogic(eventWrapper);
 				}
+			}
+		}
+
+		if (botConfig.getMtgaCardsOn()) {
+			String mtgText = eventWrapper.getMessage();
+			if (mtgText.indexOf("[[") > -1 && mtgText.indexOf("]]") > -1 && mtgText.indexOf("]]") > mtgText.indexOf("[[")) {
+				String text = eventWrapper.getMessage().substring(eventWrapper.getMessage().indexOf("[[") + 2, eventWrapper.getMessage().indexOf("]]"));
+				MTGACardFinder.findCard(text, eventWrapper);
 			}
 		}
 
