@@ -30,6 +30,8 @@ public class BotConfig {
 	private Boolean viewersPassivePointsOn;
 	@NotNull
 	private Boolean streamElementsIntegrationOn;
+	@NotNull
+	private Boolean mtgaCardsOn;
 
 	public Boolean getQueueOn() {
 		return queueOn;
@@ -109,5 +111,13 @@ public class BotConfig {
 
 	public void setStreamElementsIntegrationOn(Boolean streamElementsIntegrationOn) {
 		this.streamElementsIntegrationOn = streamElementsIntegrationOn;
+	}
+
+	public Boolean getMtgaCardsOn() {
+		return mtgaCardsOn;
+	}
+
+	public void setMtgaCardsOn(Boolean mtgaCardsOn) {
+		this.mtgaCardsOn = mtgaCardsOn;
 	}
 }

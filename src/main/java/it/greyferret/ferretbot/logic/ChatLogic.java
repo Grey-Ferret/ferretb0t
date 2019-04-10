@@ -1,5 +1,8 @@
 package it.greyferret.ferretbot.logic;
 
+import io.magicthegathering.javasdk.api.CardAPI;
+import io.magicthegathering.javasdk.resource.Card;
+import io.magicthegathering.javasdk.resource.ForeignData;
 import it.greyferret.ferretbot.config.BotConfig;
 import it.greyferret.ferretbot.config.ChatConfig;
 import it.greyferret.ferretbot.config.LootsConfig;
@@ -27,6 +30,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @EnableConfigurationProperties({LootsConfig.class, BotConfig.class})
@@ -69,6 +74,51 @@ public class ChatLogic {
 			if (botConfig.getQueueOn()) {
 				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
 				queueProcessor.proceed(event);
+			}
+			if (botConfig.getMtgaCardsOn() && (message.toLowerCase().startsWith("!card") || message.toLowerCase().startsWith("!карта"))) {
+				if (message.contains(" ") && message.length() > message.indexOf(" ") + 1) {
+					String keyword = message.substring(message.indexOf(" ") + 1);
+					if (keyword != null && keyword.length() > 0) {
+						ArrayList<String> f = new ArrayList<>();
+						Pattern p = Pattern.compile("/*[а-яА-Я]/*");
+						Matcher m = p.matcher(keyword);
+						boolean isRussianCard = false;
+						if (m.find()) {
+							f.add("language=Russian");
+							f.add("name=" + keyword);
+							isRussianCard = true;
+						} else {
+							f.add("name=" + keyword);
+						}
+						List<Card> allCards = CardAPI.getAllCards(f);
+						if (allCards != null && allCards.size() > 0) {
+							Card card = allCards.get(0);
+							String res = "";
+							if (isRussianCard) {
+								for (ForeignData foreignData : card.getForeignNames()) {
+									if (foreignData.getLanguage().equalsIgnoreCase("russian")) {
+										res = foreignData.getName();
+										if (card.getToughness() != null && card.getPower() != null) {
+											res = res + " " + card.getPower() + "/" + card.getToughness();
+										}
+										res = res + " " + card.getManaCost() + " " + foreignData.getText();
+										break;
+									}
+								}
+							} else {
+								res = card.getName();
+								if (card.getToughness() != null && card.getPower() != null) {
+									res = res + " " + card.getPower() + "/" + card.getToughness();
+								}
+								res = res + " " + card.getManaCost() + " " + card.getText();
+							}
+							res = StringUtils.replaceAll(res, "\n", "; ");
+							event.sendMessageWithMention(res);
+						} else {
+							event.sendMessageWithMention("Ничего не найдено.");
+						}
+					}
+				}
 			}
 			if (message.startsWith("!обнять")) {
 				foundCustomLogicCommand = true;

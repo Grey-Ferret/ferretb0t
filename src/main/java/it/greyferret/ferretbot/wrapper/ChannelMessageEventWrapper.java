@@ -63,6 +63,9 @@ public class ChannelMessageEventWrapper {
 	}
 
 	public void sendMessage(String text) {
+		text = StringUtils.removeAll(text, "\n");
+		text = StringUtils.removeAll(text, "\r");
+		text = StringUtils.removeAll(text, "\0");
 		logger.info(text);
 		if (!isDebug)
 			chatClient.sendMessage(text);
