@@ -2,6 +2,7 @@ package it.greyferret.ferretbot.processor;
 
 import it.greyferret.ferretbot.config.DiscordConfig;
 import it.greyferret.ferretbot.entity.SubVoteEntity;
+import it.greyferret.ferretbot.entity.SubVoteGame;
 import it.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
 import it.greyferret.ferretbot.util.FerretBotUtils;
 import net.dv8tion.jda.core.entities.Emote;
@@ -29,7 +30,7 @@ public class SubVoteProcessor implements Runnable {
 	@Autowired
 	private DiscordProcessor discordProcessor;
 
-	HashMap<String, String> games;
+	HashMap<String, SubVoteGame> games;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -42,7 +43,7 @@ public class SubVoteProcessor implements Runnable {
 
 	public void processSubVoteMessage(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentDisplay();
-		if (event.getAuthor().getId().equalsIgnoreCase(discordConfig.getSubVoteAdminId())) {
+		if (event.getMember().getUser().getId().equals(discordConfig.getSubVoteAdminId())) {
 			if (message.equalsIgnoreCase("!reset")) {
 				games = new HashMap<>();
 				discordProcessor.subsChannel.sendMessage("Список игр успешно сброшен!").queue();
@@ -57,19 +58,24 @@ public class SubVoteProcessor implements Runnable {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
 				boolean foundOption = false;
-				for (String _game : games.values()) {
+				for (String subId : games.keySet()) {
+					String _game = games.get(subId).getGame();
 					if (_game.equalsIgnoreCase(game)) {
-						discordProcessor.subsChannel.sendMessage("Такая игра уже предложена...").queue();
+						if (event.getMember().getUser().getId().equals(subId)) {
+							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена вами!").queue();
+						} else {
+							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена...").queue();
+						}
 						foundOption = true;
 						break;
 					}
 				}
 				if (!foundOption) {
-					if (games.containsKey(event.getAuthor())) {
-						games.replace(event.getAuthor().getName(), game);
+					if (games.containsKey(event.getMember().getUser().getId())) {
+						games.replace(event.getMember().getUser().getId(), new SubVoteGame(event.getMember().getNickname(), game));
 						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
 					} else {
-						games.put(event.getAuthor().getName(), game);
+						games.put(event.getMember().getUser().getId(), new SubVoteGame(event.getMember().getNickname(), game));
 						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
 					}
 				}

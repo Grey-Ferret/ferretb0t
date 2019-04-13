@@ -2,6 +2,7 @@ package it.greyferret.ferretbot.util;
 
 import io.magicthegathering.javasdk.resource.Card;
 import it.greyferret.ferretbot.entity.SubVoteEntity;
+import it.greyferret.ferretbot.entity.SubVoteGame;
 import it.greyferret.ferretbot.entity.Viewer;
 import it.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
 import net.dv8tion.jda.core.entities.Emote;
@@ -96,7 +97,7 @@ public class FerretBotUtils {
 
 	public static String buildDiscordMessageLog(Message message) {
 		try {
-			return message.getAuthor().getName() + " in #" + message.getChannel().getName() + ": " + message.getContentRaw();
+			return message.getMember().getUser().getName() + "( " + message.getMember().getNickname() + ") in #" + message.getChannel().getName() + ": " + message.getContentRaw();
 		} catch (Exception e) {
 			logger.error("Could not build Log based on the following message: " + message, e);
 			return "";
@@ -157,22 +158,23 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static SubVoteEntity formSubVoteEntity(HashMap<String, String> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
+	public static SubVoteEntity formSubVoteEntity(HashMap<String, SubVoteGame> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
 		String res = "";
 		List<Emote> selectedEmotes = new ArrayList<>();
 		HashSet<Integer> selectedEmotesId = new HashSet<>();
 		if (games.size() < emotes.size()) {
-			for (String name : games.keySet()) {
-				String game = games.get(name);
+			for (String id : games.keySet()) {
+				String game = games.get(id).getGame();
+				String name = games.get(id).getName();
 				Random rand = new Random();
 				boolean added = false;
-				int id = 0;
+				int idE = 0;
 				while (!added) {
-					id = rand.nextInt(emotes.size());
-					added = selectedEmotesId.add(id);
+					idE = rand.nextInt(emotes.size());
+					added = selectedEmotesId.add(idE);
 				}
-				if (id != 0) {
-					Emote emote = emotes.get(id);
+				if (idE != 0) {
+					Emote emote = emotes.get(idE);
 					selectedEmotes.add(emote);
 					if (StringUtils.isNoneBlank(res)) {
 						res = res + "\n";
