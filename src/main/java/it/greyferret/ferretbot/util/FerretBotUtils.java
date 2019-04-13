@@ -1,16 +1,17 @@
 package it.greyferret.ferretbot.util;
 
 import io.magicthegathering.javasdk.resource.Card;
+import it.greyferret.ferretbot.entity.SubVoteEntity;
 import it.greyferret.ferretbot.entity.Viewer;
+import it.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
+import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by GreyFerret on 18.12.2017.
@@ -154,5 +155,42 @@ public class FerretBotUtils {
 			res = res + " " + text;
 		}
 		return res;
+	}
+
+	public static SubVoteEntity formSubVoteEntity(HashMap<String, String> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
+		String res = "";
+		List<Emote> selectedEmotes = new ArrayList<>();
+		HashSet<Integer> selectedEmotesId = new HashSet<>();
+		if (games.size() < emotes.size()) {
+			for (String name : games.keySet()) {
+				String game = games.get(name);
+				Random rand = new Random();
+				boolean added = false;
+				int id = 0;
+				while (!added) {
+					id = rand.nextInt(emotes.size());
+					added = selectedEmotesId.add(id);
+				}
+				if (id != 0) {
+					Emote emote = emotes.get(id);
+					selectedEmotes.add(emote);
+					if (StringUtils.isNoneBlank(res)) {
+						res = res + "\n";
+						if (withEmotes) {
+							res = res + emote.getAsMention() + " - ";
+						}
+						res = res + game + " (" + name + ")";
+					} else {
+						if (withEmotes) {
+							res = res + emote.getAsMention() + " - ";
+						}
+						res = res + game + " (" + name + ")";
+					}
+				}
+			}
+		} else {
+			throw new NotEnoughEmotesDiscordException("Games amount:" + games.size() + "; Emotes amount: " + emotes.size());
+		}
+		return new SubVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
 	}
 }

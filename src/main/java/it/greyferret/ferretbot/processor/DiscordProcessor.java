@@ -39,6 +39,7 @@ public class DiscordProcessor implements Runnable {
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
 	public TextChannel subsChannel;
+	public TextChannel subVoteChannel;
 	private boolean isOn;
 	private ApiProcessor apiProcessor;
 
@@ -64,6 +65,7 @@ public class DiscordProcessor implements Runnable {
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
 		subsChannel = jda.getTextChannelById(discordConfig.getSubsChannel());
+		subVoteChannel = jda.getTextChannelById(discordConfig.getSubVoteChannel());
 
 		apiProcessor = context.getBean(ApiProcessor.class);
 		

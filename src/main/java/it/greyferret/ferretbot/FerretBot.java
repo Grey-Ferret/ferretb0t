@@ -4,10 +4,7 @@ import it.greyferret.ferretbot.config.BotConfig;
 import it.greyferret.ferretbot.config.DiscordConfig;
 import it.greyferret.ferretbot.config.LootsConfig;
 import it.greyferret.ferretbot.listener.DiscordListener;
-import it.greyferret.ferretbot.processor.ApiProcessor;
-import it.greyferret.ferretbot.processor.ChatProcessor;
-import it.greyferret.ferretbot.processor.DiscordProcessor;
-import it.greyferret.ferretbot.processor.LootsProcessor;
+import it.greyferret.ferretbot.processor.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +62,9 @@ public class FerretBot implements Runnable {
 			annotationConfigApplicationContext.register(DiscordConfig.class);
 			annotationConfigApplicationContext.register(DiscordProcessor.class);
 			annotationConfigApplicationContext.register(DiscordListener.class);
+			if (botConfig.getSubVoteOn()) {
+				annotationConfigApplicationContext.register(SubVoteProcessor.class);
+			}
 			this.discordProcessor = context.getBean(DiscordProcessor.class);
 			this.discordThread = new Thread(this.discordProcessor);
 			this.discordThread.setName("Discord Bot");

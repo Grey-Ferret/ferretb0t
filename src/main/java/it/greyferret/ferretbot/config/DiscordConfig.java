@@ -23,11 +23,14 @@ public class DiscordConfig {
 	@NotNull
 	private Long subsChannel;
 	@NotNull
+	private Long subVoteChannel;
+	@NotNull
 	private Long raffleChannel;
 	@NotNull
 	private Long checkTime;
 
 	private String escapeLogBotId;
+	private String subVoteAdminId;
 
 	public String getToken() {
 		return token;
@@ -83,5 +86,21 @@ public class DiscordConfig {
 
 	public void setSubsChannel(Long subsChannel) {
 		this.subsChannel = subsChannel;
+	}
+
+	public String getSubVoteAdminId() {
+		return subVoteAdminId;
+	}
+
+	public void setSubVoteAdminId(String subVoteAdminId) {
+		this.subVoteAdminId = subVoteAdminId;
+	}
+
+	public Long getSubVoteChannel() {
+		return subVoteChannel;
+	}
+
+	public void setSubVoteChannel(Long subVoteChannel) {
+		this.subVoteChannel = subVoteChannel;
 	}
 }

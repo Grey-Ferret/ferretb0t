@@ -1,6 +1,9 @@
 package it.greyferret.ferretbot.listener;
 
+import it.greyferret.ferretbot.config.BotConfig;
 import it.greyferret.ferretbot.config.DiscordConfig;
+import it.greyferret.ferretbot.processor.DiscordProcessor;
+import it.greyferret.ferretbot.processor.SubVoteProcessor;
 import it.greyferret.ferretbot.util.FerretBotUtils;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -17,7 +20,13 @@ public class DiscordListener extends ListenerAdapter {
 	private static final Logger logger = LogManager.getLogger(DiscordListener.class);
 
 	@Autowired
+	private DiscordProcessor discordProcessor;
+	@Autowired
 	private DiscordConfig discordConfig;
+	@Autowired
+	private BotConfig botConfig;
+	@Autowired
+	private SubVoteProcessor subVoteProcessor;
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
@@ -27,6 +36,10 @@ public class DiscordListener extends ListenerAdapter {
 			} else {
 				logger.info(FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
 			}
+		}
+
+		if (botConfig.getSubVoteOn() && event.getChannel() == discordProcessor.subsChannel) {
+			subVoteProcessor.processSubVoteMessage(event);
 		}
 	}
 }

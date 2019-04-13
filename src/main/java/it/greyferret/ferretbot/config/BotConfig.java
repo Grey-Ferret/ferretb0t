@@ -32,6 +32,8 @@ public class BotConfig {
 	private Boolean streamElementsIntegrationOn;
 	@NotNull
 	private Boolean mtgaCardsOn;
+	@NotNull
+	private Boolean subVoteOn;
 
 	public Boolean getQueueOn() {
 		return queueOn;
@@ -119,5 +121,13 @@ public class BotConfig {
 
 	public void setMtgaCardsOn(Boolean mtgaCardsOn) {
 		this.mtgaCardsOn = mtgaCardsOn;
+	}
+
+	public Boolean getSubVoteOn() {
+		return subVoteOn;
+	}
+
+	public void setSubVoteOn(Boolean subVoteOn) {
+		this.subVoteOn = subVoteOn;
 	}
 }
