@@ -4,6 +4,7 @@ import it.greyferret.ferretbot.config.DiscordConfig;
 import it.greyferret.ferretbot.entity.SubVoteEntity;
 import it.greyferret.ferretbot.entity.SubVoteGame;
 import it.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
+import it.greyferret.ferretbot.service.SubVoteGameService;
 import it.greyferret.ferretbot.util.FerretBotUtils;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
@@ -18,7 +19,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
+import java.util.List;
 
 @Component
 @EnableConfigurationProperties({DiscordConfig.class})
@@ -29,12 +30,11 @@ public class SubVoteProcessor implements Runnable {
 	private DiscordConfig discordConfig;
 	@Autowired
 	private DiscordProcessor discordProcessor;
-
-	HashMap<String, SubVoteGame> games;
+	@Autowired
+	private SubVoteGameService subVoteGameService;
 
 	@PostConstruct
 	private void postConstruct() {
-		games = new HashMap<>();
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class SubVoteProcessor implements Runnable {
 		String message = event.getMessage().getContentDisplay();
 		if (event.getMember().getUser().getId().equals(discordConfig.getSubVoteAdminId())) {
 			if (message.equalsIgnoreCase("!reset")) {
-				games = new HashMap<>();
+				boolean reseted = subVoteGameService.reset();
 				discordProcessor.subsChannel.sendMessage("Список игр успешно сброшен!").queue();
 			} else if (message.equalsIgnoreCase("!publish")) {
 				postSubVote(discordProcessor.subVoteChannel, true);
@@ -58,10 +58,11 @@ public class SubVoteProcessor implements Runnable {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
 				boolean foundOption = false;
-				for (String subId : games.keySet()) {
-					String _game = games.get(subId).getGame();
+				List<SubVoteGame> subVoteGameList = subVoteGameService.getByGame(game);
+				for (SubVoteGame subVoteGame : subVoteGameList) {
+					String _game = subVoteGame.getGame();
 					if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
-						if (event.getMember().getUser().getId().equals(subId)) {
+						if (event.getMember().getUser().getId().equals(subVoteGame.getId())) {
 							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена вами!").queue();
 						} else {
 							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена...").queue();
@@ -71,11 +72,10 @@ public class SubVoteProcessor implements Runnable {
 					}
 				}
 				if (!foundOption) {
-					if (games.containsKey(event.getMember().getUser().getId())) {
-						games.replace(event.getMember().getUser().getId(), new SubVoteGame(event.getMember().getNickname(), game));
+					subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
+					if (subVoteGameService.containsId(event.getMember().getUser().getId())) {
 						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
 					} else {
-						games.put(event.getMember().getUser().getId(), new SubVoteGame(event.getMember().getNickname(), game));
 						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
 					}
 				}
@@ -85,7 +85,7 @@ public class SubVoteProcessor implements Runnable {
 
 	private void postSubVote(TextChannel channel, boolean withEmotes) {
 		try {
-			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(games, discordProcessor.getEmotes(), withEmotes);
+			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(subVoteGameService.getAll(), discordProcessor.getEmotes(), withEmotes);
 			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
 				channel.sendMessage("Нет предложенных игр...").queue();
 			} else {

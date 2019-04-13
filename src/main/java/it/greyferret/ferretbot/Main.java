@@ -10,6 +10,7 @@ import it.greyferret.ferretbot.logic.ChatLogic;
 import it.greyferret.ferretbot.processor.ApiProcessor;
 import it.greyferret.ferretbot.processor.ChatProcessor;
 import it.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
+import it.greyferret.ferretbot.service.SubVoteGameService;
 import it.greyferret.ferretbot.service.ViewerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,7 @@ public class Main {
 		annotationConfigApplicationContext.register(FerretBotChatListener.class);
 		annotationConfigApplicationContext.register(ChatLogic.class);
 		annotationConfigApplicationContext.register(ViewerService.class);
+		annotationConfigApplicationContext.register(SubVoteGameService.class);
 		annotationConfigApplicationContext.register(StreamelementsConfig.class);
 		annotationConfigApplicationContext.register(StreamElementsAPIProcessor.class);
 		annotationConfigApplicationContext.register(ApiProcessor.class);

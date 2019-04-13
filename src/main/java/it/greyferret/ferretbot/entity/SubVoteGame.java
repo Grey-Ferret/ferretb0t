@@ -1,12 +1,35 @@
 package it.greyferret.ferretbot.entity;
 
+import net.dv8tion.jda.core.entities.Member;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "sub_vote_game")
 public class SubVoteGame {
+	@Id
+	@Column(name = "id")
+	private String id;
+	@Column(name = "name")
 	private String name;
+	@Column(name = "game")
 	private String game;
 
-	public SubVoteGame(String name, String game) {
-		this.name = name;
+	private SubVoteGame() {
+	}
+
+	public SubVoteGame(String id, Member member, String game) {
+		String nickname = member.getNickname();
+		if (StringUtils.isBlank(nickname)) {
+			nickname = member.getUser().getName();
+		}
+		this.id = id;
 		this.game = game;
+		this.name = nickname;
 	}
 
 	public String getName() {
@@ -23,5 +46,13 @@ public class SubVoteGame {
 
 	public void setGame(String game) {
 		this.game = game;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

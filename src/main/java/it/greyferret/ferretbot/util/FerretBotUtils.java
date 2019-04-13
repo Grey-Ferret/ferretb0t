@@ -158,14 +158,14 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static SubVoteEntity formSubVoteEntity(HashMap<String, SubVoteGame> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
+	public static SubVoteEntity formSubVoteEntity(List<SubVoteGame> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
 		String res = "";
 		List<Emote> selectedEmotes = new ArrayList<>();
 		HashSet<Integer> selectedEmotesId = new HashSet<>();
 		if (games.size() < emotes.size()) {
-			for (String id : games.keySet()) {
-				String game = games.get(id).getGame();
-				String name = games.get(id).getName();
+			for (SubVoteGame subVoteGame : games) {
+				String game = subVoteGame.getGame();
+				String name = subVoteGame.getName();
 				Random rand = new Random();
 				boolean added = false;
 				int idE = 0;
