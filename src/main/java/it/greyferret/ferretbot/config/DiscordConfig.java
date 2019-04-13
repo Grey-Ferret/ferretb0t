@@ -29,7 +29,6 @@ public class DiscordConfig {
 	@NotNull
 	private Long checkTime;
 
-	private String escapeLogBotId;
 	private String subVoteAdminId;
 
 	public String getToken() {
@@ -62,14 +61,6 @@ public class DiscordConfig {
 
 	public void setCheckTime(Long checkTime) {
 		this.checkTime = checkTime;
-	}
-
-	public String getEscapeLogBotId() {
-		return escapeLogBotId;
-	}
-
-	public void setEscapeLogBotId(String escapeLogBotId) {
-		this.escapeLogBotId = escapeLogBotId;
 	}
 
 	public Long getRaffleChannel() {

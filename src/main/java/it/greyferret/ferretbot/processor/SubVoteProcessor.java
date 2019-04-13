@@ -72,12 +72,12 @@ public class SubVoteProcessor implements Runnable {
 					}
 				}
 				if (!foundOption) {
-					subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
 					if (subVoteGameService.containsId(event.getMember().getUser().getId())) {
 						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
 					} else {
 						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
 					}
+					subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
 				}
 			}
 		}
