@@ -60,7 +60,7 @@ public class SubVoteProcessor implements Runnable {
 				boolean foundOption = false;
 				for (String subId : games.keySet()) {
 					String _game = games.get(subId).getGame();
-					if (_game.equalsIgnoreCase(game)) {
+					if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
 						if (event.getMember().getUser().getId().equals(subId)) {
 							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена вами!").queue();
 						} else {
