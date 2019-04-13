@@ -247,6 +247,7 @@ public class ChatLogic {
 				streamElementsAPIProcessor.updatePoints(split[1], (sum * -1));
 				viewerService.addPoints(split[2], sum);
 				streamElementsAPIProcessor.updatePoints(split[2], sum);
+				event.sendMessageWithMention("IQ успешно переведены!");
 			}
 		}
 
