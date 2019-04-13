@@ -1,5 +1,6 @@
 package it.greyferret.ferretbot.processor;
 
+import it.greyferret.ferretbot.config.ApplicationConfig;
 import it.greyferret.ferretbot.config.StreamelementsConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,8 @@ public class StreamElementsAPIProcessor implements Runnable {
 	private boolean isOn;
 
 	@Autowired
+	private ApplicationConfig applicationConfig;
+	@Autowired
 	private StreamelementsConfig streamelementsConfig;
 
 	@PostConstruct
@@ -45,31 +48,35 @@ public class StreamElementsAPIProcessor implements Runnable {
 	}
 
 	public boolean updatePoints(String nickname, String points) {
-		logger.info("Trying to update points for " + nickname + " by " + points);
-		if (StringUtils.isBlank(nickname) || StringUtils.isBlank(points)) {
-			logger.error("Could not update points. Nickname/points was blank: " + nickname + '/' + points);
-			return false;
-		}
-		Connection.Response response;
-		try {
-			Map<String, String> headers = new HashMap<>();
-			headers.put("Authorization", "Bearer " + streamelementsConfig.getJwtToken());
-			final String _updatePointsUrl = updatePointsUrl + nickname + '/' + points;
-			response = Jsoup.connect(_updatePointsUrl)
-					.method(Connection.Method.PUT)
-					.ignoreContentType(true)
-					.headers(headers)
-					.execute();
-			String statusCode = String.valueOf(response.statusCode());
-			if (statusCode.startsWith("4") || statusCode.startsWith("5")) {
-				logger.error("Updating pts return error code " + statusCode + " for " + nickname + ' ' + points);
+		if (!applicationConfig.isDebug()) {
+			logger.info("Trying to update points for " + nickname + " by " + points);
+			if (StringUtils.isBlank(nickname) || StringUtils.isBlank(points)) {
+				logger.error("Could not update points. Nickname/points was blank: " + nickname + '/' + points);
 				return false;
 			}
-		} catch (IOException e) {
-			logger.error(e);
-			return false;
+			Connection.Response response;
+			try {
+				Map<String, String> headers = new HashMap<>();
+				headers.put("Authorization", "Bearer " + streamelementsConfig.getJwtToken());
+				final String _updatePointsUrl = updatePointsUrl + nickname + '/' + points;
+				response = Jsoup.connect(_updatePointsUrl)
+						.method(Connection.Method.PUT)
+						.ignoreContentType(true)
+						.headers(headers)
+						.execute();
+				String statusCode = String.valueOf(response.statusCode());
+				if (statusCode.startsWith("4") || statusCode.startsWith("5")) {
+					logger.error("Updating pts return error code " + statusCode + " for " + nickname + ' ' + points);
+					return false;
+				}
+			} catch (IOException e) {
+				logger.error(e);
+				return false;
+			}
+			logger.info("Successful updated points for " + nickname + " by " + points);
+			return true;
+		} else {
+			return true;
 		}
-		logger.info("Successful updated points for " + nickname + " by " + points);
-		return true;
 	}
 }
