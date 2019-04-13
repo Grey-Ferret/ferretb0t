@@ -57,27 +57,31 @@ public class SubVoteProcessor implements Runnable {
 		if (message.toLowerCase().startsWith("!игра")) {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
-				boolean foundOption = false;
-				List<SubVoteGame> subVoteGameList = subVoteGameService.getByGame(game);
-				for (SubVoteGame subVoteGame : subVoteGameList) {
-					String _game = subVoteGame.getGame();
-					if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
-						if (event.getMember().getUser().getId().equals(subVoteGame.getId())) {
-							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена вами!").queue();
-						} else {
-							discordProcessor.subsChannel.sendMessage("Такая игра уже предложена...").queue();
+				if (StringUtils.isBlank(game)) {
+					discordProcessor.subsChannel.sendMessage("Ошибка получения игры...").queue();
+				} else {
+					boolean foundOption = false;
+					List<SubVoteGame> subVoteGameList = subVoteGameService.getByGame(game);
+					for (SubVoteGame subVoteGame : subVoteGameList) {
+						String _game = subVoteGame.getGame();
+						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
+							if (event.getMember().getUser().getId().equals(subVoteGame.getId())) {
+								discordProcessor.subsChannel.sendMessage("Такая игра уже предложена вами!").queue();
+							} else {
+								discordProcessor.subsChannel.sendMessage("Такая игра уже предложена...").queue();
+							}
+							foundOption = true;
+							break;
 						}
-						foundOption = true;
-						break;
 					}
-				}
-				if (!foundOption) {
-					if (subVoteGameService.containsId(event.getMember().getUser().getId())) {
-						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
-					} else {
-						discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
+					if (!foundOption) {
+						if (subVoteGameService.containsId(event.getMember().getUser().getId())) {
+							discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
+						} else {
+							discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
+						}
+						subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
 					}
-					subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
 				}
 			}
 		}
