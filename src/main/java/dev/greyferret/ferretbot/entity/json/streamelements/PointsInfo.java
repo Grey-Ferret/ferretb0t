@@ -4,7 +4,7 @@ package dev.greyferret.ferretbot.entity.json.streamelements;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class CheckPointsJSON {
+public class PointsInfo {
 
     @SerializedName("channel")
     @Expose

@@ -3,7 +3,7 @@ package dev.greyferret.ferretbot.processor;
 import com.google.gson.Gson;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.StreamelementsConfig;
-import dev.greyferret.ferretbot.entity.json.streamelements.CheckPointsJSON;
+import dev.greyferret.ferretbot.entity.json.streamelements.PointsInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -109,8 +109,8 @@ public class StreamElementsAPIProcessor implements Runnable {
 					return -1L;
 				}
 				Gson gson = new Gson();
-				CheckPointsJSON checkPointsJSON = gson.fromJson(response.body(), CheckPointsJSON.class);
-				return checkPointsJSON.getPoints();
+				PointsInfo pointsInfo = gson.fromJson(response.body(), PointsInfo.class);
+				return pointsInfo.getPoints();
 			} catch (IOException e) {
 				logger.error(e);
 				return -1L;
