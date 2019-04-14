@@ -168,7 +168,16 @@ public class RaffleProcessor implements Runnable {
 				}
 				j++;
 			}
-			streamElementsAPIProcessor.updatePoints(viewer.getLoginVisual(), split[i]);
+			String pointsToChangeString = split[i];
+			Long pointsToChange = null;
+			try {
+				pointsToChange = Long.valueOf(pointsToChangeString);
+			} catch (NumberFormatException ex) {
+				logger.error("There was an error while attempting to convert String to Integer", ex);
+			}
+			if (pointsToChange == null) {
+				streamElementsAPIProcessor.updatePoints(viewer.getLoginVisual(), pointsToChange);
+			}
 		}
 
 		resetMessages();
