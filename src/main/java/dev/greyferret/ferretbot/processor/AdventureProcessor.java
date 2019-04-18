@@ -56,6 +56,7 @@ public class AdventureProcessor implements Runnable {
 
 	private void proceedLogic() throws InterruptedException {
 		logger.info(adventureStage);
+		logger.info(step);
 		if (adventureStage == AdventureStage.WAITING) {
 			logger.info("Waiting Stage, 14 mins waiting");
 			Thread.sleep(14 * 60 * 1000);
@@ -73,13 +74,13 @@ public class AdventureProcessor implements Runnable {
 			logger.info("ANSWERING Stage, 2 mins waiting");
 			Thread.sleep(2 * 60 * 1000);
 			logger.info("Answering done.");
+			endStage();
 			if (this.step < stepsMax) {
 				adventureStage = AdventureStage.PROCEEDING;
 				step++;
 			} else {
 				adventureStage = AdventureStage.WAITING;
 			}
-			endStage();
 		}
 	}
 
