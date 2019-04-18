@@ -9,6 +9,7 @@ import dev.greyferret.ferretbot.listener.FerretBotChatListener;
 import dev.greyferret.ferretbot.logic.ChatLogic;
 import dev.greyferret.ferretbot.processor.ApiProcessor;
 import dev.greyferret.ferretbot.processor.ChatProcessor;
+import dev.greyferret.ferretbot.processor.MTGACardFinderProcessor;
 import dev.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
 import dev.greyferret.ferretbot.service.SubVoteGameService;
 import dev.greyferret.ferretbot.service.ViewerService;
@@ -39,6 +40,7 @@ public class Main {
 		annotationConfigApplicationContext.register(ChatProcessor.class);
 		annotationConfigApplicationContext.register(FerretChatClient.class);
 		annotationConfigApplicationContext.register(FerretBotChatListener.class);
+		annotationConfigApplicationContext.register(MTGACardFinderProcessor.class);
 		annotationConfigApplicationContext.register(ChatLogic.class);
 		annotationConfigApplicationContext.register(ViewerService.class);
 		annotationConfigApplicationContext.register(SubVoteGameService.class);

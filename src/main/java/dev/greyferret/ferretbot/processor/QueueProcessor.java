@@ -2,7 +2,6 @@ package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
-import dev.greyferret.ferretbot.logic.ChatLogic;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
@@ -19,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class QueueProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ChatLogic.class);
+	private static final Logger logger = LogManager.getLogger(QueueProcessor.class);
 
 	@Autowired
 	private ViewerService viewerService;

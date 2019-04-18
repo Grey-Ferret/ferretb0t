@@ -1,19 +1,29 @@
-package dev.greyferret.ferretbot.logic;
+package dev.greyferret.ferretbot.processor;
 
+import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import io.magicthegathering.javasdk.api.CardAPI;
 import io.magicthegathering.javasdk.resource.Card;
 import io.magicthegathering.javasdk.resource.ForeignData;
-import dev.greyferret.ferretbot.util.FerretBotUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MTGACardFinder {
-	public static void findCard(String keyword, ChannelMessageEventWrapper event) {
+@Component
+public class MTGACardFinderProcessor implements Runnable {
+	public void findCard(String text, ChannelMessageEventWrapper eventWrapper) {
+		this.findCardLogic(text, eventWrapper);
+	}
+
+	@Override
+	public void run() {
+	}
+
+	private static void findCardLogic(String keyword, ChannelMessageEventWrapper event) {
 		if (keyword.length() < 4) {
 			event.sendMessageWithMention("Введите текст для поиска длиннее 3 символов.");
 			return;

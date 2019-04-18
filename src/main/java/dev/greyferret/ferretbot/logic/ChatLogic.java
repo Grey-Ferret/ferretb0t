@@ -4,10 +4,7 @@ import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.LootsConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
-import dev.greyferret.ferretbot.processor.DiscordProcessor;
-import dev.greyferret.ferretbot.processor.QueueProcessor;
-import dev.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
-import dev.greyferret.ferretbot.processor.ViewersProcessor;
+import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.CommandService;
 import dev.greyferret.ferretbot.service.ViewerLootsMapService;
 import dev.greyferret.ferretbot.service.ViewerService;
@@ -45,11 +42,13 @@ public class ChatLogic {
 	private ChatConfig chatConfig;
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+	private MTGACardFinderProcessor mtgaCardFinderProcessor;
 	private Long pointsForAdventure = 5L;
 
 	@PostConstruct
 	private void postConstruct() {
 		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
+		mtgaCardFinderProcessor = context.getBean(MTGACardFinderProcessor.class);
 	}
 
 	/***
@@ -74,7 +73,7 @@ public class ChatLogic {
 				if (message.contains(" ") && message.length() > message.indexOf(" ") + 1) {
 					String keyword = message.substring(message.indexOf(" ") + 1);
 					if (keyword != null && keyword.length() > 0) {
-						MTGACardFinder.findCard(keyword, event);
+						mtgaCardFinderProcessor.findCard(keyword, event);
 					}
 				}
 			}

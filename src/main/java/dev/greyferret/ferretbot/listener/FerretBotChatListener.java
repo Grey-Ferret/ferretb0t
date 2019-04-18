@@ -1,6 +1,7 @@
 package dev.greyferret.ferretbot.listener;
 
 import dev.greyferret.ferretbot.processor.ApiProcessor;
+import dev.greyferret.ferretbot.processor.MTGACardFinderProcessor;
 import dev.greyferret.ferretbot.processor.RaffleProcessor;
 import dev.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
 import dev.greyferret.ferretbot.client.FerretChatClient;
@@ -8,7 +9,6 @@ import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.logic.ChatLogic;
-import dev.greyferret.ferretbot.logic.MTGACardFinder;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
@@ -60,6 +60,7 @@ public class FerretBotChatListener extends TwitchListener {
 	private FerretChatClient ferretChatClient;
 	private RaffleProcessor raffleProcessor;
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+	private MTGACardFinderProcessor mtgaCardFinderProcessor;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -75,6 +76,7 @@ public class FerretBotChatListener extends TwitchListener {
 		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
 		apiProcessor = context.getBean(ApiProcessor.class);
 		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
+		mtgaCardFinderProcessor = context.getBean(MTGACardFinderProcessor.class);
 	}
 
 	@CommandFilter("PRIVMSG")
@@ -162,7 +164,7 @@ public class FerretBotChatListener extends TwitchListener {
 			String mtgText = eventWrapper.getMessage();
 			if (mtgText.indexOf("[[") > -1 && mtgText.indexOf("]]") > -1 && mtgText.indexOf("]]") > mtgText.indexOf("[[")) {
 				String text = eventWrapper.getMessage().substring(eventWrapper.getMessage().indexOf("[[") + 2, eventWrapper.getMessage().indexOf("]]"));
-				MTGACardFinder.findCard(text, eventWrapper);
+				mtgaCardFinderProcessor.findCard(text, eventWrapper);
 			}
 		}
 
