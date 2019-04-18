@@ -1,8 +1,6 @@
 package dev.greyferret.ferretbot.util;
 
-import dev.greyferret.ferretbot.entity.SubVoteEntity;
-import dev.greyferret.ferretbot.entity.SubVoteGame;
-import dev.greyferret.ferretbot.entity.Viewer;
+import dev.greyferret.ferretbot.entity.*;
 import dev.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
 import io.magicthegathering.javasdk.resource.Card;
 import net.dv8tion.jda.core.entities.Emote;
@@ -194,5 +192,20 @@ public class FerretBotUtils {
 			throw new NotEnoughEmotesDiscordException("Games amount:" + games.size() + "; Emotes amount: " + emotes.size());
 		}
 		return new SubVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
+	}
+
+	public static String formAdventureResponses(HashMap<String, AdventureResponse> responses) {
+		String res = "Варианты ответов: ";
+		boolean isFirst = true;
+		for (String key : responses.keySet()) {
+			AdventureResponse response = responses.get(key);
+			if (!isFirst) {
+				res = res + " / ";
+			} else {
+				isFirst = false;
+			}
+			res = res + response.getText();
+		}
+		return res;
 	}
 }

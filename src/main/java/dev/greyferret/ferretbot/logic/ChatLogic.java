@@ -40,10 +40,11 @@ public class ChatLogic {
 	private BotConfig botConfig;
 	@Autowired
 	private ChatConfig chatConfig;
+	@Autowired
+	private AdventureProcessor adventureProcessor;
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
-	private Long pointsForAdventure = 5L;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -61,9 +62,17 @@ public class ChatLogic {
 		String[] split = message.split(" ");
 
 		if (message.startsWith("!")) {
+			if (message.startsWith("!поход")) {
+				adventureProcessor.checkAdventure(event);
+			}
+			if (message.startsWith("!проверка")) {
+				adventureProcessor.checkAdventurer(event);
+			}
 			boolean foundCustomLogicCommand = false;
 			if (message.toLowerCase().startsWith("!иду") && botConfig.getStreamElementsIntegrationOn()) {
-				streamElementsAPIProcessor.updatePoints(event.getLogin(), -1 * pointsForAdventure);
+				adventureProcessor.joinAdventure(event);
+			} else if (message.length() == 2) {
+				adventureProcessor.setAdventurerResponse(event);
 			}
 			if (botConfig.getQueueOn()) {
 				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
@@ -362,9 +371,4 @@ public class ChatLogic {
 	}
 
 	private ArrayList<String> tempBanWords = new ArrayList<>(Arrays.asList("getViewerspro"));
-
-	public void setPointsForAdventure(Long pts) {
-		this.pointsForAdventure = pts;
-		logger.info("Successfully updated adventure price. Price set to " + pts.toString());
-	}
 }

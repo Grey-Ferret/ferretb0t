@@ -3,16 +3,14 @@ package dev.greyferret.ferretbot.entity;
 import net.dv8tion.jda.core.entities.Member;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "sub_vote_game")
 public class SubVoteGame {
 	@Id
-	@Column(name = "id")
+	@GeneratedValue
+	@Column(name = "id", updatable = false, nullable = false)
 	private String id;
 	@Column(name = "name")
 	private String name;

@@ -102,6 +102,11 @@ public class FerretBotChatListener extends TwitchListener {
 					viewerService.setSubscriber(viewer, true);
 				else
 					viewerService.setSubscriber(viewer, false);
+				String vip = eventWrapper.getTag("vip");
+				if (vip.equalsIgnoreCase("1"))
+					viewerService.setVip(viewer, true);
+				else
+					viewerService.setVip(viewer, false);
 				Calendar cal = Calendar.getInstance();
 				boolean toUpdateVisual = false;
 				if (viewer.getUpdatedVisual() != null) {
@@ -165,24 +170,6 @@ public class FerretBotChatListener extends TwitchListener {
 			if (mtgText.indexOf("[[") > -1 && mtgText.indexOf("]]") > -1 && mtgText.indexOf("]]") > mtgText.indexOf("[[")) {
 				String text = eventWrapper.getMessage().substring(eventWrapper.getMessage().indexOf("[[") + 2, eventWrapper.getMessage().indexOf("]]"));
 				mtgaCardFinderProcessor.findCard(text, eventWrapper);
-			}
-		}
-
-		if (isModerator) {
-			if (eventWrapper.getLogin().equalsIgnoreCase("laborantlady")) {
-				String message = FerretBotUtils.buildMessage(eventWrapper.getMessage()).toLowerCase();
-				if (message.contains("Для получения снаряжения придется отдать мастерской ".toLowerCase())) {
-					Long temp = 0L;
-					try {
-						String _message = StringUtils.substringBetween(message, "мастерской ", " iq.");
-						temp = Long.valueOf(_message.trim());
-					} catch (Exception ex) {
-						logger.warn("Could not extract adventure price. " + message, ex);
-					}
-					if (temp != 0L) {
-						chatLogic.setPointsForAdventure(temp);
-					}
-				}
 			}
 		}
 

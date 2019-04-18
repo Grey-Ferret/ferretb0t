@@ -37,10 +37,12 @@ public class FerretBot implements Runnable {
 	private ChatProcessor chatClient;
 	private DiscordProcessor discordProcessor;
 	private ApiProcessor apiProcessor;
+	private AdventureProcessor adventureProcessor;
 	private Thread lootsThread;
 	private Thread chatThread;
 	private Thread discordThread;
 	private Thread apiThread;
+	private Thread adventureThread;
 
 	public FerretBot() {
 	}
@@ -82,5 +84,9 @@ public class FerretBot implements Runnable {
 		this.chatThread = new Thread(this.chatClient);
 		this.chatThread.setName("Chat Bot");
 		this.chatThread.start();
+		this.adventureProcessor = context.getBean(AdventureProcessor.class);
+		this.adventureThread = new Thread(this.adventureProcessor);
+		this.adventureThread.setName("Adventure Thread");
+		this.adventureThread.start();
 	}
 }

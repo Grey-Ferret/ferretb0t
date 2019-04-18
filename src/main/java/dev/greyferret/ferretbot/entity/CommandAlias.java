@@ -6,6 +6,7 @@ import javax.persistence.*;
 @Table(name = "command_alias")
 public class CommandAlias {
 	@Id
+	@GeneratedValue
 	@Column(name = "id", updatable = false, nullable = false)
 	private String id;
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

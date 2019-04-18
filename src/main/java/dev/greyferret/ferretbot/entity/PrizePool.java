@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -16,6 +13,7 @@ import java.util.ArrayList;
 public class PrizePool {
 	@Column(name = "type", updatable = false, nullable = false)
 	@Id
+	@GeneratedValue
 	private int type;
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "prizeJson")

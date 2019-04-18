@@ -36,6 +36,9 @@ public class Viewer implements Serializable {
 	@Column(name = "sub", nullable = false)
 	@ColumnDefault("false")
 	private Boolean sub;
+	@Column(name = "vip", nullable = false)
+	@ColumnDefault("false")
+	private Boolean vip;
 	@Column(name = "sub_streak")
 	private int subStreak;
 	@Column(name = "suitable_for_raffle", nullable = false)
@@ -58,6 +61,7 @@ public class Viewer implements Serializable {
 		this.pointsTrue = 0l;
 		this.subStreak = 0;
 		this.sub = false;
+		this.vip = false;
 		this.approved = false;
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, -1 * hoursToUpdateVisual);
@@ -202,12 +206,20 @@ public class Viewer implements Serializable {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Viewer viewer = (Viewer) o;
-		return Objects.equals(login, viewer.login);
+		return login.equalsIgnoreCase(viewer.login);
 	}
 
 	@Override
 	public int hashCode() {
 
 		return Objects.hash(login);
+	}
+
+	public Boolean isVip() {
+		return vip;
+	}
+
+	public void setVip(Boolean vip) {
+		this.vip = vip;
 	}
 }

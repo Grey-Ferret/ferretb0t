@@ -171,4 +171,12 @@ public class ViewerService {
 		entityManager.merge(viewer);
 		entityManager.flush();
 	}
+
+	public void setVip(Viewer viewer, boolean isVip) {
+		if (viewer.isVip() != isVip) {
+			viewer.setVip(isVip);
+			entityManager.merge(viewer);
+			entityManager.flush();
+		}
+	}
 }
