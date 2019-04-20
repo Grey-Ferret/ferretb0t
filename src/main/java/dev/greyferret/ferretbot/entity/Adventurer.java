@@ -57,5 +57,12 @@ public class Adventurer {
 		return viewer != null ? viewer.hashCode() : 0;
 	}
 
-
+	@Override
+	public String toString() {
+		return "Adventurer{" +
+				"viewer=" + viewer.getLoginVisual() +
+				", lives=" + lives +
+				", selectedKey='" + selectedKey + '\'' +
+				'}';
+	}
 }

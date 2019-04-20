@@ -68,6 +68,15 @@ public class FerretChatClient extends DefaultClient {
 		}
 	}
 
+	public void sendMessageMe(@Nonnull String text) {
+		if (StringUtils.isNotBlank(text)) {
+			text = "/me " + text;
+			logger.info(text);
+			if (!applicationConfig.isDebug())
+				sendMessage(chatConfig.getChannelWithHashTag(), text);
+		}
+	}
+
 	@Override
 	public void sendMessage(@Nonnull String target, @Nonnull String message) {
 		if (StringUtils.isNotBlank(target) && StringUtils.isNotBlank(message)) {

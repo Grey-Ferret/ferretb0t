@@ -46,6 +46,10 @@ public class ChannelMessageEventWrapper {
 		sendMessage("@" + getLoginVisual() + " " + text);
 	}
 
+	public void sendMessageWithMentionMe(String text) {
+		sendMessageMe("@" + getLoginVisual() + " " + text);
+	}
+
 	public void sendMessageWithMention(String text, String toWhom) {
 		if (StringUtils.isBlank(toWhom)) {
 			sendMessageWithMention(text);
@@ -70,6 +74,16 @@ public class ChannelMessageEventWrapper {
 		if (!isDebug)
 			chatClient.sendMessage(text);
 	}
+
+	public void sendMessageMe(String text) {
+		text = StringUtils.removeAll(text, "\n");
+		text = StringUtils.removeAll(text, "\r");
+		text = StringUtils.removeAll(text, "\0");
+		logger.info(text);
+		if (!isDebug)
+			chatClient.sendMessageMe(text);
+	}
+
 
 	public String getTag(String tag) {
 		ServerMessage message = event.getServerMessage();

@@ -95,7 +95,7 @@ public class FerretBotUtils {
 
 	public static String buildDiscordMessageLog(Message message) {
 		try {
-			return message.getMember().getUser().getName() + "( " + message.getMember().getNickname() + ") in #" + message.getChannel().getName() + ": " + message.getContentRaw();
+			return message.getMember().getUser().getName() + "(" + message.getMember().getNickname() + ") in #" + message.getChannel().getName() + ": " + message.getContentRaw();
 		} catch (Exception e) {
 			logger.error("Could not build Log based on the following message: " + message, e);
 			return "";

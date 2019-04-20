@@ -222,4 +222,23 @@ public class Viewer implements Serializable {
 	public void setVip(Boolean vip) {
 		this.vip = vip;
 	}
+
+	@Override
+	public String toString() {
+		return "Viewer{" +
+				"login='" + login + '\'' +
+				", loginVisual='" + loginVisual + '\'' +
+				", points=" + points +
+				", pointsTrue=" + pointsTrue +
+				", created=" + created +
+				", updated=" + updated +
+				", age=" + age +
+				", updatedVisual=" + updatedVisual +
+				", sub=" + sub +
+				", vip=" + vip +
+				", subStreak=" + subStreak +
+				", suitableForRaffle=" + suitableForRaffle +
+				", approved=" + approved +
+				'}';
+	}
 }
