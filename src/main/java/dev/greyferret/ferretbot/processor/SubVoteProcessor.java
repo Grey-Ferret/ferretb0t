@@ -89,7 +89,7 @@ public class SubVoteProcessor implements Runnable {
 
 	private void postSubVote(TextChannel channel, boolean withEmotes) {
 		try {
-			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(subVoteGameService.getAll(), discordProcessor.getEmotes(), withEmotes);
+			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(subVoteGameService.getAll(), discordProcessor.getPublicEmotes(), withEmotes);
 			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
 				channel.sendMessage("Нет предложенных игр...").queue();
 			} else {

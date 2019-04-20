@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.security.auth.login.LoginException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -68,7 +69,7 @@ public class DiscordProcessor implements Runnable {
 		subVoteChannel = jda.getTextChannelById(discordConfig.getSubVoteChannel());
 
 		apiProcessor = context.getBean(ApiProcessor.class);
-		
+
 		try {
 			Thread.sleep(discordConfig.getCheckTime());
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
@@ -83,7 +84,18 @@ public class DiscordProcessor implements Runnable {
 		}
 	}
 
-	public List<Emote> getEmotes(){
+	public List<Emote> getAllEmotes() {
 		return jda.getEmotes();
+	}
+
+	public List<Emote> getPublicEmotes() {
+		List<Emote> emotes = getAllEmotes();
+		ArrayList<Emote> res = new ArrayList<>();
+		for (Emote emote : emotes) {
+			if (emote.getRoles() == null && emote.getRoles().size() == 0) {
+				res.add(emote);
+			}
+		}
+		return res;
 	}
 }

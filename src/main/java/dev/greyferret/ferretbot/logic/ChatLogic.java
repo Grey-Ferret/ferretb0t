@@ -148,40 +148,6 @@ public class ChatLogic {
 					}
 				}
 			}
-			if (botConfig.getDiscordOn()) {
-				DiscordProcessor discordProcessor = context.getBean(DiscordProcessor.class);
-				if (event.getMessage().toLowerCase().startsWith("!votediscord")) {
-					ArrayList<Emote> emotes = new ArrayList<>(discordProcessor.getEmotes());
-					String[] split2 = StringUtils.split(event.getMessage(), ' ');
-					ArrayList<Emote> toAdd = new ArrayList<>();
-					boolean skippedFirst = false;
-					String resTest = "";
-					for (String text : split2) {
-						if (!skippedFirst) {
-							skippedFirst = true;
-						} else {
-							Boolean emoteRdy = false;
-							Emote emote = null;
-							while (!emoteRdy) {
-								Collections.shuffle(emotes);
-								emote = emotes.get(0);
-								if (!toAdd.contains(emote)) {
-									emoteRdy = true;
-								}
-							}
-							resTest = resTest + text + " " + emote.getAsMention() + " \n";
-							toAdd.add(emote);
-						}
-					}
-					Message complete = discordProcessor.subsChannel.sendMessage(resTest).complete();
-					String latestMessageId = complete.getId();
-					logger.info(latestMessageId);
-					for (Emote e : toAdd) {
-						RestAction<Void> voidRestAction = discordProcessor.subsChannel.addReactionById(latestMessageId, e);
-						voidRestAction.queue();
-					}
-				}
-			}
 			if (botConfig.getQueueOn()) {
 				if (message.toLowerCase().startsWith("!queue")) {
 					if (message.toLowerCase().startsWith("!queue add ") && split.length >= 3) {

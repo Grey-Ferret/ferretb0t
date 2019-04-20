@@ -169,23 +169,21 @@ public class FerretBotUtils {
 				int idE = 0;
 				while (!added) {
 					idE = rand.nextInt(emotes.size());
-					added = selectedEmotesId.add(idE);
+					Emote emote = emotes.get(idE);
+					if (emote.getRoles() == null || emote.getRoles().size() == 0) {
+						added = selectedEmotesId.add(idE);
+					}
 				}
 				if (idE != 0) {
 					Emote emote = emotes.get(idE);
 					selectedEmotes.add(emote);
 					if (StringUtils.isNoneBlank(res)) {
 						res = res + "\n";
-						if (withEmotes) {
-							res = res + emote.getAsMention() + " - ";
-						}
-						res = res + game + " (" + name + ")";
-					} else {
-						if (withEmotes) {
-							res = res + emote.getAsMention() + " - ";
-						}
-						res = res + game + " (" + name + ")";
 					}
+					if (withEmotes) {
+						res = res + emote.getAsMention() + " - ";
+					}
+					res = res + game + " (" + name + ")";
 				}
 			}
 		} else {
