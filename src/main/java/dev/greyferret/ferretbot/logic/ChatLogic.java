@@ -221,7 +221,7 @@ public class ChatLogic {
 				logger.info("Points transfer initiated by " + event.getLogin() + ", from " + split[1] + " to " + split[2] + " amount " + split[3]);
 				Long sum = Long.parseLong(split[3]);
 				boolean updatedPoints = streamElementsAPIProcessor.updatePoints(split[1], (sum * -1));
-				if (updatedPoints) {
+				if (!updatedPoints) {
 					event.sendMessageWithMention("Недостаточно IQ у первого зрителя!");
 				} else {
 					viewerService.removePoints(split[1], sum);
