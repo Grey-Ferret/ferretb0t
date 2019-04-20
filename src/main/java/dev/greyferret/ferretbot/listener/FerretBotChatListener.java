@@ -1,16 +1,12 @@
 package dev.greyferret.ferretbot.listener;
 
-import dev.greyferret.ferretbot.processor.ApiProcessor;
-import dev.greyferret.ferretbot.processor.MTGACardFinderProcessor;
-import dev.greyferret.ferretbot.processor.RaffleProcessor;
-import dev.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
+import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.logic.ChatLogic;
 import dev.greyferret.ferretbot.service.ViewerService;
-import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import net.engio.mbassy.listener.Handler;
@@ -54,6 +50,8 @@ public class FerretBotChatListener extends TwitchListener {
 	private ViewerService viewerService;
 	@Autowired
 	private BotConfig botConfig;
+	@Autowired
+	private AdventureProcessor adventureProcessor;
 	@Autowired
 	private ApiProcessor apiProcessor;
 
@@ -163,6 +161,8 @@ public class FerretBotChatListener extends TwitchListener {
 					chatLogic.proceedAdminCommandLogic(eventWrapper);
 				}
 			}
+		} else if (eventWrapper.getMessage().toLowerCase().length() == 1) {
+			adventureProcessor.setAdventurerResponse(eventWrapper, eventWrapper.getMessage().toLowerCase());
 		}
 
 		if (botConfig.getMtgaCardsOn()) {
@@ -184,6 +184,7 @@ public class FerretBotChatListener extends TwitchListener {
 				}
 			}
 		}
+
 	}
 
 	@Handler
