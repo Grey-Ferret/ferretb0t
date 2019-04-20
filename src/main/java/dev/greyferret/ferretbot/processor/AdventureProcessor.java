@@ -218,7 +218,7 @@ public class AdventureProcessor implements Runnable {
 		if (this.adventureStage == AdventureStage.READY) {
 			this.startAdventure(event);
 		} else if (this.adventureStage == AdventureStage.WAITING) {
-			event.sendMessageWithMentionMe("Поход не готов, мы в поисках новой лаборотории для рейда.");
+			event.sendMessageWithMentionMe("Поход не готов, мы в поисках новой лаборатории для рейда.");
 		} else if (this.adventureStage == AdventureStage.LFG) {
 			event.sendMessageWithMentionMe("Кто-то уже собирает в поход! Пиши !иду чтобы принять участие!");
 		} else {
