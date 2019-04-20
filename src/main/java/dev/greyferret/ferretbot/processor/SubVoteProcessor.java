@@ -105,6 +105,7 @@ public class SubVoteProcessor implements Runnable {
 			logger.error(e);
 		} catch (NotEnoughEmotesDiscordException e) {
 			logger.error(e);
+			channel.sendMessage("Кол-во доступных эмоций меньше чем количество игр.").queue();
 		}
 	}
 }
