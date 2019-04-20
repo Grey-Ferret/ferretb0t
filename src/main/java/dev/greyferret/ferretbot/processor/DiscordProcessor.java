@@ -92,7 +92,7 @@ public class DiscordProcessor implements Runnable {
 		List<Emote> emotes = getAllEmotes();
 		ArrayList<Emote> res = new ArrayList<>();
 		for (Emote emote : emotes) {
-			if (emote.getRoles() == null && emote.getRoles().size() == 0) {
+			if (emote.getRoles() == null || emote.getRoles().size() == 0) {
 				res.add(emote);
 			}
 		}
