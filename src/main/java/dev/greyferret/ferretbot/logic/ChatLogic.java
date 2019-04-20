@@ -71,8 +71,12 @@ public class ChatLogic {
 			boolean foundCustomLogicCommand = false;
 			if (message.toLowerCase().startsWith("!иду") && botConfig.getStreamElementsIntegrationOn()) {
 				adventureProcessor.joinAdventure(event);
-			} else if (message.length() == 2) {
-				adventureProcessor.setAdventurerResponse(event);
+			} else if (message.length() == 2 || message.length() == 1) {
+				String keyword = message;
+				if (message.length() == 2) {
+					keyword = StringUtils.substring(message, 1, 2);
+				}
+				adventureProcessor.setAdventurerResponse(event, keyword);
 			}
 			if (botConfig.getQueueOn()) {
 				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);

@@ -43,6 +43,7 @@ public class AdventureProcessor implements Runnable {
 	private long cost = 10L;
 	private int step = 1;
 	private int stepsMax = 5;
+	private HashSet<Long> pastAdventures = new HashSet<>();
 
 	@Override
 	public void run() {
@@ -116,17 +117,14 @@ public class AdventureProcessor implements Runnable {
 				} else {
 					deadMen = proceedLosingOption(adventurer, deadMen);
 				}
-				if (adventurer.getLives() > 0) {
-					aliveAdventurers++;
-				}
-				adventurer.setSelectedKey("");
 			} else {
 				deadMen = proceedLosingOption(adventurer, deadMen);
-				if (adventurer.getLives() > 0) {
-					aliveAdventurers++;
-				}
-				adventurer.setSelectedKey("");
 			}
+
+			if (adventurer.getLives() > 0) {
+				aliveAdventurers++;
+			}
+			adventurer.setSelectedKey("");
 		}
 		if (step == stepsMax) {
 			if (aliveAdventurers > 0) {
@@ -145,9 +143,11 @@ public class AdventureProcessor implements Runnable {
 			if (aliveAdventurers > 0) {
 				String res = "";
 				if (StringUtils.isNotBlank(deadMen)) {
-					res = "К сожалению, " + deadMen + " не смогли преодолеть этап. ";
+					if (StringUtils.split(deadMen, ",").length <= 4) {
+						res = "К сожалению, " + deadMen + " не смогли преодолеть этап. ";
+					}
 				}
-				ferretChatClient.sendMessageMe(res + "А поход продолжают " + aliveAdventurers + " приключенцев.");
+				ferretChatClient.sendMessageMe(res + "Поход продолжают " + aliveAdventurers + " приключенцев.");
 
 			} else {
 				adventureStage = AdventureStage.WAITING;
@@ -163,7 +163,9 @@ public class AdventureProcessor implements Runnable {
 			}
 			deadMen = deadMen + adventurer.getViewer().getLoginVisual();
 		}
-		adventurer.setLives(adventurer.getLives() - 1);
+		if (adventurer.getLives() > 0) {
+			adventurer.setLives(adventurer.getLives() - 1);
+		}
 		return deadMen;
 	}
 
@@ -174,17 +176,15 @@ public class AdventureProcessor implements Runnable {
 		return Math.round(calced);
 	}
 
-	public void setAdventurerResponse(ChannelMessageEventWrapper event) {
+	public void setAdventurerResponse(ChannelMessageEventWrapper event, String keyword) {
 		for (Adventurer adventurer : adventurers) {
 			if (adventurer.getViewer().getLogin().equalsIgnoreCase(event.getLogin())) {
 				if (adventurer.getLives() <= 0) {
 					return;
 				}
-				String message = event.getMessage().toLowerCase();
-				message = message.replace("!", "");
-				String selectedKey = message.substring(0, 1);
-				if (responses.keySet().contains(selectedKey.toLowerCase())) {
-					adventurer.setSelectedKey(selectedKey);
+				keyword = keyword.toLowerCase();
+				if (responses.keySet().contains(keyword)) {
+					adventurer.setSelectedKey(keyword);
 					logger.info("For adventurer " + adventurer.getViewer().getLogin() + " set selected option for " + adventurer.getSelectedKey());
 				}
 				return;
@@ -198,7 +198,11 @@ public class AdventureProcessor implements Runnable {
 		} else if (step == stepsMax) {
 			adventure = adventureService.getFinalAdventure();
 		} else {
-			adventure = adventureService.getAdventure();
+			boolean added = false;
+			while (!added) {
+				adventure = adventureService.getAdventure();
+				added = pastAdventures.add(adventure.getId());
+			}
 		}
 		ferretChatClient.sendMessageMe(adventure.getText());
 		responses = adventureService.getAdventureResponses(adventure.getId());
@@ -245,6 +249,7 @@ public class AdventureProcessor implements Runnable {
 	}
 
 	private void startAdventure(ChannelMessageEventWrapper event) {
+		pastAdventures = new HashSet<>();
 		Random rand = new Random();
 		this.adventureStage = AdventureStage.LFG;
 		this.step = 1;
