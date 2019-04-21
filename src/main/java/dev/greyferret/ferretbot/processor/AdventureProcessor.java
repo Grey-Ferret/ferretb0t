@@ -59,13 +59,6 @@ public class AdventureProcessor implements Runnable {
 	}
 
 	private void proceedLogic() throws InterruptedException {
-		logger.info(adventureStage);
-		logger.info(step);
-		if (adventureStage != AdventureStage.READY && adventureStage != AdventureStage.WAITING) {
-			for (Adventurer adventurer : adventurers) {
-				logger.info(adventurer.toString());
-			}
-		}
 		if (adventureStage == AdventureStage.WAITING) {
 			logger.info("Waiting Stage, 14 mins waiting");
 			Thread.sleep(14 * 60 * 1000);
