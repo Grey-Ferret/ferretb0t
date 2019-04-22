@@ -3,6 +3,11 @@ package dev.greyferret.ferretbot.service;
 import dev.greyferret.ferretbot.entity.SubVoteGame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.EntityMode;
+import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.metamodel.spi.MetamodelImplementor;
+import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +18,9 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.EntityType;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class SubVoteGameService {
@@ -26,15 +33,20 @@ public class SubVoteGameService {
 
 	@Transactional
 	public boolean reset() {
-		List<SubVoteGame> subVoteGames = getAll();
-		for (SubVoteGame subVoteGame : subVoteGames) {
-			entityManager.remove(subVoteGame);
+		try {
+			List<SubVoteGame> subVoteGames = getAll();
+			for (SubVoteGame subVoteGame : subVoteGames) {
+				entityManager.remove(subVoteGame);
+			}
+			if (subVoteGames.size() > 0) {
+				entityManager.flush();
+				return true;
+			}
+			return false;
+		} catch (Exception ex) {
+			logger.error(ex);
+			return false;
 		}
-		if (subVoteGames.size() > 0) {
-			entityManager.flush();
-			return true;
-		}
-		return false;
 	}
 
 	@Transactional

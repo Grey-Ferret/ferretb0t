@@ -46,7 +46,11 @@ public class SubVoteProcessor implements Runnable {
 		if (event.getMember().getUser().getId().equals(discordConfig.getSubVoteAdminId())) {
 			if (message.equalsIgnoreCase("!reset")) {
 				boolean reseted = subVoteGameService.reset();
-				discordProcessor.subsChannel.sendMessage("Список игр успешно сброшен!").queue();
+				if(reseted) {
+					discordProcessor.subsChannel.sendMessage("Список игр успешно сброшен!").queue();
+				} else {
+					discordProcessor.subsChannel.sendMessage("Что-то пошло не так...").queue();
+				}
 			} else if (message.equalsIgnoreCase("!publish")) {
 				postSubVote(discordProcessor.subVoteChannel, true);
 			}
