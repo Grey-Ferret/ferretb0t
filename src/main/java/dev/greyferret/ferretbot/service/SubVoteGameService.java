@@ -40,9 +40,8 @@ public class SubVoteGameService {
 			}
 			if (subVoteGames.size() > 0) {
 				entityManager.flush();
-				return true;
 			}
-			return false;
+			return true;
 		} catch (Exception ex) {
 			logger.error(ex);
 			return false;
