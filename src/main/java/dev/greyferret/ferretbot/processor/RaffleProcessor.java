@@ -175,7 +175,7 @@ public class RaffleProcessor implements Runnable {
 			} catch (NumberFormatException ex) {
 				logger.error("There was an error while attempting to convert String to Integer", ex);
 			}
-			if (pointsToChange == null) {
+			if (pointsToChange != null) {
 				streamElementsAPIProcessor.updatePoints(viewer.getLoginVisual(), pointsToChange);
 			}
 		}
