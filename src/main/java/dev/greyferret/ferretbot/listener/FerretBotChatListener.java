@@ -129,8 +129,8 @@ public class FerretBotChatListener extends TwitchListener {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DAY_OF_MONTH, -2);
 				if (ageDate.after(c.getTime())) {
-					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
-					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
+//					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
+//					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
 				} else {
 					viewer.setApproved(true);
 					logger.info("Update incoming for approved status for Viewer " + viewer.getLoginVisual());
