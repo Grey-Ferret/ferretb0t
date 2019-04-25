@@ -45,6 +45,7 @@ public class Loots implements Serializable {
 		this.message = entry.getAttachments().getMessage();
 		this.id = entry.getId();
 		this.paid = false;
+		this.date = ZonedDateTime.now(SpringConfig.getZoneId()).toLocalDateTime();
 		String name = FerretBotUtils.parseLootsAuthor(entry.getFrom().getAccount().getName());
 		this.lootsName = name;
 	}
@@ -62,6 +63,7 @@ public class Loots implements Serializable {
 			LinkedTreeMap<String, Object> from = (LinkedTreeMap<String, Object>) runningLoots.get("from");
 			LinkedTreeMap<String, Object> account = (LinkedTreeMap<String, Object>) from.get("account");
 			this.lootsName = FerretBotUtils.parseLootsAuthor((String) account.get("name"));
+			this.date = ZonedDateTime.now(SpringConfig.getZoneId()).toLocalDateTime();
 			this.paid = false;
 		} catch (Exception e) {
 			throw new LootsRunningLootsParsingException(e);
@@ -85,8 +87,12 @@ public class Loots implements Serializable {
 				twitchName = viewerLootsMap.getViewer().getLogin();
 			}
 		}
-		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
-		return "Loots(" + this.id + ") " + dateTimeFormatter.format(date) + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
+		String dateFormatted = "";
+		if (date != null) {
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
+			dateFormatted = dateTimeFormatter.format(date);
+		}
+		return "Loots(" + this.id + ") " + dateFormatted + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
 	}
 
 	@Override
