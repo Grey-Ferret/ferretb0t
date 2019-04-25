@@ -5,6 +5,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -26,13 +27,13 @@ public class Viewer implements Serializable {
 	@Column(name = "true_points")
 	private Long pointsTrue;
 	@Column(name = "created")
-	private ZonedDateTime created;
+	private LocalDateTime created;
 	@Column(name = "updated")
-	private ZonedDateTime updated;
+	private LocalDateTime updated;
 	@Column(name = "age")
-	private ZonedDateTime age;
+	private LocalDateTime age;
 	@Column(name = "updated_visual")
-	private ZonedDateTime updatedVisual;
+	private LocalDateTime updatedVisual;
 	@Column(name = "sub", nullable = false)
 	@ColumnDefault("false")
 	private Boolean sub;
@@ -65,7 +66,7 @@ public class Viewer implements Serializable {
 		this.approved = false;
 		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
 		zdt.minusHours(hoursToUpdateVisual);
-		this.updatedVisual = zdt;
+		setUpdatedVisual(zdt);
 		this.suitableForRaffle = true;
 	}
 
@@ -108,31 +109,37 @@ public class Viewer implements Serializable {
 	}
 
 	public ZonedDateTime getCreated() {
-		return created;
+		if (this.created == null) {
+			return null;
+		}
+		return ZonedDateTime.of(this.created, SpringConfig.getZoneId());
 	}
 
 	public void setCreated(ZonedDateTime created) {
-		this.created = created;
+		this.created = created.toLocalDateTime();
 	}
 
 	public ZonedDateTime getUpdated() {
-		return updated;
+		if (this.updated == null) {
+			return null;
+		}
+		return ZonedDateTime.of(this.updated, SpringConfig.getZoneId());
 	}
 
 	public void setUpdated(ZonedDateTime updated) {
-		this.updated = updated;
+		this.updated = updated.toLocalDateTime();
 	}
 
 	@PostUpdate
 	private void postUpdate() {
-		this.updated = ZonedDateTime.now(SpringConfig.getZoneId());
+		setUpdated(ZonedDateTime.now(SpringConfig.getZoneId()));
 	}
 
 	@PostPersist
 	private void postPersist() {
 		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		this.created = zdt;
-		this.updated = zdt;
+		setCreated(zdt);
+		setUpdated(zdt);
 	}
 
 	public Boolean isSub() {
@@ -165,15 +172,18 @@ public class Viewer implements Serializable {
 
 	public void setLoginVisual(String loginVisual) {
 		this.loginVisual = loginVisual;
-		this.updatedVisual = ZonedDateTime.now(SpringConfig.getZoneId());
+		setUpdatedVisual(ZonedDateTime.now(SpringConfig.getZoneId()));
 	}
 
 	public ZonedDateTime getUpdatedVisual() {
-		return updatedVisual;
+		if (this.updatedVisual == null) {
+			return null;
+		}
+		return ZonedDateTime.of(this.updatedVisual, SpringConfig.getZoneId());
 	}
 
 	public void setUpdatedVisual(ZonedDateTime updatedVisual) {
-		this.updatedVisual = updatedVisual;
+		this.updatedVisual = updatedVisual.toLocalDateTime();
 	}
 
 	public boolean removePoints(Long points) {
@@ -194,11 +204,14 @@ public class Viewer implements Serializable {
 	}
 
 	public ZonedDateTime getAge() {
-		return age;
+		if (this.age == null) {
+			return null;
+		}
+		return ZonedDateTime.of(this.age, SpringConfig.getZoneId());
 	}
 
 	public void setAge(ZonedDateTime age) {
-		this.age = age;
+		this.age = age.toLocalDateTime();
 	}
 
 	@Override
@@ -221,6 +234,22 @@ public class Viewer implements Serializable {
 
 	public void setVip(Boolean vip) {
 		this.vip = vip;
+	}
+
+	public void setCreated(LocalDateTime created) {
+		this.created = created;
+	}
+
+	public void setUpdated(LocalDateTime updated) {
+		this.updated = updated;
+	}
+
+	public void setAge(LocalDateTime age) {
+		this.age = age;
+	}
+
+	public void setUpdatedVisual(LocalDateTime updatedVisual) {
+		this.updatedVisual = updatedVisual;
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -28,7 +29,7 @@ public class Loots implements Serializable {
 	@Id
 	private String id;
 	@Column(name = "date")
-	private ZonedDateTime date;
+	private LocalDateTime date;
 	@Column(name = "paid")
 	private Boolean paid;
 	@Column(name = "loots_name")
@@ -70,7 +71,7 @@ public class Loots implements Serializable {
 	@PostPersist
 	private void postPersist() {
 		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		this.date = zdt;
+		setDate(zdt);
 	}
 
 	@Override
@@ -121,11 +122,18 @@ public class Loots implements Serializable {
 	}
 
 	public ZonedDateTime getDate() {
-		return date;
+		if (this.date == null) {
+			return null;
+		}
+		return ZonedDateTime.of(this.date, SpringConfig.getZoneId());
+	}
+
+	public void setDate(LocalDateTime date) {
+		this.date = date;
 	}
 
 	public void setDate(ZonedDateTime date) {
-		this.date = date;
+		this.date = date.toLocalDateTime();
 	}
 
 	public Boolean getPaid() {
