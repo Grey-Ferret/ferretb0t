@@ -73,8 +73,7 @@ public class RaffleProcessor implements Runnable {
 				if (lastRaffle == null) {
 					rollRaffle();
 				} else {
-					ZonedDateTime lastTodayCal = lastRaffle.getDate();
-					lastTodayCal.plusMinutes(30);
+					ZonedDateTime lastTodayCal = lastRaffle.getDate().plusMinutes(30);
 
 					if (lastTodayCal.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
 						if (lastChannelStatus) {
@@ -91,8 +90,7 @@ public class RaffleProcessor implements Runnable {
 
 	private void createBlankRaffle() {
 		Raffle raffle = new Raffle();
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		zdt.minusMinutes(20);
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusMinutes(20);
 		raffle.setDate(zdt);
 		raffleService.put(raffle);
 	}

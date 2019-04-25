@@ -64,8 +64,7 @@ public class Viewer implements Serializable {
 		this.sub = false;
 		this.vip = false;
 		this.approved = false;
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		zdt.minusHours(hoursToUpdateVisual);
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusHours(hoursToUpdateVisual);
 		setUpdatedVisual(zdt);
 		this.suitableForRaffle = true;
 	}

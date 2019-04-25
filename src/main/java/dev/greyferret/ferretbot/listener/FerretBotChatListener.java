@@ -107,8 +107,7 @@ public class FerretBotChatListener extends TwitchListener {
 					viewerService.setVip(viewer, false);
 				boolean toUpdateVisual = false;
 				if (viewer.getUpdatedVisual() != null) {
-					ZonedDateTime zdt = viewer.getUpdatedVisual();
-					zdt.plusHours(Viewer.hoursToUpdateVisual);
+					ZonedDateTime zdt = viewer.getUpdatedVisual().plusHours(Viewer.hoursToUpdateVisual);
 					if (zdt.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
 						toUpdateVisual = true;
 					}
@@ -125,8 +124,7 @@ public class FerretBotChatListener extends TwitchListener {
 				ZonedDateTime ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
 				viewer.setAge(ageDate);
 				logger.info("Update incoming for account age for Viewer " + viewer.getLoginVisual());
-				ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-				zdt.minusDays(2);
+				ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusDays(2);
 				if (ageDate.isAfter(zdt)) {
 //					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
 //					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);

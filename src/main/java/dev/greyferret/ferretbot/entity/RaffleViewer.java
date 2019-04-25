@@ -41,8 +41,7 @@ public class RaffleViewer implements Serializable {
 		if (this.messageTimes.size() < amountOfTimes) {
 			return false;
 		}
-		ZonedDateTime suitablePeriod = ZonedDateTime.now(SpringConfig.getZoneId());
-		suitablePeriod.minusMinutes(30);
+		ZonedDateTime suitablePeriod = ZonedDateTime.now(SpringConfig.getZoneId()).minusMinutes(30);
 		boolean res = true;
 		for (ZonedDateTime zdt : messageTimes) {
 			if (zdt.isBefore(suitablePeriod)) {

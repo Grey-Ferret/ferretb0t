@@ -90,9 +90,8 @@ public class LootsService {
 		Root<Loots> root = criteria.from(Loots.class);
 		criteria.select(root);
 
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		zdt.minusMonths(3);
-		Predicate oldDate = builder.lessThan(root.get("date"), ZonedDateTime.now(SpringConfig.getZoneId()));
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusMonths(3);
+		Predicate oldDate = builder.lessThan(root.get("date"), zdt);
 		criteria.where(oldDate);
 
 		List<Loots> oldList = entityManager.createQuery(criteria).getResultList();

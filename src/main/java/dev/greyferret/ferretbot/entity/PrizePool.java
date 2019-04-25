@@ -13,7 +13,6 @@ import java.util.ArrayList;
 public class PrizePool {
 	@Column(name = "type", updatable = false, nullable = false)
 	@Id
-	@GeneratedValue
 	private int type;
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "prizeJson")
