@@ -2,6 +2,7 @@ package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.Prize;
 import dev.greyferret.ferretbot.entity.Raffle;
 import dev.greyferret.ferretbot.entity.RaffleViewer;
@@ -18,7 +19,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -72,11 +73,10 @@ public class RaffleProcessor implements Runnable {
 				if (lastRaffle == null) {
 					rollRaffle();
 				} else {
-					Calendar lastTodayCal = Calendar.getInstance();
-					lastTodayCal.setTime(lastRaffle.getDate());
-					lastTodayCal.add(Calendar.MINUTE, 30);
+					ZonedDateTime lastTodayCal = lastRaffle.getDate();
+					lastTodayCal.plusMinutes(30);
 
-					if (lastTodayCal.before(Calendar.getInstance())) {
+					if (lastTodayCal.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
 						if (lastChannelStatus) {
 							rollRaffle();
 						} else {
@@ -91,9 +91,9 @@ public class RaffleProcessor implements Runnable {
 
 	private void createBlankRaffle() {
 		Raffle raffle = new Raffle();
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.MINUTE, -20);
-		raffle.setDate(cal.getTime());
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+		zdt.minusMinutes(20);
+		raffle.setDate(zdt);
 		raffleService.put(raffle);
 	}
 
@@ -148,13 +148,13 @@ public class RaffleProcessor implements Runnable {
 			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + prize.getName() + "! Поздравляем! ";
 			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " выиграл " + prize.getName() + "! Поздравляем! ";
 		}
-		LocalDateTime ldt = LocalDateTime.now();
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
 		ferretChatClient.sendMessage(message);
 
-		String smileCode = "<a:PepePls:452100407779393536>";
 		if (!applicationConfig.isDebug()) {
-			discordProcessor.raffleChannel.sendMessage(smileCode + messageDiscord + smileCode + dateTimeFormatter.format(ldt)).queue();
+			String smileCode = "<a:PepePls:452100407779393536>";
+			discordProcessor.raffleChannel.sendMessage(smileCode + messageDiscord + smileCode + dateTimeFormatter.format(zdt)).queue();
 		}
 
 		if (message.contains(" IQ!")) {
@@ -192,7 +192,7 @@ public class RaffleProcessor implements Runnable {
 				raffleViewer = new RaffleViewer(login);
 			} else {
 				raffleViewer = viewers.get(login);
-				raffleViewer.addMessageTime(Calendar.getInstance());
+				raffleViewer.addMessageTime(ZonedDateTime.now(SpringConfig.getZoneId()));
 			}
 			viewers.put(login, raffleViewer);
 		}

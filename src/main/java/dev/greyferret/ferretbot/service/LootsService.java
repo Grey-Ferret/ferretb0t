@@ -1,5 +1,6 @@
 package dev.greyferret.ferretbot.service;
 
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.exception.TransactionRuntimeFerretBotException;
 import dev.greyferret.ferretbot.entity.Loots;
 import dev.greyferret.ferretbot.entity.Viewer;
@@ -17,6 +18,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -47,6 +49,7 @@ public class LootsService {
 		HashMap<String, ViewerLootsMap> mapOfMaps = new HashMap<>();
 
 		try {
+			boolean persisted = false;
 			for (Loots loots : lootsSet) {
 				if (loots.getViewerLootsMap() == null) {
 					String lootsName = loots.getLootsName();
@@ -63,13 +66,14 @@ public class LootsService {
 				Loots foundLoots = entityManager.find(Loots.class, loots.getId());
 				if (foundLoots == null) {
 					entityManager.persist(loots);
-					entityManager.flush();
+					persisted = true;
 					res.add(loots);
 					logger.info("New Loots found!");
 					logger.info(loots);
-
-					removeOldLoots();
 				}
+			}
+			if (persisted) {
+				entityManager.flush();
 			}
 		} catch (Exception e) {
 			logger.error(e);
@@ -86,9 +90,9 @@ public class LootsService {
 		Root<Loots> root = criteria.from(Loots.class);
 		criteria.select(root);
 
-		Calendar calendar = Calendar.getInstance();
-		calendar.add(Calendar.MONTH, -3);
-		Predicate oldDate = builder.lessThan(root.get("date"), calendar.getTime());
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+		zdt.minusMonths(3);
+		Predicate oldDate = builder.lessThan(root.get("date"), ZonedDateTime.now(SpringConfig.getZoneId()));
 		criteria.where(oldDate);
 
 		List<Loots> oldList = entityManager.createQuery(criteria).getResultList();

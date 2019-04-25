@@ -1,5 +1,6 @@
 package dev.greyferret.ferretbot.listener;
 
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
@@ -30,8 +31,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -105,12 +105,11 @@ public class FerretBotChatListener extends TwitchListener {
 					viewerService.setVip(viewer, true);
 				else
 					viewerService.setVip(viewer, false);
-				Calendar cal = Calendar.getInstance();
 				boolean toUpdateVisual = false;
 				if (viewer.getUpdatedVisual() != null) {
-					cal.setTime(viewer.getUpdatedVisual());
-					cal.add(Calendar.HOUR, Viewer.hoursToUpdateVisual);
-					if (cal.before(Calendar.getInstance())) {
+					ZonedDateTime zdt = viewer.getUpdatedVisual();
+					zdt.plusHours(Viewer.hoursToUpdateVisual);
+					if (zdt.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
 						toUpdateVisual = true;
 					}
 				} else {
@@ -123,12 +122,12 @@ public class FerretBotChatListener extends TwitchListener {
 				viewer = viewerService.createViewer(login);
 			}
 			if (viewer.getAge() == null) {
-				Date ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
+				ZonedDateTime ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
 				viewer.setAge(ageDate);
 				logger.info("Update incoming for account age for Viewer " + viewer.getLoginVisual());
-				Calendar c = Calendar.getInstance();
-				c.add(Calendar.DAY_OF_MONTH, -2);
-				if (ageDate.after(c.getTime())) {
+				ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+				zdt.minusDays(2);
+				if (ageDate.isAfter(zdt)) {
 //					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
 //					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
 				} else {

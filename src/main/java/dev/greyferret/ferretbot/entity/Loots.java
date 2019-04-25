@@ -1,15 +1,17 @@
 package dev.greyferret.ferretbot.entity;
 
 import com.google.gson.internal.LinkedTreeMap;
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.json.loots.Ok;
 import dev.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
-import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * Class for each "Loots", called Loots
@@ -26,7 +28,7 @@ public class Loots implements Serializable {
 	@Id
 	private String id;
 	@Column(name = "date")
-	private Date date;
+	private ZonedDateTime date;
 	@Column(name = "paid")
 	private Boolean paid;
 	@Column(name = "loots_name")
@@ -41,7 +43,6 @@ public class Loots implements Serializable {
 	public Loots(Ok entry) {
 		this.message = entry.getAttachments().getMessage();
 		this.id = entry.getId();
-		this.date = new Date();
 		this.paid = false;
 		String name = FerretBotUtils.parseLootsAuthor(entry.getFrom().getAccount().getName());
 		this.lootsName = name;
@@ -60,16 +61,21 @@ public class Loots implements Serializable {
 			LinkedTreeMap<String, Object> from = (LinkedTreeMap<String, Object>) runningLoots.get("from");
 			LinkedTreeMap<String, Object> account = (LinkedTreeMap<String, Object>) from.get("account");
 			this.lootsName = FerretBotUtils.parseLootsAuthor((String) account.get("name"));
-			this.date = new Date();
 			this.paid = false;
 		} catch (Exception e) {
 			throw new LootsRunningLootsParsingException(e);
 		}
 	}
 
+	@PostPersist
+	private void postPersist() {
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+		this.date = zdt;
+	}
+
 	@Override
 	public String toString() {
-		Date dateLatest = this.date;
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
 		String lootsName = this.lootsName;
 		String twitchName = this.lootsName;
 		if (viewerLootsMap != null) {
@@ -78,7 +84,8 @@ public class Loots implements Serializable {
 				twitchName = viewerLootsMap.getViewer().getLogin();
 			}
 		}
-		return "Loots(" + this.id + ") " + SpringConfig.getDateFormat().format(dateLatest) + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
+		return "Loots(" + this.id + ") " + dateTimeFormatter.format(date) + ": L:" + lootsName + " / T:" + twitchName + ": \"" + this.message + "\"";
 	}
 
 	@Override
@@ -113,11 +120,11 @@ public class Loots implements Serializable {
 		this.id = id;
 	}
 
-	public Date getDate() {
+	public ZonedDateTime getDate() {
 		return date;
 	}
 
-	public void setDate(Date date) {
+	public void setDate(ZonedDateTime date) {
 		this.date = date;
 	}
 

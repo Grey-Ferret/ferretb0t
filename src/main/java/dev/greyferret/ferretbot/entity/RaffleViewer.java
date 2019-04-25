@@ -1,14 +1,16 @@
 package dev.greyferret.ferretbot.entity;
 
+import dev.greyferret.ferretbot.config.SpringConfig;
+
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class RaffleViewer implements Serializable {
 	private String login;
-	private Queue<Calendar> messageTimes;
+	private Queue<ZonedDateTime> messageTimes;
 	private final int amountOfTimes = 2;
 
 	public RaffleViewer(String login) {
@@ -24,12 +26,12 @@ public class RaffleViewer implements Serializable {
 		this.login = login;
 	}
 
-	public ArrayList<Calendar> getMessageTimes() {
+	public ArrayList<ZonedDateTime> getMessageTimes() {
 		return new ArrayList<>(messageTimes);
 	}
 
-	public void addMessageTime(Calendar calendar) {
-		this.messageTimes.add(calendar);
+	public void addMessageTime(ZonedDateTime zdt) {
+		this.messageTimes.add(zdt);
 		if (this.messageTimes.size() > amountOfTimes) {
 			this.messageTimes.poll();
 		}
@@ -39,11 +41,11 @@ public class RaffleViewer implements Serializable {
 		if (this.messageTimes.size() < amountOfTimes) {
 			return false;
 		}
-		Calendar suitablePeriod = Calendar.getInstance();
-		suitablePeriod.add(Calendar.MINUTE, -30);
+		ZonedDateTime suitablePeriod = ZonedDateTime.now(SpringConfig.getZoneId());
+		suitablePeriod.minusMinutes(30);
 		boolean res = true;
-		for (Calendar c : messageTimes) {
-			if (c.before(suitablePeriod)) {
+		for (ZonedDateTime zdt : messageTimes) {
+			if (zdt.isBefore(suitablePeriod)) {
 				res = false;
 			}
 		}

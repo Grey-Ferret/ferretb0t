@@ -3,6 +3,7 @@ package dev.greyferret.ferretbot.processor;
 import com.google.gson.Gson;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.Messages;
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.json.twitch.games.TwitchGames;
 import dev.greyferret.ferretbot.entity.json.twitch.streams.Datum;
 import dev.greyferret.ferretbot.entity.json.twitch.streams.TwitchStreamsJson;
@@ -18,8 +19,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +129,7 @@ public class ApiProcessor implements Runnable {
 		return twitchGames;
 	}
 
-	public Date checkForFreshAcc(String login) {
+	public ZonedDateTime checkForFreshAcc(String login) {
 		logger.info("Checking for fresh acc of " + login);
 		Connection.Response response;
 		try {
@@ -142,9 +144,10 @@ public class ApiProcessor implements Runnable {
 			Gson gson = new Gson();
 			UserV5Gson twitchUser = gson.fromJson(body, UserV5Gson.class);
 			logger.info("Date:" + twitchUser.getCreatedAt());
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-			Date date = sdf.parse(twitchUser.getCreatedAt());
-			return date;
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			LocalDateTime ld = LocalDateTime.parse(twitchUser.getCreatedAt(), dtf);
+			ZonedDateTime zdt = ld.atZone(SpringConfig.getZoneId());
+			return zdt;
 		} catch (Exception ex) {
 			logger.error("Error while checking for Fresh acc: " + ex);
 			return null;

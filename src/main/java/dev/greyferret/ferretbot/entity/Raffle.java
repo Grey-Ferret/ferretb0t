@@ -1,8 +1,10 @@
 package dev.greyferret.ferretbot.entity;
 
+import dev.greyferret.ferretbot.config.SpringConfig;
+
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "raffle")
@@ -17,7 +19,7 @@ public class Raffle implements Serializable {
 	@Column(name = "prize")
 	private String prize;
 	@Column(name = "date")
-	private Date date;
+	private ZonedDateTime date;
 
 	public Raffle() {
 
@@ -26,7 +28,7 @@ public class Raffle implements Serializable {
 	public Raffle(Prize prize, Viewer viewer) {
 		this.prize = prize.getName();
 		this.winner = viewer;
-		this.date = new Date();
+		this.date = ZonedDateTime.now(SpringConfig.getZoneId());
 	}
 
 	public int getId() {
@@ -53,11 +55,11 @@ public class Raffle implements Serializable {
 		this.prize = prize.getName();
 	}
 
-	public Date getDate() {
+	public ZonedDateTime getDate() {
 		return date;
 	}
 
-	public void setDate(Date date) {
+	public void setDate(ZonedDateTime date) {
 		this.date = date;
 	}
 }

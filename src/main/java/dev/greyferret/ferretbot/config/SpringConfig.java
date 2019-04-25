@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.Properties;
 
 /**
@@ -36,10 +36,10 @@ public class SpringConfig {
 	@Autowired
 	private DbConfig dbConfig;
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
+	private static final ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
-	public static SimpleDateFormat getDateFormat() {
-		return dateFormat;
+	public static ZoneId getZoneId() {
+		return zoneId;
 	}
 
 	@Bean

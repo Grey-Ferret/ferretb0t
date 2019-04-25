@@ -1,11 +1,11 @@
 package dev.greyferret.ferretbot.entity;
 
+import dev.greyferret.ferretbot.config.SpringConfig;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -26,13 +26,13 @@ public class Viewer implements Serializable {
 	@Column(name = "true_points")
 	private Long pointsTrue;
 	@Column(name = "created")
-	private Date created;
+	private ZonedDateTime created;
 	@Column(name = "updated")
-	private Date updated;
+	private ZonedDateTime updated;
 	@Column(name = "age")
-	private Date age;
+	private ZonedDateTime age;
 	@Column(name = "updated_visual")
-	private Date updatedVisual;
+	private ZonedDateTime updatedVisual;
 	@Column(name = "sub", nullable = false)
 	@ColumnDefault("false")
 	private Boolean sub;
@@ -63,9 +63,9 @@ public class Viewer implements Serializable {
 		this.sub = false;
 		this.vip = false;
 		this.approved = false;
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.HOUR, -1 * hoursToUpdateVisual);
-		this.updatedVisual = cal.getTime();
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+		zdt.minusHours(hoursToUpdateVisual);
+		this.updatedVisual = zdt;
 		this.suitableForRaffle = true;
 	}
 
@@ -107,32 +107,32 @@ public class Viewer implements Serializable {
 		this.pointsTrue = pointsTrue;
 	}
 
-	public Date getCreated() {
+	public ZonedDateTime getCreated() {
 		return created;
 	}
 
-	public void setCreated(Date created) {
+	public void setCreated(ZonedDateTime created) {
 		this.created = created;
 	}
 
-	public Date getUpdated() {
+	public ZonedDateTime getUpdated() {
 		return updated;
 	}
 
-	public void setUpdated(Date updated) {
+	public void setUpdated(ZonedDateTime updated) {
 		this.updated = updated;
 	}
 
 	@PostUpdate
 	private void postUpdate() {
-		this.updated = new Date();
+		this.updated = ZonedDateTime.now(SpringConfig.getZoneId());
 	}
 
 	@PostPersist
 	private void postPersist() {
-		Date date = new Date();
-		this.created = date;
-		this.updated = date;
+		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+		this.created = zdt;
+		this.updated = zdt;
 	}
 
 	public Boolean isSub() {
@@ -165,14 +165,14 @@ public class Viewer implements Serializable {
 
 	public void setLoginVisual(String loginVisual) {
 		this.loginVisual = loginVisual;
-		this.updatedVisual = new Date();
+		this.updatedVisual = ZonedDateTime.now(SpringConfig.getZoneId());
 	}
 
-	public Date getUpdatedVisual() {
+	public ZonedDateTime getUpdatedVisual() {
 		return updatedVisual;
 	}
 
-	public void setUpdatedVisual(Date updatedVisual) {
+	public void setUpdatedVisual(ZonedDateTime updatedVisual) {
 		this.updatedVisual = updatedVisual;
 	}
 
@@ -193,11 +193,11 @@ public class Viewer implements Serializable {
 		this.approved = approved;
 	}
 
-	public Date getAge() {
+	public ZonedDateTime getAge() {
 		return age;
 	}
 
-	public void setAge(Date age) {
+	public void setAge(ZonedDateTime age) {
 		this.age = age;
 	}
 
