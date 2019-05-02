@@ -163,8 +163,14 @@ public class AdventureProcessor implements Runnable {
 	}
 
 	private int calcPrize(int aliveAdventurers) {
-		long l = ThreadLocalRandom.current().nextLong((long) 0.5, 2L);
-		long calced = cost * adventurers.size() * stepsMax * l / aliveAdventurers / 2;
+		double l = ThreadLocalRandom.current().nextDouble(0.5, 3);
+		logger.info("Random koef " + l);
+		logger.info("Cost " + cost);
+		logger.info("adventurers.size " + adventurers.size());
+		logger.info("stepsMax " + stepsMax);
+		logger.info("aliveAdventurers " + aliveAdventurers);
+		Double calcedD = cost * adventurers.size() * stepsMax * l / aliveAdventurers / 2;
+		long calced = Math.round(calcedD);
 		logger.info(calced);
 		return Math.round(calced);
 	}
