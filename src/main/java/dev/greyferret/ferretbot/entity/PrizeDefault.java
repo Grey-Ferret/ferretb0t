@@ -25,7 +25,7 @@ public class PrizeDefault {
 		prizes.add(new Prize("Случайная пробирка", 8, type));
 		prizes.add(new Prize("Случайная пробирка (с возможностью реролла)", 4, type));
 		prizes.add(new Prize("Первый Spec-час", 2, type));
-		prizes.add(new Prize("Заказной стрим на 2 часа", 1, type));
+		prizes.add(new Prize("Научный стрим на 2 часа", 1, type));
 		prizePool = new PrizePool(type, prizes, 0.233);
 		res.put(type, prizePool);
 
