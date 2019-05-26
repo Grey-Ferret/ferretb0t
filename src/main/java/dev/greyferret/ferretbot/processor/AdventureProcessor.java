@@ -252,7 +252,7 @@ public class AdventureProcessor implements Runnable {
 		Random rand = new Random();
 		this.adventureStage = AdventureStage.LFG;
 		this.step = 1;
-		//		this.cost = rand.nextInt(90) + 10L;
+		this.cost = rand.nextInt(90) + 10L;
 		event.sendMessageMe(event.getLoginVisual() + " собирает в поход! Для того чтобы принять участие в походе, пишите в чат !иду - стоимость экипировки для похода: " + this.cost + " IQ.");
 		this.adventurers = new HashSet<>();
 		this.responses = new HashMap<>();
