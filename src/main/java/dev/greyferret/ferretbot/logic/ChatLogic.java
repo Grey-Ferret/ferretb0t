@@ -11,9 +11,6 @@ import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
-import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.requests.RestAction;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +39,8 @@ public class ChatLogic {
 	private ChatConfig chatConfig;
 	@Autowired
 	private AdventureProcessor adventureProcessor;
+	@Autowired
+	private MiscLogic miscLogic;
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
@@ -103,6 +102,7 @@ public class ChatLogic {
 				CommandService commandService = context.getBean(CommandService.class);
 				commandService.proceedTextCommand(split[0].toLowerCase(), event);
 			}
+			miscLogic.proceed(event, message);
 		}
 	}
 
@@ -193,6 +193,7 @@ public class ChatLogic {
 					}
 				}
 			}
+			miscLogic.proceedAdmin(event, message);
 		}
 	}
 
