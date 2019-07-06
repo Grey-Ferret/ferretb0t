@@ -101,7 +101,6 @@ public class SubVoteProcessor implements Runnable {
 			logger.info(subGames.toString());
 			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
 			logger.info("Found " + publicEmotes.size() + " emotes");
-			logger.info(publicEmotes.toString());
 			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
 			logger.info("Formed subVoteEntity.");
 			logger.info(subVoteEntity);
