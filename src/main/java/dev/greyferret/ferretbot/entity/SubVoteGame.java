@@ -53,4 +53,13 @@ public class SubVoteGame {
 	public void setId(String id) {
 		this.id = id;
 	}
+
+	@Override
+	public String toString() {
+		return "SubVoteGame{" +
+				"id='" + id + '\'' +
+				", name='" + name + '\'' +
+				", game='" + game + '\'' +
+				'}';
+	}
 }

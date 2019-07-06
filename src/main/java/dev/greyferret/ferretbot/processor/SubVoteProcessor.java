@@ -1,5 +1,6 @@
 package dev.greyferret.ferretbot.processor;
 
+import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.SubVoteEntity;
 import dev.greyferret.ferretbot.entity.SubVoteGame;
@@ -26,6 +27,8 @@ import java.util.List;
 public class SubVoteProcessor implements Runnable {
 	private static final Logger logger = LogManager.getLogger(SubVoteProcessor.class);
 
+	@Autowired
+	private ApplicationConfig applicationConfig;
 	@Autowired
 	private DiscordConfig discordConfig;
 	@Autowired
@@ -93,7 +96,15 @@ public class SubVoteProcessor implements Runnable {
 
 	private void postSubVote(TextChannel channel, boolean withEmotes) {
 		try {
-			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(subVoteGameService.getAll(), discordProcessor.getPublicEmotes(), withEmotes);
+			List<SubVoteGame> subGames = subVoteGameService.getAll();
+			logger.info("Found " + subGames.size() + " SubGames");
+			logger.info(subGames.toString());
+			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
+			logger.info("Found " + publicEmotes.size() + " emotes");
+			logger.info(publicEmotes.toString());
+			SubVoteEntity subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
+			logger.info("Formed subVoteEntity.");
+			logger.info(subVoteEntity);
 			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
 				channel.sendMessage("Нет предложенных игр...").queue();
 			} else {

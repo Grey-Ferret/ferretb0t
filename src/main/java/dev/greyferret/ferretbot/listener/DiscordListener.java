@@ -36,7 +36,7 @@ public class DiscordListener extends ListenerAdapter {
 			}
 		}
 
-		if (botConfig.getSubVoteOn() && event.getChannel() == discordProcessor.subsChannel) {
+		if (botConfig.getSubVoteOn() && event.getChannel() == discordProcessor.testChannel) {
 			subVoteProcessor.processSubVoteMessage(event);
 		}
 	}

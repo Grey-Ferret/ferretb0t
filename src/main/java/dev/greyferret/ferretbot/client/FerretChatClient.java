@@ -2,6 +2,7 @@ package dev.greyferret.ferretbot.client;
 
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
+import dev.greyferret.ferretbot.config.Messages;
 import dev.greyferret.ferretbot.listener.FerretBotChatListener;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,8 @@ import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.defaults.DefaultBuilder;
 import org.kitteh.irc.client.library.defaults.DefaultClient;
 import org.kitteh.irc.client.library.element.Channel;
+import org.kitteh.irc.client.library.feature.twitch.TwitchSupport;
+import org.kitteh.irc.client.library.util.HostWithPort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -45,11 +48,15 @@ public class FerretChatClient extends DefaultClient {
 	@PostConstruct
 	private void postConstruct() {
 		DefaultBuilder defaultBuilder = (DefaultBuilder) Client.builder();
-		client = (DefaultClient) defaultBuilder.nick(chatConfig.getLogin())
-				.serverPassword(chatConfig.getPassword())
-				.serverHost("irc.twitch.tv")
-				.name("FerretBotClient")
+		client = (DefaultClient) defaultBuilder
+				.server()
+				.host("irc.twitch.tv")
+				.port(443)
+				.password(chatConfig.getPassword())
+				.then()
+				.nick(chatConfig.getLogin())
 				.build();
+		TwitchSupport.addSupport(client);
 		FerretBotChatListener ferretBotChatListener = context.getBean(FerretBotChatListener.class, client);
 		client.addChannel(chatConfig.getChannelWithHashTag());
 		client.getEventManager().registerEventListener(ferretBotChatListener);
@@ -57,7 +64,7 @@ public class FerretChatClient extends DefaultClient {
 
 	public void connect() {
 		client.connect();
-//		client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
+		client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
 	}
 
 	public void sendMessage(@Nonnull String text) {

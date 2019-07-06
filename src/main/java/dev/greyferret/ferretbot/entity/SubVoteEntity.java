@@ -28,4 +28,12 @@ public class SubVoteEntity {
 	public void setEmotes(ArrayList<Emote> emotes) {
 		this.emotes = emotes;
 	}
+
+	@Override
+	public String toString() {
+		return "SubVoteEntity{" +
+				"message='" + message + '\'' +
+				", emotes=" + emotes +
+				'}';
+	}
 }
