@@ -166,7 +166,7 @@ public class FerretBotUtils {
 				String name = subVoteGame.getName();
 				Random rand = new Random();
 				boolean added = false;
-				int idE = 0;
+				int idE = -1;
 				while (!added) {
 					idE = rand.nextInt(emotes.size());
 					Emote emote = emotes.get(idE);
@@ -174,7 +174,7 @@ public class FerretBotUtils {
 						added = selectedEmotesId.add(idE);
 					}
 				}
-				if (idE != 0) {
+				if (idE >= 0) {
 					Emote emote = emotes.get(idE);
 					selectedEmotes.add(emote);
 					if (StringUtils.isNoneBlank(res)) {
