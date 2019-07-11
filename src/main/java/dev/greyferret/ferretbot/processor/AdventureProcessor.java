@@ -123,11 +123,14 @@ public class AdventureProcessor implements Runnable {
 			if (aliveAdventurers > 0) {
 				int prize = calcPrize(aliveAdventurers);
 				ferretChatClient.sendMessageMe("У нас есть победители, что одолели лабу! Победителям начисляется: " + prize + " iq.");
+				HashSet<Viewer> adventurerViewers = new HashSet<>();
 				for (Adventurer adventurer : adventurers) {
 					if (adventurer.getLives() > 0) {
 						streamElementsAPIProcessor.updatePoints(adventurer.getViewer().getLogin(), Long.valueOf(prize));
+						adventurerViewers.add(adventurer.getViewer());
 					}
 				}
+				ferretChatClient.sendMessageMe("Победители: " + FerretBotUtils.buildMergedViewersNicknames(adventurerViewers));
 			} else {
 				ferretChatClient.sendMessageMe("К сожалению, поход трагически закончился разгромом в самом последнем этапе...");
 			}
