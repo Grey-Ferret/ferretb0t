@@ -39,4 +39,13 @@ public class UserNoticeEventWrapper {
 		if (!isDebug)
 			chatClient.sendMessage(text);
 	}
+
+	@Override
+	public String toString() {
+		return "UserNoticeEventWrapper{" +
+				"event=" + event +
+				", isDebug=" + isDebug +
+				", chatClient=" + chatClient +
+				'}';
+	}
 }

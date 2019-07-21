@@ -193,10 +193,10 @@ public class FerretBotChatListener extends TwitchListener {
 		if (botConfig.getSubAlertOn()) {
 			if (StringUtils.isNotBlank(msgId)) {
 				if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
+					logger.info("Sub Alert triggered for " + msgId);
+					logger.info(wrapper);
 					chatLogic.proceedSubAlert(wrapper);
-				}
-
-				if (msgId.equalsIgnoreCase("subgift")) {
+				} else if (msgId.equalsIgnoreCase("subgift")) {
 					chatLogic.proceedSubAlert(wrapper, true);
 				}
 			}
