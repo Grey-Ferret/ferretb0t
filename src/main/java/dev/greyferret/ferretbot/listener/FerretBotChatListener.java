@@ -197,6 +197,8 @@ public class FerretBotChatListener extends TwitchListener {
 					logger.info(wrapper);
 					chatLogic.proceedSubAlert(wrapper);
 				} else if (msgId.equalsIgnoreCase("subgift")) {
+					logger.info("Sub Gift Alert triggered for " + msgId);
+					logger.info(wrapper);
 					chatLogic.proceedSubAlert(wrapper, true);
 				}
 			}
