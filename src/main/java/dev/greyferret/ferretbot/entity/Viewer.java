@@ -41,8 +41,10 @@ public class Viewer implements Serializable {
 	@ColumnDefault("false")
 	private Boolean vip;
 	@Column(name = "sub_cumulative")
+	@ColumnDefault("0")
 	private int subCumulative;
 	@Column(name = "sub_streak")
+	@ColumnDefault("0")
 	private int subStreak;
 	@Column(name = "suitable_for_raffle", nullable = false)
 	@ColumnDefault("true")
