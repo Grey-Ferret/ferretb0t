@@ -7,9 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.defaults.element.DefaultUser;
 import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.MessageTag;
-import org.kitteh.irc.client.library.element.ServerMessage;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
-import org.kitteh.irc.client.library.feature.MessageTagManager;
 
 import java.util.Optional;
 
@@ -86,17 +84,16 @@ public class ChannelMessageEventWrapper {
 
 
 	public String getTag(String tag) {
-		ServerMessage message = event.getServerMessage();
-		Optional<MessageTag> messageTagOptional = message.getTag(tag);
-		if (messageTagOptional.isPresent()) {
-			MessageTagManager.DefaultMessageTag messageTag = (MessageTagManager.DefaultMessageTag) messageTagOptional.get();
-			Optional<String> value = messageTag.getValue();
-			if (value.isPresent())
-				return value.get();
-			else
-				return "";
+		Optional<MessageTag> _tag = this.event.getTag(tag);
+		if (!_tag.isPresent()) {
+			return "";
 		}
-		return "";
+		MessageTag messageTag = _tag.get();
+		Optional<String> value = messageTag.getValue();
+		if (!value.isPresent()) {
+			return "";
+		}
+		return value.get();
 	}
 
 	public String getMessage() {

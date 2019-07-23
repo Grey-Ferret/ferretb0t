@@ -37,11 +37,11 @@ public class Viewer implements Serializable {
 	@Column(name = "sub", nullable = false)
 	@ColumnDefault("false")
 	private Boolean sub;
-	@Column(name = "updated_sub")
-	private LocalDateTime updatedSub;
 	@Column(name = "vip", nullable = false)
 	@ColumnDefault("false")
 	private Boolean vip;
+	@Column(name = "sub_cumulative")
+	private int subCumulative;
 	@Column(name = "sub_streak")
 	private int subStreak;
 	@Column(name = "suitable_for_raffle", nullable = false)
@@ -253,12 +253,12 @@ public class Viewer implements Serializable {
 		this.updatedVisual = updatedVisual;
 	}
 
-	public LocalDateTime getUpdatedSub() {
-		return updatedSub;
+	public int getSubCumulative() {
+		return subCumulative;
 	}
 
-	public void setUpdatedSub(LocalDateTime updatedSub) {
-		this.updatedSub = updatedSub;
+	public void setSubCumulative(int subCumulative) {
+		this.subCumulative = subCumulative;
 	}
 
 	@Override
@@ -274,6 +274,7 @@ public class Viewer implements Serializable {
 				", updatedVisual=" + updatedVisual +
 				", sub=" + sub +
 				", vip=" + vip +
+				", subCumulative=" + subCumulative +
 				", subStreak=" + subStreak +
 				", suitableForRaffle=" + suitableForRaffle +
 				", approved=" + approved +

@@ -21,12 +21,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @EnableConfigurationProperties({LootsConfig.class, BotConfig.class})
@@ -50,6 +46,7 @@ public class ChatLogic {
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
+	private HashMap<String, ZonedDateTime> recentSubsTimes = new HashMap<>();
 
 	@PostConstruct
 	private void postConstruct() {
@@ -280,29 +277,17 @@ public class ChatLogic {
 				points = chatConfig.getSubPlan().getTwentyFive();
 			}
 			String login = wrapper.getTag("login");
-			Viewer viewer = viewerService.getViewerByName(login);
-			LocalDateTime updatedSubTime = viewer.getUpdatedSub();
-			ZonedDateTime currentZonedTime = ZonedDateTime.now();
-			if (updatedSubTime == null) {
-				logger.info("Updated Sub Time for " + login + " was null.");
-			} else {
-				ZonedDateTime updatedSubZonedTime = ZonedDateTime.of(updatedSubTime, SpringConfig.getZoneId());
-				if (updatedSubZonedTime.plusDays(1).isAfter(currentZonedTime)) {
-					logger.info("Updated Sub Time for " + login + " was less than one day away. " + updatedSubZonedTime.toString());
-					return;
-				}
-			}
-			viewer.setUpdatedSub(currentZonedTime.toLocalDateTime());
-			viewerService.updateViewer(viewer);
-			logger.info("Updated Sub Time for " + viewer.getLogin() + " was set to " + currentZonedTime.toLocalDateTime().toString());
-
 			String loginForThanks;
 			if (isGift) {
 				loginForThanks = wrapper.getTag("msg-param-recipient-display-name");
 			} else {
 				loginForThanks = login;
 			}
-			viewerService.addPoints(viewer.getLogin(), points);
+			clearOldRecentSubsTimes();
+			if (!isNewSubMessage(login, loginForThanks)) {
+				return;
+			}
+			viewerService.addPoints(login, points);
 			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
 				String msgParamMonth = wrapper.getTag("msg-param-months");
 				try {
@@ -319,6 +304,29 @@ public class ChatLogic {
 			}
 			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
+	}
+
+	private void clearOldRecentSubsTimes() {
+		HashMap<String, ZonedDateTime> newRecentSubsTimes = new HashMap<>();
+		recentSubsTimes.keySet().forEach(key -> {
+			if (recentSubsTimes.containsKey(key) && recentSubsTimes.get(key).plusDays(1).isAfter(ZonedDateTime.now(SpringConfig.getZoneId()))) {
+				newRecentSubsTimes.put(key, recentSubsTimes.get(key));
+			}
+		});
+		recentSubsTimes = newRecentSubsTimes;
+	}
+
+	private boolean isNewSubMessage(String login, String loginForThanks) {
+		String summedNickName = login.toLowerCase() + loginForThanks.toLowerCase();
+		ZonedDateTime currentTime = ZonedDateTime.now(SpringConfig.getZoneId());
+		if (recentSubsTimes.containsKey(summedNickName)) {
+			ZonedDateTime oldTime = recentSubsTimes.get(summedNickName);
+			if (currentTime.minusMinutes(1).isBefore(oldTime)) {
+				return false;
+			}
+		}
+		recentSubsTimes.put(summedNickName, currentTime);
+		return true;
 	}
 
 	protected void alias(ChannelMessageEventWrapper event, String message) {
