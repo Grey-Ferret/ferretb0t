@@ -289,14 +289,23 @@ public class ChatLogic {
 			}
 			viewerService.addPoints(login, points);
 			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
-				String msgParamMonth = wrapper.getTag("msg-param-months");
+				String _subStreak = wrapper.getTag("msg-param-streak-months");
+				String _subCumulative = wrapper.getTag("msg-param-cumulative-months");
 				try {
-					Integer subStreak = Integer.valueOf(msgParamMonth);
-					if (subStreak != null) {
-						viewerService.setSubStreak(login, subStreak);
+					Integer subStreak = Integer.valueOf(_subStreak);
+					Integer subCumulative = Integer.valueOf(_subCumulative);
+					if (subStreak != null && subCumulative != null) {
+						Viewer viewer = viewerService.getViewerByName(login);
+						if (subStreak != null) {
+							viewer.setSubStreak(subStreak);
+						}
+						if (subCumulative != null) {
+							viewer.setSubCumulative(subCumulative);
+						}
+						viewerService.updateViewer(viewer);
 					}
 				} catch (NumberFormatException ex) {
-					logger.warn("Could not parse sub streak to Integer. Value: " + msgParamMonth, ex);
+					logger.warn("Could not parse sub streak/cumulative to Integer. Value: " + _subStreak + " or " + _subCumulative, ex);
 				}
 			}
 			if (!login.equalsIgnoreCase("ananonymousgifter")) {

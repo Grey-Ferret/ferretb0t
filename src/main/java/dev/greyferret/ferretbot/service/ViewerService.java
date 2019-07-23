@@ -147,17 +147,6 @@ public class ViewerService {
 	}
 
 	@Transactional
-	public void setSubStreak(String login, Integer subStreak) {
-		Viewer viewer = getViewerByName(login);
-		if (viewer != null) {
-			viewer.setSubStreak(subStreak);
-			logger.info("Updated sub streak for viewer " + viewer.getLoginVisual() + ", value: " + subStreak);
-			entityManager.merge(viewer);
-			entityManager.flush();
-		}
-	}
-
-	@Transactional
 	public void updateApproved(Viewer viewer, boolean approved) {
 		logger.info("Viewer " + viewer.getLoginVisual() + " set as approved");
 		viewer.setApproved(approved);

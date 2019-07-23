@@ -63,6 +63,7 @@ public class Viewer implements Serializable {
 		this.points = 0L;
 		this.pointsTrue = 0l;
 		this.subStreak = 0;
+		this.subCumulative = 0;
 		this.sub = false;
 		this.vip = false;
 		this.approved = false;
