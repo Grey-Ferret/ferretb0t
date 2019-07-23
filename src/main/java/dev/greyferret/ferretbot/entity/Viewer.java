@@ -37,6 +37,8 @@ public class Viewer implements Serializable {
 	@Column(name = "sub", nullable = false)
 	@ColumnDefault("false")
 	private Boolean sub;
+	@Column(name = "updated_sub")
+	private LocalDateTime updatedSub;
 	@Column(name = "vip", nullable = false)
 	@ColumnDefault("false")
 	private Boolean vip;
@@ -249,6 +251,14 @@ public class Viewer implements Serializable {
 
 	public void setUpdatedVisual(LocalDateTime updatedVisual) {
 		this.updatedVisual = updatedVisual;
+	}
+
+	public LocalDateTime getUpdatedSub() {
+		return updatedSub;
+	}
+
+	public void setUpdatedSub(LocalDateTime updatedSub) {
+		this.updatedSub = updatedSub;
 	}
 
 	@Override

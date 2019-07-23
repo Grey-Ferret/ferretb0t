@@ -3,14 +3,15 @@ package dev.greyferret.ferretbot.logic;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.LootsConfig;
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.CommandService;
 import dev.greyferret.ferretbot.service.ViewerLootsMapService;
 import dev.greyferret.ferretbot.service.ViewerService;
+import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
-import dev.greyferret.ferretbot.util.FerretBotUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +21,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 @EnableConfigurationProperties({LootsConfig.class, BotConfig.class})
@@ -260,7 +266,7 @@ public class ChatLogic {
 		this.proceedSubAlert(wrapper, false);
 	}
 
-	public void proceedSubAlert(UserNoticeEventWrapper wrapper, boolean isGift) {
+	public synchronized void proceedSubAlert(UserNoticeEventWrapper wrapper, boolean isGift) {
 		String subPlan = wrapper.getTag("msg-param-sub-plan");
 		if (StringUtils.isNotBlank(subPlan)) {
 			Long points = null;
@@ -274,13 +280,29 @@ public class ChatLogic {
 				points = chatConfig.getSubPlan().getTwentyFive();
 			}
 			String login = wrapper.getTag("login");
+			Viewer viewer = viewerService.getViewerByName(login);
+			LocalDateTime updatedSubTime = viewer.getUpdatedSub();
+			ZonedDateTime currentZonedTime = ZonedDateTime.now();
+			if (updatedSubTime == null) {
+				logger.info("Updated Sub Time for " + login + " was null.");
+			} else {
+				ZonedDateTime updatedSubZonedTime = ZonedDateTime.of(updatedSubTime, SpringConfig.getZoneId());
+				if (updatedSubZonedTime.plusDays(1).isAfter(currentZonedTime)) {
+					logger.info("Updated Sub Time for " + login + " was less than one day away. " + updatedSubZonedTime.toString());
+					return;
+				}
+			}
+			viewer.setUpdatedSub(currentZonedTime.toLocalDateTime());
+			viewerService.updateViewer(viewer);
+			logger.info("Updated Sub Time for " + viewer.getLogin() + " was set to " + currentZonedTime.toLocalDateTime().toString());
+
 			String loginForThanks;
 			if (isGift) {
 				loginForThanks = wrapper.getTag("msg-param-recipient-display-name");
 			} else {
 				loginForThanks = login;
 			}
-			viewerService.addPoints(login, points);
+			viewerService.addPoints(viewer.getLogin(), points);
 			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
 				String msgParamMonth = wrapper.getTag("msg-param-months");
 				try {
