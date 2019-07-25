@@ -291,21 +291,30 @@ public class ChatLogic {
 			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
 				String _subStreak = wrapper.getTag("msg-param-streak-months");
 				String _subCumulative = wrapper.getTag("msg-param-cumulative-months");
+				Integer subStreak = 1;
+				Integer subCumulative = 1;
+				Viewer viewer = viewerService.getViewerByName(login);
+				boolean updated = false;
 				try {
-					Integer subStreak = Integer.valueOf(_subStreak);
-					Integer subCumulative = Integer.valueOf(_subCumulative);
-					if (subStreak != null && subCumulative != null) {
-						Viewer viewer = viewerService.getViewerByName(login);
-						if (subStreak != null) {
-							viewer.setSubStreak(subStreak);
-						}
-						if (subCumulative != null) {
-							viewer.setSubCumulative(subCumulative);
-						}
-						viewerService.updateViewer(viewer);
+					subStreak = Integer.valueOf(_subStreak);
+					if (subStreak != null) {
+						viewer.setSubStreak(subStreak);
 					}
+					updated = true;
 				} catch (NumberFormatException ex) {
-					logger.warn("Could not parse sub streak/cumulative to Integer. Value: " + _subStreak + " or " + _subCumulative, ex);
+					logger.warn("Could not parse sub streak to Integer. Value: " + _subStreak, ex);
+				}
+				try {
+					subCumulative = Integer.valueOf(_subCumulative);
+					if (subCumulative != null) {
+						viewer.setSubCumulative(subCumulative);
+					}
+					updated = true;
+				} catch (NumberFormatException ex) {
+					logger.warn("Could not parse sub cumulative to Integer. Value: " + _subCumulative, ex);
+				}
+				if (updated) {
+					viewerService.updateViewer(viewer);
 				}
 			}
 			if (!login.equalsIgnoreCase("ananonymousgifter")) {

@@ -56,7 +56,8 @@ public class Viewer implements Serializable {
 	public static int hoursToUpdateVisual = 168;
 
 	public Viewer() {
-
+		this.subStreak = 0;
+		this.subCumulative = 0;
 	}
 
 	public Viewer(String author) {
