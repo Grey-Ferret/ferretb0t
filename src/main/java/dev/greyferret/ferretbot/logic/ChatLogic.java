@@ -13,6 +13,7 @@ import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,7 +184,7 @@ public class ChatLogic {
 						QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
 						HashSet<Viewer> selected = new HashSet<>();
 						try {
-							Integer numberOfPeople = Integer.valueOf(split2[2]);
+							Integer numberOfPeople = NumberUtils.toInt(split2[2], 0);
 							selected = queueProcessor.roll(split2[0], numberOfPeople);
 						} catch (NumberFormatException e) {
 							logger.error(e);
@@ -291,31 +292,16 @@ public class ChatLogic {
 			if (wrapper.getTag("msg-id").equalsIgnoreCase("resub")) {
 				String _subStreak = wrapper.getTag("msg-param-streak-months");
 				String _subCumulative = wrapper.getTag("msg-param-cumulative-months");
-				Integer subStreak = 1;
-				Integer subCumulative = 1;
 				Viewer viewer = viewerService.getViewerByName(login);
-				boolean updated = false;
-				try {
-					subStreak = Integer.valueOf(_subStreak);
-					if (subStreak != null) {
-						viewer.setSubStreak(subStreak);
-					}
-					updated = true;
-				} catch (NumberFormatException ex) {
-					logger.warn("Could not parse sub streak to Integer. Value: " + _subStreak, ex);
+				Integer subStreak = NumberUtils.toInt(_subStreak, 0);
+				if (subStreak != null) {
+					viewer.setSubStreak(subStreak);
 				}
-				try {
-					subCumulative = Integer.valueOf(_subCumulative);
-					if (subCumulative != null) {
-						viewer.setSubCumulative(subCumulative);
-					}
-					updated = true;
-				} catch (NumberFormatException ex) {
-					logger.warn("Could not parse sub cumulative to Integer. Value: " + _subCumulative, ex);
+				Integer subCumulative = NumberUtils.toInt(_subCumulative, 0);
+				if (subCumulative != null) {
+					viewer.setSubCumulative(subCumulative);
 				}
-				if (updated) {
-					viewerService.updateViewer(viewer);
-				}
+				viewerService.updateViewer(viewer);
 			}
 			if (!login.equalsIgnoreCase("ananonymousgifter")) {
 				streamElementsAPIProcessor.updatePoints(login, points);

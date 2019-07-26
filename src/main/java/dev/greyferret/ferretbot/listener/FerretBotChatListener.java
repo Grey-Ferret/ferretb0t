@@ -1,17 +1,18 @@
 package dev.greyferret.ferretbot.listener;
 
-import dev.greyferret.ferretbot.config.SpringConfig;
-import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.BotConfig;
+import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.logic.ChatLogic;
+import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
@@ -173,11 +174,11 @@ public class FerretBotChatListener extends TwitchListener {
 		if (botConfig.getBitsOn()) {
 			String bits = eventWrapper.getTag("bits");
 			if (StringUtils.isNotBlank(bits)) {
-				Long points = Long.valueOf(bits);
-				if (points != null) {
+				Long points = NumberUtils.toLong(bits, 0);
+				if (points != 0) {
 					streamElementsAPIProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
 				} else {
-					logger.error("points == null");
+					logger.error("points == null/0");
 				}
 			}
 		}
