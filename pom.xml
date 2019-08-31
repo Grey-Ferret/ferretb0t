@@ -6,11 +6,12 @@
 
     <groupId>dev.greyferret</groupId>
     <artifactId>ferretbot</artifactId>
-    <version>1.13-SNAPSHOT</version>
+    <version>1.14-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Spring -->
         <spring-framework.version>4.3.12.RELEASE</spring-framework.version>
