@@ -62,8 +62,8 @@ public class FerretBot implements Runnable {
 
 		if (botConfig.getDiscordOn()) {
 			annotationConfigApplicationContext.register(DiscordConfig.class);
-			annotationConfigApplicationContext.register(DiscordProcessor.class);
 			annotationConfigApplicationContext.register(DiscordListener.class);
+			annotationConfigApplicationContext.register(DiscordProcessor.class);
 			if (botConfig.getSubVoteOn()) {
 				annotationConfigApplicationContext.register(SubVoteProcessor.class);
 			}

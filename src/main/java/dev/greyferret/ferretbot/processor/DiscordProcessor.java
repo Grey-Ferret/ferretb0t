@@ -5,11 +5,13 @@ import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.config.Messages;
 import dev.greyferret.ferretbot.listener.DiscordListener;
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.utils.Compression;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 @Component
@@ -55,13 +58,21 @@ public class DiscordProcessor implements Runnable {
 	@Override
 	public void run() {
 		try {
-			jda = new JDABuilder(AccountType.BOT).setToken(discordConfig.getToken()).buildBlocking();
-		} catch (LoginException e) {
-			logger.error(e);
-		} catch (InterruptedException e) {
+			JDABuilder builder = new JDABuilder(discordConfig.getToken());
+			// Disable parts of the cache
+			builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE));
+			// Enable the bulk delete event
+			builder.setBulkDeleteSplittingEnabled(false);
+			// Disable compression (not recommended)
+			builder.setCompression(Compression.NONE);
+			// Set activity (like "playing Something")
+			builder.setActivity(Activity.playing("Planning to take over the world"));
+			builder.addEventListeners(context.getBean(DiscordListener.class));
+			jda = builder.build();
+			jda.awaitReady();
+		} catch (LoginException | InterruptedException e) {
 			logger.error(e);
 		}
-		jda.addEventListener(context.getBean(DiscordListener.class));
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());

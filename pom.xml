@@ -165,11 +165,15 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>3.5.0_328</version>
+            <version>4.0.0_39</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>
                     <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>club.minnced</groupId>
+                    <artifactId>opus-java</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

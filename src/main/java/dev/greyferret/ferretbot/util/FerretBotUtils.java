@@ -1,10 +1,13 @@
 package dev.greyferret.ferretbot.util;
 
-import dev.greyferret.ferretbot.entity.*;
+import dev.greyferret.ferretbot.entity.AdventureResponse;
+import dev.greyferret.ferretbot.entity.SubVoteEntity;
+import dev.greyferret.ferretbot.entity.SubVoteGame;
+import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
 import io.magicthegathering.javasdk.resource.Card;
-import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

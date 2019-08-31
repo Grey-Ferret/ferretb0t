@@ -1,6 +1,6 @@
 package dev.greyferret.ferretbot.entity;
 
-import net.dv8tion.jda.core.entities.Emote;
+import net.dv8tion.jda.api.entities.Emote;
 
 import java.util.ArrayList;
 

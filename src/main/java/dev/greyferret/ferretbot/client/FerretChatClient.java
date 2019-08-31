@@ -63,7 +63,9 @@ public class FerretChatClient extends DefaultClient {
 
 	public void connect() {
 		client.connect();
-		client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
+		if (!applicationConfig.isDebug()) {
+			client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
+		}
 	}
 
 	public void sendMessage(@Nonnull String text) {

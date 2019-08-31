@@ -1,10 +1,12 @@
 package dev.greyferret.ferretbot.entity;
 
-import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.api.entities.Member;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.Cascade;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "sub_vote_game")
