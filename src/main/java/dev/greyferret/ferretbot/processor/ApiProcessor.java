@@ -191,9 +191,7 @@ public class ApiProcessor implements Runnable {
 			Viewer viewer = viewerService.getViewerByName(login);
 			String userId = viewer.getTwitchUserId();
 			if (StringUtils.isBlank(userId)) {
-				userId = getUserIdByLogin(viewer.getLogin());
-				viewer.setTwitchUserId(userId);
-				viewerService.updateViewer(viewer);
+				userId = getUserIdByLogin(login);
 			}
 			if (StringUtils.isBlank(userId)) {
 				logger.error("Error while checking for follower: " + login);

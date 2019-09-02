@@ -119,6 +119,8 @@ public class FerretBotChatListener extends TwitchListener {
 					viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
 					String followDate = apiProcessor.getFollowDate(viewer.getLogin());
 					boolean isFollower = !StringUtils.isBlank(followDate);
+					String userId = apiProcessor.getUserIdByLogin(viewer.getLogin());
+					viewer.setTwitchUserId(userId);
 					viewerService.updateFollowerStatus(viewer, followDate, isFollower);
 				}
 			} else {
