@@ -3,11 +3,13 @@ package dev.greyferret.ferretbot.processor;
 import com.google.gson.Gson;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.Messages;
-import dev.greyferret.ferretbot.config.SpringConfig;
+import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.entity.json.twitch.games.TwitchGames;
 import dev.greyferret.ferretbot.entity.json.twitch.streams.Datum;
 import dev.greyferret.ferretbot.entity.json.twitch.streams.TwitchStreamsJson;
-import dev.greyferret.ferretbot.entity.json.v5.user.UserV5Gson;
+import dev.greyferret.ferretbot.entity.json.twitch.users.Users;
+import dev.greyferret.ferretbot.entity.json.twitch.users.follows.Follows;
+import dev.greyferret.ferretbot.service.ViewerService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,9 +21,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,22 +31,27 @@ public class ApiProcessor implements Runnable {
 	private static final Logger logger = LogManager.getLogger(ApiProcessor.class);
 
 	private static final String twitchAPIPrefix = "https://api.twitch.tv/helix/";
-	@Deprecated
-	private static final String twitchV5APIPrefix = "https://api.twitch.tv/kraken/";
 	private String channelStatusUrl;
 	private String gameInfoUrl;
+	private String usersInfoUrl;
+	private String followerInfoUrl;
 	private boolean isOn;
 	private ChannelStatus currentChannelStatus = ChannelStatus.UNDEFINED;
+	private String _streamerId = "";
 
 	public enum ChannelStatus {ONLINE, OFFLINE, UNDEFINED}
 
 	@Autowired
 	private ChatConfig chatConfig;
+	@Autowired
+	private ViewerService viewerService;
 
 	@PostConstruct
 	private void postConstruct() {
 		channelStatusUrl = this.twitchAPIPrefix + "streams?user_login=" + chatConfig.getChannel();
 		gameInfoUrl = this.twitchAPIPrefix + "games?id=";
+		usersInfoUrl = this.twitchAPIPrefix + "users?login=";
+		followerInfoUrl = this.twitchAPIPrefix + "users/follows?from_id=";
 		isOn = true;
 	}
 
@@ -129,29 +133,88 @@ public class ApiProcessor implements Runnable {
 		return twitchGames;
 	}
 
-	public ZonedDateTime checkForFreshAcc(String login) {
-		logger.info("Checking for fresh acc of " + login);
+	public String getUserIdByLogin(String login) {
+		logger.info("Getting id for Twitch Login " + login);
 		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("Client-ID", chatConfig.getClientId());
-			response = Jsoup.connect(twitchV5APIPrefix + "users/" + login)
+			response = Jsoup.connect(usersInfoUrl + login)
 					.method(Connection.Method.GET)
 					.ignoreContentType(true)
 					.headers(headers)
 					.execute();
 			String body = response.body();
 			Gson gson = new Gson();
-			UserV5Gson twitchUser = gson.fromJson(body, UserV5Gson.class);
-			logger.info("Date:" + twitchUser.getCreatedAt());
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-			LocalDateTime ld = LocalDateTime.parse(twitchUser.getCreatedAt(), dtf);
-			ZonedDateTime zdt = ld.atZone(SpringConfig.getZoneId());
-			return zdt;
+			Users users = gson.fromJson(body, Users.class);
+			if (users == null || users.getData() == null) {
+				return "";
+			} else {
+				if (users.getData().size() != 1) {
+					logger.warn("There was found more or less than one user by login " + login + ". Result: " + users.getData());
+				} else {
+					return users.getData().get(0).getId();
+				}
+			}
 		} catch (Exception ex) {
-			logger.error("Error while checking for Fresh acc: " + ex);
+			logger.error("Error while checking for twitch id: " + ex);
 			return null;
 		}
+		return "";
+	}
+
+	public boolean isFollower(String login) {
+		String followDate = getFollowDate(login);
+		return isFollowerByFollowedAtString(followDate);
+	}
+
+	public static boolean isFollowerByFollowedAtString(String followedAt) {
+		if (StringUtils.isNotBlank(followedAt)) {
+			return true;
+		}
+		return false;
+	}
+
+	public synchronized String streamerId() {
+		if (StringUtils.isBlank(_streamerId)) {
+			_streamerId = getUserIdByLogin(chatConfig.getChannel());
+		}
+		return _streamerId;
+	}
+
+	public String getFollowDate(String login) {
+		logger.info("Checking is follower for " + login);
+		Connection.Response response;
+		try {
+			Map<String, String> headers = new HashMap<>();
+			headers.put("Client-ID", chatConfig.getClientId());
+			Viewer viewer = viewerService.getViewerByName(login);
+			String userId = viewer.getTwitchUserId();
+			if (StringUtils.isBlank(userId)) {
+				userId = getUserIdByLogin(viewer.getLogin());
+				viewer.setTwitchUserId(userId);
+				viewerService.updateViewer(viewer);
+			}
+			if (StringUtils.isBlank(userId)) {
+				logger.error("Error while checking for follower: " + login);
+			}
+			response = Jsoup.connect(followerInfoUrl + userId + "&to_id=" + streamerId())
+					.method(Connection.Method.GET)
+					.ignoreContentType(true)
+					.headers(headers)
+					.execute();
+			String body = response.body();
+			Gson gson = new Gson();
+			Follows follows = gson.fromJson(body, Follows.class);
+			if (follows == null || follows.getData() == null || follows.getData().size() == 0) {
+				return "";
+			} else {
+				return follows.getData().get(0).getFollowedAt();
+			}
+		} catch (Exception ex) {
+			logger.error("Error while checking for follower: " + login + "Exception: " + ex);
+		}
+		return "";
 	}
 
 	public boolean getChannelStatus() {

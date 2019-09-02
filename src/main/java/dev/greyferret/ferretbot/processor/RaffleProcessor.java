@@ -185,6 +185,20 @@ public class RaffleProcessor implements Runnable {
 	public void newMessage(String login) {
 		synchronized (viewers) {
 			login = login.toLowerCase();
+			Viewer viewerByName = viewerService.getViewerByName(login);
+			if (viewerByName == null) {
+				return;
+			}
+			Boolean follower = viewerByName.getFollower();
+			if (follower == null || !follower) {
+				String followDate = apiProcessor.getFollowDate(login);
+				follower = apiProcessor.isFollowerByFollowedAtString(followDate);
+				viewerService.updateFollowerStatus(viewerByName, followDate, follower);
+				if (!follower) {
+					logger.info("User " + login + " was not added to raffle due him not being follower");
+					return;
+				}
+			}
 			RaffleViewer raffleViewer;
 			if (!viewers.keySet().contains(login)) {
 				raffleViewer = new RaffleViewer(login);

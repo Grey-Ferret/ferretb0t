@@ -106,35 +106,38 @@ public class FerretBotChatListener extends TwitchListener {
 					viewerService.setVip(viewer, true);
 				else
 					viewerService.setVip(viewer, false);
-				boolean toUpdateVisual = false;
+				boolean toUpdateMeta = false;
 				if (viewer.getUpdatedVisual() != null) {
 					ZonedDateTime zdt = viewer.getUpdatedVisual().plusHours(Viewer.hoursToUpdateVisual);
 					if (zdt.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
-						toUpdateVisual = true;
+						toUpdateMeta = true;
 					}
 				} else {
-					toUpdateVisual = true;
+					toUpdateMeta = true;
 				}
-				if (toUpdateVisual) {
+				if (toUpdateMeta) {
 					viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
+					String followDate = apiProcessor.getFollowDate(viewer.getLogin());
+					boolean isFollower = !StringUtils.isBlank(followDate);
+					viewerService.updateFollowerStatus(viewer, followDate, isFollower);
 				}
 			} else {
 				viewer = viewerService.createViewer(login);
 			}
-			if (viewer.getAge() == null) {
-				ZonedDateTime ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
-				viewer.setAge(ageDate);
-				logger.info("Update incoming for account age for Viewer " + viewer.getLoginVisual());
-				ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusDays(2);
-				if (ageDate.isAfter(zdt)) {
-//					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
-//					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
-				} else {
-					viewer.setApproved(true);
-					logger.info("Update incoming for approved status for Viewer " + viewer.getLoginVisual());
-				}
-				viewerService.updateViewer(viewer);
-			}
+//			if (viewer.getAge() == null) {
+//				ZonedDateTime ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
+//				viewer.setAge(ageDate);
+//				logger.info("Update incoming for account age for Viewer " + viewer.getLoginVisual());
+//				ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusDays(2);
+//				if (ageDate.isAfter(zdt)) {
+////					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
+////					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
+//				} else {
+//					viewer.setApproved(true);
+//					logger.info("Update incoming for approved status for Viewer " + viewer.getLoginVisual());
+//				}
+//				viewerService.updateViewer(viewer);
+//			}
 		}
 
 		if (true) {

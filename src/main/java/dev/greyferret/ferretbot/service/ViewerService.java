@@ -73,6 +73,17 @@ public class ViewerService {
 	}
 
 	@Transactional
+	public void updateFollowerStatus(Viewer viewer, String followedAt, boolean isFollower) {
+		if (viewer == null)
+			return;
+		viewer.setFollower(isFollower);
+		viewer.setFollowedAt(followedAt);
+		entityManager.merge(viewer);
+		entityManager.flush();
+		logger.info("Updated follower info for: " + viewer.getLoginVisual());
+	}
+
+	@Transactional
 	public void addPointsForViewers(HashSet<Viewer> users) {
 		for (Viewer viewer : users) {
 			if (viewer != null) {

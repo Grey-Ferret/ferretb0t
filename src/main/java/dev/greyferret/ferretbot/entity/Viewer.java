@@ -52,6 +52,13 @@ public class Viewer implements Serializable {
 	@Column(name = "approved", nullable = false)
 	@ColumnDefault("false")
 	private Boolean approved;
+	@Column(name = "twitchUserId")
+	private String twitchUserId;
+	@Column(name = "followedAt")
+	private String followedAt;
+	@Column(name = "follower")
+	@ColumnDefault("false")
+	private Boolean follower;
 
 	public static int hoursToUpdateVisual = 168;
 
@@ -70,6 +77,9 @@ public class Viewer implements Serializable {
 		this.sub = false;
 		this.vip = false;
 		this.approved = false;
+		this.twitchUserId = "";
+		this.followedAt = "";
+		this.follower = false;
 		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusHours(hoursToUpdateVisual);
 		setUpdatedVisual(zdt);
 		this.suitableForRaffle = true;
@@ -265,6 +275,30 @@ public class Viewer implements Serializable {
 		this.subCumulative = subCumulative;
 	}
 
+	public String getFollowedAt() {
+		return followedAt;
+	}
+
+	public void setFollowedAt(String followedAt) {
+		this.followedAt = followedAt;
+	}
+
+	public boolean getFollower() {
+		return follower;
+	}
+
+	public void setFollower(boolean follower) {
+		this.follower = follower;
+	}
+
+	public String getTwitchUserId() {
+		return twitchUserId;
+	}
+
+	public void setTwitchUserId(String twitchUserId) {
+		this.twitchUserId = twitchUserId;
+	}
+
 	@Override
 	public String toString() {
 		return "Viewer{" +
@@ -282,6 +316,9 @@ public class Viewer implements Serializable {
 				", subStreak=" + subStreak +
 				", suitableForRaffle=" + suitableForRaffle +
 				", approved=" + approved +
+				", twitchUserId='" + twitchUserId + '\'' +
+				", followedAt='" + followedAt + '\'' +
+				", follower=" + follower +
 				'}';
 	}
 }
