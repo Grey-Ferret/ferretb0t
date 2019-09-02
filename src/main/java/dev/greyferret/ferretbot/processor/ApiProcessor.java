@@ -182,19 +182,14 @@ public class ApiProcessor implements Runnable {
 		return _streamerId;
 	}
 
-	public String getFollowDate(String login) {
-		logger.info("Checking is follower for " + login);
+	public String getFollowDateByUserId(String userId) {
+		logger.info("Checking is follower for user id" + userId);
 		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("Client-ID", chatConfig.getClientId());
-			Viewer viewer = viewerService.getViewerByName(login);
-			String userId = viewer.getTwitchUserId();
 			if (StringUtils.isBlank(userId)) {
-				userId = getUserIdByLogin(login);
-			}
-			if (StringUtils.isBlank(userId)) {
-				logger.error("Error while checking for follower: " + login);
+				logger.error("Error while checking for follower  (userId): " + userId);
 			}
 			response = Jsoup.connect(followerInfoUrl + userId + "&to_id=" + streamerId())
 					.method(Connection.Method.GET)
@@ -210,9 +205,21 @@ public class ApiProcessor implements Runnable {
 				return follows.getData().get(0).getFollowedAt();
 			}
 		} catch (Exception ex) {
-			logger.error("Error while checking for follower: " + login + "Exception: " + ex);
+			logger.error("Error while checking for follower (userId): " + userId + "Exception: " + ex);
 		}
 		return "";
+	}
+
+	public String getFollowDate(String login) {
+		Viewer viewer = viewerService.getViewerByName(login);
+		String userId = viewer.getTwitchUserId();
+		if (StringUtils.isBlank(userId)) {
+			userId = getUserIdByLogin(login);
+		}
+		if (StringUtils.isBlank(userId)) {
+			logger.error("Error while checking for follower: " + login);
+		}
+		return getFollowDateByUserId(userId);
 	}
 
 	public boolean getChannelStatus() {
