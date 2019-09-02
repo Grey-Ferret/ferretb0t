@@ -183,7 +183,7 @@ public class ApiProcessor implements Runnable {
 	}
 
 	public String getFollowDateByUserId(String userId) {
-		logger.info("Checking is follower for user id" + userId);
+		logger.info("Checking is follower for user id " + userId);
 		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();
