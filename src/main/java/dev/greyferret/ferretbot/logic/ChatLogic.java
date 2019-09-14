@@ -2,8 +2,6 @@ package dev.greyferret.ferretbot.logic;
 
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
-import dev.greyferret.ferretbot.config.LootsConfig;
-import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.CommandService;
@@ -12,23 +10,26 @@ import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
 @Component
-@EnableConfigurationProperties({LootsConfig.class, BotConfig.class})
+@EnableConfigurationProperties({ChatConfig.class, BotConfig.class})
+@Log4j2
 public class ChatLogic {
-	private static final Logger logger = LogManager.getLogger(ChatLogic.class);
+	@Value("${main.zone-id}")
+	private String zoneId;
 
 	@Autowired
 	private ViewerService viewerService;
@@ -44,6 +45,8 @@ public class ChatLogic {
 	private AdventureProcessor adventureProcessor;
 	@Autowired
 	private MiscLogic miscLogic;
+	@Autowired
+	private PointsProcessor pointsProcessor;
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
@@ -187,7 +190,7 @@ public class ChatLogic {
 							Integer numberOfPeople = NumberUtils.toInt(split2[2], 0);
 							selected = queueProcessor.roll(split2[0], numberOfPeople);
 						} catch (NumberFormatException e) {
-							logger.error(e);
+							log.error(e.toString());
 						}
 						if (selected == null || selected.size() == 0) {
 
@@ -223,14 +226,14 @@ public class ChatLogic {
 		if (message.startsWith("!transfer")) {
 			String[] split = StringUtils.split(message, ' ');
 			if (split.length == 4 && StringUtils.isNumeric(split[3])) {
-				logger.info("Points transfer initiated by " + event.getLogin() + ", from " + split[1] + " to " + split[2] + " amount " + split[3]);
+				log.info("Points transfer initiated by " + event.getLogin() + ", from " + split[1] + " to " + split[2] + " amount " + split[3]);
 				Long sum = Long.parseLong(split[3]);
-				boolean updatedPoints = streamElementsAPIProcessor.updatePoints(split[1], (sum * -1));
+				boolean updatedPoints = pointsProcessor.updatePoints(split[1], (sum * -1));
 				if (!updatedPoints) {
 					event.sendMessageWithMention("Недостаточно IQ у первого зрителя!");
 				} else {
 					viewerService.removePoints(split[1], sum);
-					streamElementsAPIProcessor.updatePoints(split[2], sum);
+					pointsProcessor.updatePoints(split[2], sum);
 					viewerService.addPoints(split[2], sum);
 					event.sendMessageWithMention("IQ успешно переведены!");
 				}
@@ -304,7 +307,7 @@ public class ChatLogic {
 				viewerService.updateViewer(viewer);
 			}
 			if (!login.equalsIgnoreCase("ananonymousgifter")) {
-				streamElementsAPIProcessor.updatePoints(login, points);
+				pointsProcessor.updatePoints(login, points);
 			}
 			wrapper.sendMessage("Спасибо за подписку, " + loginForThanks + "!");
 		}
@@ -313,7 +316,7 @@ public class ChatLogic {
 	private void clearOldRecentSubsTimes() {
 		HashMap<String, ZonedDateTime> newRecentSubsTimes = new HashMap<>();
 		recentSubsTimes.keySet().forEach(key -> {
-			if (recentSubsTimes.containsKey(key) && recentSubsTimes.get(key).plusDays(1).isAfter(ZonedDateTime.now(SpringConfig.getZoneId()))) {
+			if (recentSubsTimes.containsKey(key) && recentSubsTimes.get(key).plusDays(1).isAfter(ZonedDateTime.now(ZoneId.of(zoneId)))) {
 				newRecentSubsTimes.put(key, recentSubsTimes.get(key));
 			}
 		});
@@ -322,7 +325,7 @@ public class ChatLogic {
 
 	private boolean isNewSubMessage(String login, String loginForThanks) {
 		String summedNickName = login.toLowerCase() + loginForThanks.toLowerCase();
-		ZonedDateTime currentTime = ZonedDateTime.now(SpringConfig.getZoneId());
+		ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of(zoneId));
 		if (recentSubsTimes.containsKey(summedNickName)) {
 			ZonedDateTime oldTime = recentSubsTimes.get(summedNickName);
 			if (currentTime.minusMinutes(1).isBefore(oldTime)) {
@@ -337,7 +340,7 @@ public class ChatLogic {
 		String[] split = StringUtils.split(message, ' ');
 		if (split.length == 3) {
 			String answer = viewerLootsMapService.updateAlias(split[1], split[2]);
-			logger.info("User change ended with following message: " + answer);
+			log.info("User change ended with following message: " + answer);
 			event.sendMessageWithMention(answer);
 		} else if (split.length == 2) {
 			String answer = viewerLootsMapService.showAliasMessage(split[1]);

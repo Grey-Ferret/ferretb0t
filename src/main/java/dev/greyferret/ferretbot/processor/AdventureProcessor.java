@@ -1,6 +1,5 @@
 package dev.greyferret.ferretbot.processor;
 
-import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.entity.Adventure;
 import dev.greyferret.ferretbot.entity.AdventureResponse;
 import dev.greyferret.ferretbot.entity.Adventurer;
@@ -9,10 +8,11 @@ import dev.greyferret.ferretbot.service.AdventureService;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -21,9 +21,8 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
-public class AdventureProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(AdventureProcessor.class);
-
+@Log4j2
+public class AdventureProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private ViewerService viewerService;
 	@Autowired
@@ -31,9 +30,9 @@ public class AdventureProcessor implements Runnable {
 	@Autowired
 	private ApiProcessor apiProcessor;
 	@Autowired
-	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+	private FerretChatProcessor ferretChatClient;
 	@Autowired
-	private FerretChatClient ferretChatClient;
+	private PointsProcessor pointsProcessor;
 
 	private boolean isOn = true;
 	private AdventureStage adventureStage = AdventureStage.READY;
@@ -53,29 +52,29 @@ public class AdventureProcessor implements Runnable {
 				Thread.sleep(sleepTimer);
 				this.proceedLogic();
 			} catch (InterruptedException e) {
-				logger.error(e);
+				log.error(e.toString());
 			}
 		}
 	}
 
 	private void proceedLogic() throws InterruptedException {
 		if (adventureStage == AdventureStage.WAITING) {
-			logger.info("Waiting Stage, 14 mins waiting");
+			log.info("Waiting Stage, 14 mins waiting");
 			Thread.sleep(14 * 60 * 1000);
-			logger.info("Ready Stage!");
+			log.info("Ready Stage!");
 			adventureStage = AdventureStage.READY;
 		} else if (adventureStage == AdventureStage.READY) {
 
 		} else if (adventureStage == AdventureStage.LFG || adventureStage == AdventureStage.PROCEEDING) {
-			logger.info("LFG/PROCEEDING Stage, 2 mins waiting");
+			log.info("LFG/PROCEEDING Stage, 2 mins waiting");
 			Thread.sleep(2 * 60 * 1000);
-			logger.info("Answering Stage!");
+			log.info("Answering Stage!");
 			adventureStage = AdventureStage.ANSWERING;
 			proceedStage();
 		} else if (adventureStage == AdventureStage.ANSWERING) {
-			logger.info("ANSWERING Stage, 2 mins waiting");
+			log.info("ANSWERING Stage, 2 mins waiting");
 			Thread.sleep(2 * 60 * 1000);
-			logger.info("Answering done.");
+			log.info("Answering done.");
 			endStage();
 			if (adventureStage != AdventureStage.WAITING) {
 				if (this.step < stepsMax) {
@@ -126,7 +125,7 @@ public class AdventureProcessor implements Runnable {
 				HashSet<Viewer> adventurerViewers = new HashSet<>();
 				for (Adventurer adventurer : adventurers) {
 					if (adventurer.getLives() > 0) {
-						streamElementsAPIProcessor.updatePoints(adventurer.getViewer().getLogin(), Long.valueOf(prize));
+						pointsProcessor.updatePoints(adventurer.getViewer().getLogin(), Long.valueOf(prize));
 						adventurerViewers.add(adventurer.getViewer());
 					}
 				}
@@ -167,14 +166,14 @@ public class AdventureProcessor implements Runnable {
 
 	private int calcPrize(int aliveAdventurers) {
 		double l = ThreadLocalRandom.current().nextDouble(0.5, 3);
-		logger.info("Random koef " + l);
-		logger.info("Cost " + cost);
-		logger.info("adventurers.size " + adventurers.size());
-		logger.info("stepsMax " + stepsMax);
-		logger.info("aliveAdventurers " + aliveAdventurers);
+		log.info("Random koef " + l);
+		log.info("Cost " + cost);
+		log.info("adventurers.size " + adventurers.size());
+		log.info("stepsMax " + stepsMax);
+		log.info("aliveAdventurers " + aliveAdventurers);
 		Double calcedD = cost * adventurers.size() * stepsMax * l / aliveAdventurers / 2;
 		long calced = Math.round(calcedD);
-		logger.info(calced);
+		log.info(String.valueOf(calced));
 		return Math.round(calced);
 	}
 
@@ -187,7 +186,7 @@ public class AdventureProcessor implements Runnable {
 				keyword = keyword.toLowerCase();
 				if (responses.keySet().contains(keyword)) {
 					adventurer.setSelectedKey(keyword);
-					logger.info("For adventurer " + adventurer.getViewer().getLogin() + " set selected option for " + adventurer.getSelectedKey());
+					log.info("For adventurer " + adventurer.getViewer().getLogin() + " set selected option for " + adventurer.getSelectedKey());
 				}
 				return;
 			}
@@ -237,7 +236,7 @@ public class AdventureProcessor implements Runnable {
 			if (adventurers.contains(adventurer)) {
 				event.sendMessageWithMentionMe("Вас уже записали! Откиньтесь на спинку стула и ждите начала.");
 			} else {
-				boolean updated = streamElementsAPIProcessor.updatePoints(event.getLogin(), -1 * this.cost);
+				boolean updated = pointsProcessor.updatePoints(event.getLogin(), -1 * this.cost);
 				if (updated) {
 					adventurers.add(adventurer);
 					event.sendMessageWithMentionMe("Стоимость уплачена, ждем начала похода.");
@@ -276,6 +275,14 @@ public class AdventureProcessor implements Runnable {
 		} else {
 			event.sendMessageWithMentionMe("Количество жизней: " + adventurer.getLives());
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Adventure Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 
 	public enum AdventureStage {

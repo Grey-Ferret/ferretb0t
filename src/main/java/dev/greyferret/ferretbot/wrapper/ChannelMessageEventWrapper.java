@@ -1,6 +1,9 @@
 package dev.greyferret.ferretbot.wrapper;
 
-import dev.greyferret.ferretbot.client.FerretChatClient;
+import dev.greyferret.ferretbot.listener.FerretBotChatListener;
+import dev.greyferret.ferretbot.processor.FerretChatProcessor;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,20 +11,20 @@ import org.kitteh.irc.client.library.defaults.element.DefaultUser;
 import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.MessageTag;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Optional;
 
+@Log4j2
 public class ChannelMessageEventWrapper {
-	private static final Logger logger = LogManager.getLogger(ChannelMessageEventWrapper.class);
-
 	private ClientReceiveCommandEvent event;
 	private boolean isDebug;
-	private FerretChatClient chatClient;
+	private ApplicationContext context;
 
-	public ChannelMessageEventWrapper(ClientReceiveCommandEvent event, boolean isDebug, FerretChatClient chatClient) {
+	public ChannelMessageEventWrapper(ClientReceiveCommandEvent event, boolean isDebug, ApplicationContext context) {
 		this.isDebug = isDebug;
 		this.event = event;
-		this.chatClient = chatClient;
+		this.context = context;
 	}
 
 	public String getLogin() {
@@ -31,7 +34,7 @@ public class ChannelMessageEventWrapper {
 			DefaultUser defaultUser = (DefaultUser) actor;
 			res = defaultUser.getUserString();
 		} catch (Exception ex) {
-			logger.error("Can't cast Actor to DefaultUser " + actor);
+			log.error("Can't cast Actor to DefaultUser " + actor);
 		}
 		return res;
 	}
@@ -65,21 +68,21 @@ public class ChannelMessageEventWrapper {
 	}
 
 	public void sendMessage(String text) {
-		text = StringUtils.removeAll(text, "\n");
-		text = StringUtils.removeAll(text, "\r");
-		text = StringUtils.removeAll(text, "\0");
-		logger.info(text);
+		text = RegExUtils.removeAll(text, "\n");
+		text = RegExUtils.removeAll(text, "\r");
+		text = RegExUtils.removeAll(text, "\0");
+		log.info(text);
 		if (!isDebug)
-			chatClient.sendMessage(text);
+			context.getBean(FerretChatProcessor.class).sendMessage(text);
 	}
 
 	public void sendMessageMe(String text) {
-		text = StringUtils.removeAll(text, "\n");
-		text = StringUtils.removeAll(text, "\r");
-		text = StringUtils.removeAll(text, "\0");
-		logger.info(text);
+		text = RegExUtils.removeAll(text, "\n");
+		text = RegExUtils.removeAll(text, "\r");
+		text = RegExUtils.removeAll(text, "\0");
+		log.info(text);
 		if (!isDebug)
-			chatClient.sendMessageMe(text);
+			context.getBean(FerretChatProcessor.class).sendMessageMe(text);
 	}
 
 

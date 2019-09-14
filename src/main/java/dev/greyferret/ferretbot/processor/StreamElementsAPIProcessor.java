@@ -4,13 +4,14 @@ import com.google.gson.Gson;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.StreamelementsConfig;
 import dev.greyferret.ferretbot.entity.json.streamelements.PointsInfo;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -19,19 +20,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@EnableConfigurationProperties({StreamelementsConfig.class})
-public class StreamElementsAPIProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(StreamElementsAPIProcessor.class);
-
-	private static final String streamElementsAPIPrefix = "https://api.streamelements.com/kappa/v2/";
-	private static String updatePointsUrl;
-	private static String checkPointsUrl;
-	private boolean isOn;
-
+@EnableConfigurationProperties({ApplicationConfig.class, StreamelementsConfig.class})
+@Log4j2
+public class StreamElementsAPIProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private ApplicationConfig applicationConfig;
 	@Autowired
 	private StreamelementsConfig streamelementsConfig;
+
+	private static String streamElementsAPIPrefix = "https://api.streamelements.com/kappa/v2/";
+	private static String updatePointsUrl = "";
+	private static String checkPointsUrl = "";
+	private boolean isOn = false;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -53,12 +53,12 @@ public class StreamElementsAPIProcessor implements Runnable {
 						return false;
 					}
 				} catch (Exception ex) {
-					logger.error("Error while getting current points", ex);
+					log.error("Error while getting current points", ex);
 				}
 			}
-			logger.info("Trying to update points for " + nickname + " by " + points);
+			log.info("Trying to update points for " + nickname + " by " + points);
 			if (StringUtils.isBlank(nickname) || points == null) {
-				logger.error("Could not update points. Nickname/points was blank: " + nickname + '/' + points);
+				log.error("Could not update points. Nickname/points was blank: " + nickname + '/' + points);
 				return false;
 			}
 			Connection.Response response;
@@ -73,14 +73,14 @@ public class StreamElementsAPIProcessor implements Runnable {
 						.execute();
 				String statusCode = String.valueOf(response.statusCode());
 				if (statusCode.startsWith("4") || statusCode.startsWith("5")) {
-					logger.error("Updating pts return error code " + statusCode + " for " + nickname + ' ' + points);
+					log.error("Updating pts return error code " + statusCode + " for " + nickname + ' ' + points);
 					return false;
 				}
 			} catch (IOException e) {
-				logger.error(e);
+				log.error(e.toString());
 				return false;
 			}
-			logger.info("Successful updated points for " + nickname + " by " + points);
+			log.info("Successful updated points for " + nickname + " by " + points);
 			return true;
 		}
 		return true;
@@ -88,9 +88,9 @@ public class StreamElementsAPIProcessor implements Runnable {
 
 	public Long checkPoints(String nickname) {
 		if (!applicationConfig.isDebug()) {
-			logger.info("Trying to check points for " + nickname);
+			log.info("Trying to check points for " + nickname);
 			if (StringUtils.isBlank(nickname)) {
-				logger.error("Could not update points. Nickname was blank: " + nickname);
+				log.error("Could not update points. Nickname was blank: " + nickname);
 				return -1L;
 			}
 			Connection.Response response;
@@ -105,17 +105,27 @@ public class StreamElementsAPIProcessor implements Runnable {
 						.execute();
 				String statusCode = String.valueOf(response.statusCode());
 				if (statusCode.startsWith("4") || statusCode.startsWith("5")) {
-					logger.error("Checking pts return error code " + statusCode + " for " + nickname);
+					log.error("Checking pts return error code " + statusCode + " for " + nickname);
 					return -1L;
 				}
 				Gson gson = new Gson();
 				PointsInfo pointsInfo = gson.fromJson(response.body(), PointsInfo.class);
 				return pointsInfo.getPoints();
 			} catch (IOException e) {
-				logger.error(e);
+				log.error(e.toString());
 				return -1L;
 			}
 		}
 		return -1L;
 	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("StreamElements Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
+	}
+
+
 }

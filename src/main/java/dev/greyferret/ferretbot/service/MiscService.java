@@ -17,8 +17,6 @@ import javax.persistence.PersistenceContext;
  */
 @Service
 public class MiscService {
-	private static final Logger logger = LogManager.getLogger(MiscService.class);
-
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired

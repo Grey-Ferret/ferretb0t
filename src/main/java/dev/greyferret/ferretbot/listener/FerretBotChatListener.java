@@ -1,20 +1,17 @@
 package dev.greyferret.ferretbot.listener;
 
-import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.BotConfig;
-import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.logic.ChatLogic;
 import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
+import lombok.extern.log4j.Log4j2;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
 import org.kitteh.irc.client.library.feature.filter.CommandFilter;
@@ -24,23 +21,26 @@ import org.kitteh.irc.client.library.feature.twitch.event.RoomStateEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
 import org.kitteh.irc.client.library.feature.twitch.event.UserStateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-@EnableConfigurationProperties({BotConfig.class, ApplicationConfig.class})
+@Log4j2
+@Lazy
 public class FerretBotChatListener extends TwitchListener {
-	private static final Logger logger = LogManager.getLogger(FerretBotChatListener.class);
-	private static final Logger chatLogger = LogManager.getLogger("ChatLogger");
-
+	@Value("${main.zone-id}")
+	private String zoneId;
 	@Autowired
 	private ChatLogic chatLogic;
 	@Autowired
@@ -55,10 +55,11 @@ public class FerretBotChatListener extends TwitchListener {
 	private AdventureProcessor adventureProcessor;
 	@Autowired
 	private ApiProcessor apiProcessor;
-
-	private FerretChatClient ferretChatClient;
+	@Autowired
 	private RaffleProcessor raffleProcessor;
-	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+	@Autowired
+	private PointsProcessor pointsProcessor;
+	@Autowired
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
 
 	/**
@@ -72,16 +73,12 @@ public class FerretBotChatListener extends TwitchListener {
 
 	@PostConstruct
 	private void postConstruct() {
-		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
-		apiProcessor = context.getBean(ApiProcessor.class);
-		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
-		mtgaCardFinderProcessor = context.getBean(MTGACardFinderProcessor.class);
 	}
 
 	@CommandFilter("PRIVMSG")
 	@Handler
 	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
-		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
+		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), context);
 
 		if (botConfig.getRaffleOn()) {
 			if (raffleProcessor == null) {
@@ -91,7 +88,7 @@ public class FerretBotChatListener extends TwitchListener {
 		}
 
 		String login = eventWrapper.getLogin();
-		chatLogger.info(login + ": " + eventWrapper.getMessage());
+//		chatlog.info(login + ": " + eventWrapper.getMessage());
 
 		if (botConfig.getViewersServiceOn()) {
 			Viewer viewer = viewerService.getViewerByName(login);
@@ -107,9 +104,9 @@ public class FerretBotChatListener extends TwitchListener {
 				else
 					viewerService.setVip(viewer, false);
 				boolean toUpdateMeta = false;
-				if (viewer.getUpdatedVisual() != null) {
-					ZonedDateTime zdt = viewer.getUpdatedVisual().plusHours(Viewer.hoursToUpdateVisual);
-					if (zdt.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
+				if (viewer.getUpdatedVisual(applicationConfig.getZoneId()) != null) {
+					ZonedDateTime zdt = viewer.getUpdatedVisual(applicationConfig.getZoneId()).plusHours(Viewer.hoursToUpdateVisual);
+					if (zdt.isBefore(ZonedDateTime.now(ZoneId.of(zoneId)))) {
 						toUpdateMeta = true;
 					}
 				} else {
@@ -126,27 +123,13 @@ public class FerretBotChatListener extends TwitchListener {
 			} else {
 				viewer = viewerService.createViewer(login);
 			}
-//			if (viewer.getAge() == null) {
-//				ZonedDateTime ageDate = apiProcessor.checkForFreshAcc(viewer.getLogin());
-//				viewer.setAge(ageDate);
-//				logger.info("Update incoming for account age for Viewer " + viewer.getLoginVisual());
-//				ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusDays(2);
-//				if (ageDate.isAfter(zdt)) {
-////					ferretChatClient.sendMessage("/timeout " + viewer.getLogin() + " 120");
-////					ferretChatClient.sendMessage("/me Была замечена подозрительная активность от зрителя с ником " + login);
-//				} else {
-//					viewer.setApproved(true);
-//					logger.info("Update incoming for approved status for Viewer " + viewer.getLoginVisual());
-//				}
-//				viewerService.updateViewer(viewer);
-//			}
 		}
 
 		if (true) {
 			boolean antispamCatched = chatLogic.antispamByWords(eventWrapper);
 			if (antispamCatched) {
-				logger.info("Antispam caught following message: " + eventWrapper.getMessage());
-				logger.info("Ban for author: " + eventWrapper.getLoginVisual());
+				log.info("Antispam caught following message: " + eventWrapper.getMessage());
+				log.info("Ban for author: " + eventWrapper.getLoginVisual());
 				eventWrapper.sendMessage("/ban " + eventWrapper.getLoginVisual());
 			}
 		}
@@ -181,9 +164,9 @@ public class FerretBotChatListener extends TwitchListener {
 			if (StringUtils.isNotBlank(bits)) {
 				Long points = NumberUtils.toLong(bits, 0);
 				if (points != 0) {
-					streamElementsAPIProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
+					pointsProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
 				} else {
-					logger.error("points == null/0");
+					log.error("points == null/0");
 				}
 			}
 		}
@@ -192,19 +175,19 @@ public class FerretBotChatListener extends TwitchListener {
 
 	@Handler
 	private void onUserNoticeEvent(UserNoticeEvent event) {
-		chatLogger.info("UserNoticeEvent: " + event);
-		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), ferretChatClient);
+//		chatlog.info("UserNoticeEvent: " + event);
+		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), context);
 		String msgId = wrapper.getTag("msg-id");
 
 		if (botConfig.getSubAlertOn()) {
 			if (StringUtils.isNotBlank(msgId)) {
 				if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
-					logger.info("Sub Alert triggered for " + msgId);
-					logger.info(wrapper);
+					log.info("Sub Alert triggered for " + msgId);
+					log.info(wrapper.toString());
 					chatLogic.proceedSubAlert(wrapper);
 				} else if (msgId.equalsIgnoreCase("subgift")) {
-					logger.info("Sub Gift Alert triggered for " + msgId);
-					logger.info(wrapper);
+					log.info("Sub Gift Alert triggered for " + msgId);
+					log.info(wrapper.toString());
 					chatLogic.proceedSubAlert(wrapper, true);
 				}
 			}
@@ -213,16 +196,16 @@ public class FerretBotChatListener extends TwitchListener {
 
 	@Handler
 	private void onGlobalUserStateEvent(GlobalUserStateEvent globalUserStateEvent) {
-		chatLogger.info("GlobalUserStateEvent: " + globalUserStateEvent);
+//		chatlog.info("GlobalUserStateEvent: " + globalUserStateEvent);
 	}
 
 	@Handler
 	private void onRoomStateEvent(RoomStateEvent roomStateEvent) {
-		chatLogger.info("RoomStateEvent: " + roomStateEvent);
+//		chatlog.info("RoomStateEvent: " + roomStateEvent);
 	}
 
 	@Handler
 	private void onUserStateEvent(UserStateEvent userStateEvent) {
-		chatLogger.info("UserStateEvent: " + userStateEvent);
+//		chatlog.info("UserStateEvent: " + userStateEvent);
 	}
 }

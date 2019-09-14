@@ -1,11 +1,13 @@
 package dev.greyferret.ferretbot.entity;
 
-import dev.greyferret.ferretbot.config.SpringConfig;
+import dev.greyferret.ferretbot.config.ApplicationConfig;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -28,8 +30,6 @@ public class Viewer implements Serializable {
 	private Long pointsTrue;
 	@Column(name = "created")
 	private LocalDateTime created;
-	@Column(name = "updated")
-	private LocalDateTime updated;
 	@Column(name = "age")
 	private LocalDateTime age;
 	@Column(name = "updated_visual")
@@ -67,7 +67,7 @@ public class Viewer implements Serializable {
 		this.subCumulative = 0;
 	}
 
-	public Viewer(String author) {
+	public Viewer(String author, ZoneId zoneId) {
 		this.login = author.toLowerCase();
 		this.loginVisual = author;
 		this.points = 0L;
@@ -80,7 +80,7 @@ public class Viewer implements Serializable {
 		this.twitchUserId = "";
 		this.followedAt = "";
 		this.follower = false;
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusHours(hoursToUpdateVisual);
+		ZonedDateTime zdt = ZonedDateTime.now(zoneId).minusHours(hoursToUpdateVisual);
 		setUpdatedVisual(zdt);
 		this.suitableForRaffle = true;
 	}
@@ -123,38 +123,15 @@ public class Viewer implements Serializable {
 		this.pointsTrue = pointsTrue;
 	}
 
-	public ZonedDateTime getCreated() {
+	public ZonedDateTime getCreated(ZoneId zoneId) {
 		if (this.created == null) {
 			return null;
 		}
-		return ZonedDateTime.of(this.created, SpringConfig.getZoneId());
+		return ZonedDateTime.of(this.created, zoneId);
 	}
 
 	public void setCreated(ZonedDateTime created) {
 		this.created = created.toLocalDateTime();
-	}
-
-	public ZonedDateTime getUpdated() {
-		if (this.updated == null) {
-			return null;
-		}
-		return ZonedDateTime.of(this.updated, SpringConfig.getZoneId());
-	}
-
-	public void setUpdated(ZonedDateTime updated) {
-		this.updated = updated.toLocalDateTime();
-	}
-
-	@PostUpdate
-	private void postUpdate() {
-		setUpdated(ZonedDateTime.now(SpringConfig.getZoneId()));
-	}
-
-	@PostPersist
-	private void postPersist() {
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		setCreated(zdt);
-		setUpdated(zdt);
 	}
 
 	public Boolean isSub() {
@@ -185,16 +162,16 @@ public class Viewer implements Serializable {
 		return loginVisual;
 	}
 
-	public void setLoginVisual(String loginVisual) {
+	public void setLoginVisual(String loginVisual, ZoneId zoneId) {
 		this.loginVisual = loginVisual;
-		setUpdatedVisual(ZonedDateTime.now(SpringConfig.getZoneId()));
+		setUpdatedVisual(ZonedDateTime.now(zoneId));
 	}
 
-	public ZonedDateTime getUpdatedVisual() {
+	public ZonedDateTime getUpdatedVisual(ZoneId zoneId) {
 		if (this.updatedVisual == null) {
 			return null;
 		}
-		return ZonedDateTime.of(this.updatedVisual, SpringConfig.getZoneId());
+		return ZonedDateTime.of(this.updatedVisual, zoneId);
 	}
 
 	public void setUpdatedVisual(ZonedDateTime updatedVisual) {
@@ -218,11 +195,11 @@ public class Viewer implements Serializable {
 		this.approved = approved;
 	}
 
-	public ZonedDateTime getAge() {
+	public ZonedDateTime getAge(ZoneId zoneId) {
 		if (this.age == null) {
 			return null;
 		}
-		return ZonedDateTime.of(this.age, SpringConfig.getZoneId());
+		return ZonedDateTime.of(this.age, zoneId);
 	}
 
 	public void setAge(ZonedDateTime age) {
@@ -253,10 +230,6 @@ public class Viewer implements Serializable {
 
 	public void setCreated(LocalDateTime created) {
 		this.created = created;
-	}
-
-	public void setUpdated(LocalDateTime updated) {
-		this.updated = updated;
 	}
 
 	public void setAge(LocalDateTime age) {
@@ -307,7 +280,6 @@ public class Viewer implements Serializable {
 				", points=" + points +
 				", pointsTrue=" + pointsTrue +
 				", created=" + created +
-				", updated=" + updated +
 				", age=" + age +
 				", updatedVisual=" + updatedVisual +
 				", sub=" + sub +

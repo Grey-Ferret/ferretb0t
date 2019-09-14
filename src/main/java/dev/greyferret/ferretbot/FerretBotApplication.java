@@ -1,60 +1,40 @@
-package dev.greyferret.ferretbot.config;
+package dev.greyferret.ferretbot;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import dev.greyferret.ferretbot.config.ApplicationConfig;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-import java.time.ZoneId;
 import java.util.Properties;
 
-/**
- * Spring main Config
- * <p>
- * Created by GreyFerret on 14.12.2017.
- */
-@Configuration
-@PropertySource("file:config.properties")
-@ComponentScan(basePackages = {"dev.greyferret.ferretbot.entity", "dev.greyferret.ferretbot.service"})
-@EnableTransactionManagement
-public class SpringConfig {
-	private static final Logger logger = LogManager.getLogger(SpringConfig.class);
-
-	@Autowired
-	private DbConfig dbConfig;
-
-	private static final ZoneId zoneId = ZoneId.of("Europe/Moscow");
-
-	public static ZoneId getZoneId() {
-		return zoneId;
+@SpringBootApplication
+@EnableConfigurationProperties({ApplicationConfig.class})
+public class FerretBotApplication {
+	public static void main(String[] args) {
+		ConfigurableApplicationContext context = SpringApplication.run(FerretBotApplication.class, args);
+		context.start();
 	}
 
+	@ConfigurationProperties(prefix = "spring.datasource")
 	@Bean
-	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
-	}
-
-	@Bean
+	@Primary
 	public DataSource dataSource() {
-		DriverManagerDataSource dataSource = new DriverManagerDataSource();
-		dataSource.setDriverClassName("org.postgresql.Driver");
-		dataSource.setUrl(dbConfig.getUrl());
-		dataSource.setUsername(dbConfig.getUsername());
-		dataSource.setPassword(dbConfig.getPassword());
-		return dataSource;
+		return DataSourceBuilder
+				.create()
+				.build();
 	}
 
 	@Bean

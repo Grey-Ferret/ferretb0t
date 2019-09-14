@@ -1,11 +1,9 @@
 package dev.greyferret.ferretbot.util;
 
-import dev.greyferret.ferretbot.entity.AdventureResponse;
-import dev.greyferret.ferretbot.entity.SubVoteEntity;
-import dev.greyferret.ferretbot.entity.SubVoteGame;
-import dev.greyferret.ferretbot.entity.Viewer;
+import dev.greyferret.ferretbot.entity.*;
 import dev.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
 import io.magicthegathering.javasdk.resource.Card;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
 import org.apache.commons.lang3.StringUtils;
@@ -18,9 +16,8 @@ import java.util.*;
 /**
  * Created by GreyFerret on 18.12.2017.
  */
+@Log4j2
 public class FerretBotUtils {
-	private static final Logger logger = LogManager.getLogger(FerretBotUtils.class);
-
 	/***
 	 * Format message, delete whitespaces
 	 *
@@ -68,7 +65,7 @@ public class FerretBotUtils {
 		try {
 			return parseLootsAuthor(authorUnparsed, authorUnparsed.toLowerCase().startsWith("guest_".toLowerCase()));
 		} catch (Exception e) {
-			logger.error("Error while parsing author of loots with name: " + authorUnparsed);
+			log.error("Error while parsing author of loots with name: " + authorUnparsed);
 			return authorUnparsed;
 		}
 	}
@@ -88,11 +85,11 @@ public class FerretBotUtils {
 					res = authorUnparsed.substring(6, authorUnparsed.length() - 10);
 				}
 			} catch (Exception e) {
-				logger.error("Could not parse following name: " + authorUnparsed, e);
+				log.error("Could not parse following name: " + authorUnparsed, e);
 			}
 			return StringUtils.deleteWhitespace(res);
 		}
-		logger.error("Author of loots was blank");
+		log.error("Author of loots was blank");
 		return "";
 	}
 
@@ -100,7 +97,7 @@ public class FerretBotUtils {
 		try {
 			return message.getMember().getUser().getName() + "(" + message.getMember().getNickname() + ") in #" + message.getChannel().getName() + ": " + message.getContentRaw();
 		} catch (Exception e) {
-			logger.error("Could not build Log based on the following message: " + message, e);
+			log.error("Could not build Log based on the following message: " + message, e);
 			return "";
 		}
 	}
@@ -194,6 +191,43 @@ public class FerretBotUtils {
 		}
 		return new SubVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
 	}
+
+	public static GameVoteEntity formGameVoteEntity(List<GameVoteGame> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
+		String res = "";
+		List<Emote> selectedEmotes = new ArrayList<>();
+		HashSet<Integer> selectedEmotesId = new HashSet<>();
+		if (games.size() < emotes.size()) {
+			for (GameVoteGame subVoteGame : games) {
+				String game = subVoteGame.getGame();
+				String name = subVoteGame.getName();
+				Random rand = new Random();
+				boolean added = false;
+				int idE = -1;
+				while (!added) {
+					idE = rand.nextInt(emotes.size());
+					Emote emote = emotes.get(idE);
+					if (emote.getRoles() == null || emote.getRoles().size() == 0) {
+						added = selectedEmotesId.add(idE);
+					}
+				}
+				if (idE >= 0) {
+					Emote emote = emotes.get(idE);
+					selectedEmotes.add(emote);
+					if (StringUtils.isNoneBlank(res)) {
+						res = res + "\n";
+					}
+					if (withEmotes) {
+						res = res + emote.getAsMention() + " - ";
+					}
+					res = res + game + " (" + name + ")";
+				}
+			}
+		} else {
+			throw new NotEnoughEmotesDiscordException("Games amount:" + games.size() + "; Emotes amount: " + emotes.size());
+		}
+		return new GameVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
+	}
+
 
 	public static String formAdventureResponses(HashMap<String, AdventureResponse> responses) {
 		String res = "Варианты ответов: ";

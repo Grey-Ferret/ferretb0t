@@ -5,9 +5,12 @@ import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -17,9 +20,8 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class QueueProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(QueueProcessor.class);
-
+@Log4j2
+public class QueueProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private ViewerService viewerService;
 	@Autowired
@@ -126,5 +128,13 @@ public class QueueProcessor implements Runnable {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Queue Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

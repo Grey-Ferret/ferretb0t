@@ -1,11 +1,13 @@
 package dev.greyferret.ferretbot.service;
 
+import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.entity.ViewerLootsMap;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 
@@ -22,8 +25,14 @@ import java.util.List;
  * Created by GreyFerret on 27.12.2017.
  */
 @Service
+@Log4j2
+@EnableConfigurationProperties({ApplicationConfig.class})
 public class ViewerService {
-	private static final Logger logger = LogManager.getLogger(ViewerService.class);
+	@Autowired
+	ApplicationConfig applicationConfig;
+
+	@Value("${main.zone-id}")
+	private String zoneId;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -41,7 +50,7 @@ public class ViewerService {
 
 	@Transactional
 	public Viewer createViewer(String login) {
-		Viewer viewer = new Viewer(login.toLowerCase());
+		Viewer viewer = new Viewer(login.toLowerCase(), ZoneId.of(zoneId));
 		entityManager.persist(viewer);
 		return viewer;
 	}
@@ -67,7 +76,7 @@ public class ViewerService {
 	public void updateVisual(Viewer viewer, String visual) {
 		if (viewer == null || StringUtils.isBlank(visual))
 			return;
-		viewer.setLoginVisual(visual);
+		viewer.setLoginVisual(visual, applicationConfig.getZoneId());
 		entityManager.merge(viewer);
 		entityManager.flush();
 	}
@@ -80,7 +89,7 @@ public class ViewerService {
 		viewer.setFollowedAt(followedAt);
 		entityManager.merge(viewer);
 		entityManager.flush();
-		logger.info("Updated follower info for: " + viewer.getLoginVisual());
+		log.info("Updated follower info for: " + viewer.getLoginVisual());
 	}
 
 	@Transactional
@@ -139,7 +148,7 @@ public class ViewerService {
 			if (viewer == null) {
 				Viewer viewerByName = getViewerByName(lootsName.toLowerCase());
 				if (viewerByName != null) {
-					logger.info("Found Viewer by name: " + viewerByName.getLoginVisual());
+					log.info("Found Viewer by name: " + viewerByName.getLoginVisual());
 					viewerLootsMap.setViewer(viewerByName);
 					entityManager.merge(viewerLootsMap);
 					entityManager.flush();
@@ -159,7 +168,7 @@ public class ViewerService {
 
 	@Transactional
 	public void updateApproved(Viewer viewer, boolean approved) {
-		logger.info("Viewer " + viewer.getLoginVisual() + " set as approved");
+		log.info("Viewer " + viewer.getLoginVisual() + " set as approved");
 		viewer.setApproved(approved);
 		entityManager.merge(viewer);
 		entityManager.flush();
@@ -167,7 +176,7 @@ public class ViewerService {
 
 	@Transactional
 	public void updateViewer(Viewer viewer) {
-		logger.info("Viewer " + viewer.getLoginVisual() + " was updated");
+		log.info("Viewer " + viewer.getLoginVisual() + " was updated");
 		entityManager.merge(viewer);
 		entityManager.flush();
 	}

@@ -18,8 +18,6 @@ import javax.persistence.PersistenceContext;
 
 @Service
 public class CommandService {
-	private static final Logger logger = LogManager.getLogger(CommandService.class);
-
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired

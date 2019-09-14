@@ -3,8 +3,10 @@ package dev.greyferret.ferretbot.listener;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.processor.DiscordProcessor;
+import dev.greyferret.ferretbot.processor.GameVoteProcessor;
 import dev.greyferret.ferretbot.processor.SubVoteProcessor;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -15,29 +17,32 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 @Component
-@EnableConfigurationProperties({DiscordConfig.class})
+@Log4j2
 public class DiscordListener extends ListenerAdapter {
-	private static final Logger logger = LogManager.getLogger(DiscordListener.class);
-
 	@Autowired
 	private DiscordProcessor discordProcessor;
 	@Autowired
 	private BotConfig botConfig;
 	@Autowired
 	private SubVoteProcessor subVoteProcessor;
+	@Autowired
+	private GameVoteProcessor gameVoteProcessor;
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (!event.getMessage().getMember().getUser().getName().equalsIgnoreCase("Dyno")) {
 			if (event.isFromType(ChannelType.PRIVATE)) {
-				logger.info("PRIVATE: " + FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
+				log.info("PRIVATE: " + FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
 			} else {
-				logger.info(FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
+				log.info(FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
 			}
 		}
 
 		if (botConfig.getSubVoteOn() && event.getChannel() == discordProcessor.subsChannel) {
 			subVoteProcessor.processSubVoteMessage(event);
+		}
+		if (botConfig.getSubVoteOn() && event.getChannel() == discordProcessor.readVoteChannel) {
+			gameVoteProcessor.processGameVoteMessage(event);
 		}
 	}
 }

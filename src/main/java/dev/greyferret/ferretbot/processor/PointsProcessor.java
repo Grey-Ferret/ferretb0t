@@ -1,0 +1,30 @@
+package dev.greyferret.ferretbot.processor;
+
+import dev.greyferret.ferretbot.config.StreamelementsConfig;
+import dev.greyferret.ferretbot.util.FerretBotUtils;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component
+@EnableConfigurationProperties({StreamelementsConfig.class})
+@Log4j2
+public class PointsProcessor {
+	@Autowired
+	private StreamelementsConfig streamelementsConfig;
+	@Autowired
+	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+	@Autowired
+	private FerretChatProcessor ferretChatProcessor;
+
+	public boolean updatePoints(String nick, Long points) {
+		if (StringUtils.isNotBlank(streamelementsConfig.getChannelId()) && StringUtils.isNotBlank(streamelementsConfig.getJwtToken())) {
+			return streamElementsAPIProcessor.updatePoints(nick, points);
+		} else {
+			ferretChatProcessor.sendMessage(FerretBotUtils.buildMessageAddPoints(nick, points));
+		}
+		return false;
+	}
+}

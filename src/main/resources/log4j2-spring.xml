@@ -25,20 +25,8 @@
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
         </RollingFile>
-        <RollingFile name="chatFileLogger" fileName="${log-path}/log-chat.log"
-                     filePattern="${log-path}/log-chat-%d{yyyy-MM-dd}.log">
-            <PatternLayout>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level %-12c{1}] %msg%n</pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-            </Policies>
-        </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="ChatLogger" additivity="false">
-            <AppenderRef ref="chatFileLogger"/>
-        </Logger>
         <Root level="info">
             <AppenderRef ref="consoleLogger"/>
             <AppenderRef ref="infoFileLogger" level="info"/>

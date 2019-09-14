@@ -4,7 +4,9 @@ import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.config.Messages;
+import dev.greyferret.ferretbot.entity.json.account.Discord;
 import dev.greyferret.ferretbot.listener.DiscordListener;
+import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -18,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -27,10 +31,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 @Component
-@EnableConfigurationProperties({ChatConfig.class, DiscordConfig.class})
-public class DiscordProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(DiscordProcessor.class);
-
+@Log4j2
+@EnableConfigurationProperties(DiscordConfig.class)
+public class DiscordProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private ApplicationContext context;
 	@Autowired
@@ -43,7 +46,9 @@ public class DiscordProcessor implements Runnable {
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
 	public TextChannel subsChannel;
+	public TextChannel readVoteChannel;
 	public TextChannel subVoteChannel;
+	public TextChannel writeVoteChannel;
 	private boolean isOn;
 	private ApiProcessor apiProcessor;
 
@@ -71,13 +76,15 @@ public class DiscordProcessor implements Runnable {
 			jda = builder.build();
 			jda.awaitReady();
 		} catch (LoginException | InterruptedException e) {
-			logger.error(e);
+			log.error(e.toString());
 		}
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
 		subsChannel = jda.getTextChannelById(discordConfig.getSubsChannel());
+		readVoteChannel = jda.getTextChannelById(discordConfig.getReadVoteChannel());
 		subVoteChannel = jda.getTextChannelById(discordConfig.getSubVoteChannel());
+		writeVoteChannel = jda.getTextChannelById(discordConfig.getWriteVoteChannel());
 
 		apiProcessor = context.getBean(ApiProcessor.class);
 
@@ -91,7 +98,7 @@ public class DiscordProcessor implements Runnable {
 				Thread.sleep(discordConfig.getCheckTime());
 			}
 		} catch (InterruptedException e) {
-			logger.error(e);
+			log.error(e.toString());
 		}
 	}
 
@@ -108,5 +115,13 @@ public class DiscordProcessor implements Runnable {
 			}
 		}
 		return res;
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Discord Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

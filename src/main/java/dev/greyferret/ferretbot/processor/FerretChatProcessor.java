@@ -1,12 +1,12 @@
-package dev.greyferret.ferretbot.client;
+package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.ApplicationConfig;
+import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.Messages;
 import dev.greyferret.ferretbot.listener.FerretBotChatListener;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.defaults.DefaultBuilder;
 import org.kitteh.irc.client.library.defaults.DefaultClient;
@@ -16,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -28,10 +30,9 @@ import java.util.Optional;
 
 @Component("FerretChatClient")
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-@EnableConfigurationProperties({ChatConfig.class, ApplicationConfig.class})
-public class FerretChatClient extends DefaultClient {
-	private static final Logger logger = LogManager.getLogger(FerretChatClient.class);
-
+@EnableConfigurationProperties(ChatConfig.class)
+@Log4j2
+public class FerretChatProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private ChatConfig chatConfig;
 	@Autowired
@@ -41,7 +42,7 @@ public class FerretChatClient extends DefaultClient {
 
 	private DefaultClient client;
 
-	private FerretChatClient() {
+	private FerretChatProcessor() {
 	}
 
 	@PostConstruct
@@ -61,16 +62,9 @@ public class FerretChatClient extends DefaultClient {
 		client.getEventManager().registerEventListener(ferretBotChatListener);
 	}
 
-	public void connect() {
-		client.connect();
-		if (!applicationConfig.isDebug()) {
-			client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
-		}
-	}
-
-	public void sendMessage(@Nonnull String text) {
+	public void sendMessage(String text) {
 		if (StringUtils.isNotBlank(text)) {
-			logger.info(text);
+			log.info(text);
 			if (!applicationConfig.isDebug())
 				sendMessage(chatConfig.getChannelWithHashTag(), text);
 		}
@@ -79,13 +73,12 @@ public class FerretChatClient extends DefaultClient {
 	public void sendMessageMe(@Nonnull String text) {
 		if (StringUtils.isNotBlank(text)) {
 			text = "/me " + text;
-			logger.info(text);
+			log.info(text);
 			if (!applicationConfig.isDebug())
 				sendMessage(chatConfig.getChannelWithHashTag(), text);
 		}
 	}
 
-	@Override
 	public void sendMessage(@Nonnull String target, @Nonnull String message) {
 		if (StringUtils.isNotBlank(target) && StringUtils.isNotBlank(message)) {
 			if (!target.startsWith("#")) //Fix for Twitch channel
@@ -95,7 +88,6 @@ public class FerretChatClient extends DefaultClient {
 	}
 
 	@Nonnull
-	@Override
 	public Optional<Channel> getChannel(@Nonnull String name) {
 		if (StringUtils.isNotBlank(name)) {
 			return this.client.getActorTracker().getTrackedChannel(name);
@@ -112,8 +104,24 @@ public class FerretChatClient extends DefaultClient {
 		if (channel.isPresent()) {
 			return channel.get().getNicknames();
 		} else {
-			logger.warn("No channel was found!");
+			log.warn("No channel was found!");
 			return new ArrayList<>();
 		}
+	}
+
+	@Override
+	public void run() {
+		client.connect();
+		if (!applicationConfig.isDebug()) {
+			client.sendMessage(chatConfig.getChannelWithHashTag(), Messages.HELLO_MESSAGE);
+		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Ferret Chat Bot Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

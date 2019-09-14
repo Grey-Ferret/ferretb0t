@@ -1,13 +1,16 @@
 package dev.greyferret.ferretbot.service;
 
-import dev.greyferret.ferretbot.config.SpringConfig;
+import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.exception.TransactionRuntimeFerretBotException;
 import dev.greyferret.ferretbot.entity.Loots;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.entity.ViewerLootsMap;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +21,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -25,8 +29,10 @@ import java.util.*;
  * Created by GreyFerret on 19.12.2017.
  */
 @Service
+@Log4j2
 public class LootsService {
-	private static final Logger logger = LogManager.getLogger(LootsService.class);
+	@Value("${main.zone-id}")
+	private String zoneId;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -68,15 +74,15 @@ public class LootsService {
 					entityManager.persist(loots);
 					persisted = true;
 					res.add(loots);
-					logger.info("New Loots found!");
-					logger.info(loots);
+					log.info("New Loots found!");
+					log.info(loots.toString());
 				}
 			}
 			if (persisted) {
 				entityManager.flush();
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			log.error(e.toString());
 			throw new TransactionRuntimeFerretBotException(e);
 		}
 
@@ -90,7 +96,7 @@ public class LootsService {
 		Root<Loots> root = criteria.from(Loots.class);
 		criteria.select(root);
 
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusMonths(3);
+		ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of(zoneId)).minusMonths(3);
 		Predicate oldDate = builder.lessThan(root.get("date"), zdt);
 		criteria.where(oldDate);
 
@@ -150,13 +156,13 @@ public class LootsService {
 					loots.setPaid(true);
 					entityManager.merge(loots);
 					res.add(loots);
-					logger.info("Payment incoming for Loots " + loots.getId() + " from " + loots.getViewerLootsMap().getViewer().getLoginVisual());
+					log.info("Payment incoming for Loots " + loots.getId() + " from " + loots.getViewerLootsMap().getViewer().getLoginVisual());
 				}
 			}
 			if (res.size() > 0)
 				entityManager.flush();
 		} catch (Exception e) {
-			logger.error(e);
+			log.error(e.toString());
 			throw new TransactionRuntimeFerretBotException(e);
 		}
 

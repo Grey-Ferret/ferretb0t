@@ -5,7 +5,10 @@ import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import io.magicthegathering.javasdk.api.CardAPI;
 import io.magicthegathering.javasdk.resource.Card;
 import io.magicthegathering.javasdk.resource.ForeignData;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -14,7 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class MTGACardFinderProcessor implements Runnable {
+@Log4j2
+public class MTGACardFinderProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	public void findCard(String text, ChannelMessageEventWrapper eventWrapper) {
 		this.findCardLogic(text, eventWrapper);
 	}
@@ -61,5 +65,13 @@ public class MTGACardFinderProcessor implements Runnable {
 		} else {
 			event.sendMessageWithMention("Ничего не найдено.");
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("MTGA Cards Finder Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

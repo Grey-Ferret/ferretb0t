@@ -4,7 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 

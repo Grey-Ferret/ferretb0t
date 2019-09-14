@@ -2,8 +2,10 @@ package dev.greyferret.ferretbot.processor;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.LootsConfig;
+import dev.greyferret.ferretbot.config.StreamelementsConfig;
 import dev.greyferret.ferretbot.entity.Loots;
 import dev.greyferret.ferretbot.entity.json.account.AccountJson;
 import dev.greyferret.ferretbot.entity.json.loots.LootsJson;
@@ -11,6 +13,7 @@ import dev.greyferret.ferretbot.entity.json.loots.Ok;
 import dev.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
 import dev.greyferret.ferretbot.service.LootsService;
 import dev.greyferret.ferretbot.service.ViewerService;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,10 +26,13 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,10 +42,9 @@ import java.util.stream.Collectors;
  * Created by GreyFerret on 07.12.2017.
  */
 @Component
-@EnableConfigurationProperties({LootsConfig.class})
-public class LootsProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(LootsProcessor.class);
-
+@EnableConfigurationProperties({StreamelementsConfig.class, LootsConfig.class, ChatConfig.class, ApplicationConfig.class})
+@Log4j2
+public class LootsProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private LootsConfig lootsConfig;
 	@Autowired
@@ -50,6 +55,10 @@ public class LootsProcessor implements Runnable {
 	private ApplicationContext context;
 	@Autowired
 	private ChatConfig chatConfig;
+	@Autowired
+	private ApplicationConfig applicationConfig;
+	@Autowired
+	private PointsProcessor pointsProcessor;
 
 	private long timeRetryMS;
 	private boolean isOn;
@@ -81,24 +90,24 @@ public class LootsProcessor implements Runnable {
 		boolean retryLogin = true;
 		while (retryLogin) {
 			if (cookies == null || cookies.size() == 0) {
-				logger.info("No cookies found, starting auth...");
+				log.info("No cookies found, starting auth...");
 				retryLogin = true;
 				login();
 			}
 			if (StringUtils.isBlank(key) || StringUtils.isBlank(token) || StringUtils.isBlank(tokenChroma)) {
-				logger.info("No Key/Token/TokenChroma found, starting auth...");
+				log.info("No Key/Token/TokenChroma found, starting auth...");
 				retryLogin = true;
 				login();
 			} else {
 				retryLogin = false;
-				logger.info("Success! Loots are ready...");
+				log.info("Success! Loots are ready...");
 			}
 		}
 
 		try {
 			mainLoop();
 		} catch (InterruptedException e) {
-			logger.error("InterruptedException in LootsProcessor.java", e);
+			log.error("InterruptedException in LootsProcessor.java", e);
 		}
 	}
 
@@ -137,12 +146,12 @@ public class LootsProcessor implements Runnable {
 						.cookies(cookies)
 						.execute();
 			} catch (IOException e) {
-				logger.error("Could not request page", e);
+				log.error("Could not request page", e);
 				increaseRetry();
 			}
 			if (response != null) {
 				if (response.url().toString().contains("/auth/login")) {
-					logger.info("Login page found, starting auth...");
+					log.info("Login page found, starting auth...");
 					login();
 					continue;
 				}
@@ -153,7 +162,7 @@ public class LootsProcessor implements Runnable {
 						lootsJson = g.fromJson(response.body(), LootsJson.class);
 					} catch (Exception e) {
 						increaseRetry();
-						logger.error("Exception when parsing JSON", e);
+						log.error("Exception when parsing JSON", e);
 					}
 					if (lootsJson != null) {
 						Set<Loots> loots = parseLootsJson(lootsJson);
@@ -165,7 +174,7 @@ public class LootsProcessor implements Runnable {
 						resetRetry();
 					} else {
 						increaseRetry();
-						logger.warn("No Loots found, but without exceptions");
+						log.warn("No Loots found, but without exceptions");
 					}
 				}
 			}
@@ -186,13 +195,13 @@ public class LootsProcessor implements Runnable {
 			if (runningLootsUnparsed.size() > 0) {
 				LinkedTreeMap<String, Object> runningLoots = (LinkedTreeMap<String, Object>) runningLootsUnparsed.get(0);
 				try {
-					res.add(new Loots(runningLoots));
+					res.add(new Loots(runningLoots, applicationConfig.getZoneId()));
 				} catch (LootsRunningLootsParsingException e) {
-					logger.error("Could not parse Running Loots", e);
+					log.error("Could not parse Running Loots", e);
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Could not parse running Loots", e);
+			log.error("Could not parse running Loots", e);
 		}
 		List<Ok> newOkLoots = new ArrayList<>();
 		for (Ok ok : okLoots) {
@@ -201,7 +210,10 @@ public class LootsProcessor implements Runnable {
 			}
 		}
 		okLoots = newOkLoots;
-		Set<Loots> lootsList = okLoots.stream().map(Loots::new).collect(Collectors.toSet());
+		Set<Loots> lootsList = new HashSet<>();
+		for (Ok okLoot : okLoots) {
+			lootsList.add(new Loots(okLoot, applicationConfig.getZoneId()));
+		}
 		if (lootsList != null && lootsList.size() > 0) {
 			res.addAll(lootsList);
 			return res;
@@ -239,7 +251,7 @@ public class LootsProcessor implements Runnable {
 		headers.put("Connection", "keep-alive");
 		headers.put("Referer", "https://loots.com/en/auth/login");
 		try {
-			logger.info("Getting additional info for Loots");
+			log.info("Getting additional info for Loots");
 			response = Jsoup.connect(this.accountUrl)
 					.headers(headers)
 					.cookies(cookies)
@@ -248,7 +260,7 @@ public class LootsProcessor implements Runnable {
 					.execute();
 		} catch (IOException e) {
 			increaseRetry();
-			logger.error("Could not get account page of Loots", e);
+			log.error("Could not get account page of Loots", e);
 		}
 
 		String body = response.body();
@@ -273,7 +285,7 @@ public class LootsProcessor implements Runnable {
 		headers.put("Content-Type", "application/json");
 
 		try {
-			logger.info("Auth into Loots...");
+			log.info("Auth into Loots...");
 			response = Jsoup.connect(loginUrl)
 					.headers(headers)
 					.requestBody(requestBody)
@@ -282,7 +294,7 @@ public class LootsProcessor implements Runnable {
 					.execute();
 		} catch (IOException e) {
 			increaseRetry();
-			logger.error("Could not login into Loots", e);
+			log.error("Could not login into Loots", e);
 		}
 		cookies = response.cookies();
 	}
@@ -294,8 +306,16 @@ public class LootsProcessor implements Runnable {
 
 			} else {
 				viewerService.addPoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
-				streamElementsAPIProcessor.updatePoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
+				pointsProcessor.updatePoints(loots.getViewerLootsMap().getViewer().getLogin(), lootsConfig.getPointsForLoots());
 			}
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Loots Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

@@ -1,24 +1,22 @@
 package dev.greyferret.ferretbot.wrapper;
 
-import dev.greyferret.ferretbot.client.FerretChatClient;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.kitteh.irc.client.library.element.MessageTag;
 import org.kitteh.irc.client.library.feature.twitch.event.UserNoticeEvent;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Optional;
 
+@Log4j2
 public class UserNoticeEventWrapper {
-	private static final Logger logger = LogManager.getLogger(UserNoticeEventWrapper.class);
-
 	private UserNoticeEvent event;
 	private boolean isDebug;
-	private FerretChatClient chatClient;
+	private ApplicationContext context;
 
-	public UserNoticeEventWrapper(UserNoticeEvent event, boolean isDebug, FerretChatClient chatClient) {
+	public UserNoticeEventWrapper(UserNoticeEvent event, boolean isDebug, ApplicationContext context) {
 		this.event = event;
 		this.isDebug = isDebug;
-		this.chatClient = chatClient;
+		this.context = context;
 	}
 
 	public String getTag(String tagString) {
@@ -35,17 +33,17 @@ public class UserNoticeEventWrapper {
 	}
 
 	public void sendMessage(String text) {
-		logger.info(text);
+		log.info(text);
 		if (!isDebug)
-			chatClient.sendMessage(text);
+			context.getBean("SendMessage", text);
 	}
 
 	@Override
 	public String toString() {
 		return "UserNoticeEventWrapper{" +
-				"event=" + event +
+				"context=" + context +
+				", event=" + event +
 				", isDebug=" + isDebug +
-				", chatClient=" + chatClient +
 				'}';
 	}
 }

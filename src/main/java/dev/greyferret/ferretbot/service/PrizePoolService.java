@@ -3,6 +3,7 @@ package dev.greyferret.ferretbot.service;
 import dev.greyferret.ferretbot.entity.Prize;
 import dev.greyferret.ferretbot.entity.PrizeDefault;
 import dev.greyferret.ferretbot.entity.PrizePool;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,8 @@ import javax.persistence.criteria.Root;
 import java.util.*;
 
 @Service
+@Log4j2
 public class PrizePoolService {
-	private static final Logger logger = LogManager.getLogger(PrizePoolService.class);
-
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
@@ -31,16 +31,16 @@ public class PrizePoolService {
 		Random rand = new Random();
 		HashMap<Integer, PrizePool> prizePoolMap = getEntireCurrentPrizePool();
 		Prize prize = null;
-		logger.info("Rolling raffle!");
+		log.info("Rolling raffle!");
 
 		for (Integer i : prizePoolMap.keySet()) {
 			PrizePool prizePool = prizePoolMap.get(i);
 			if (prize == null) {
 				double randDouble = rand.nextDouble();
 				boolean rollResult = randDouble < (prizePool.getCurrentChance() / 100);
-				logger.info("Rolled (" + rollResult + ") PrizePool #" + i + ": " + randDouble + " against " + prizePool.getCurrentChance() / 100);
+				log.info("Rolled (" + rollResult + ") PrizePool #" + i + ": " + randDouble + " against " + prizePool.getCurrentChance() / 100);
 				if (rollResult) {
-					logger.info("Win! Current chance was: " + prizePool.getCurrentChance() / 100);
+					log.info("Win! Current chance was: " + prizePool.getCurrentChance() / 100);
 					prize = selectPrize(prizePool);
 					resetChance(prizePool);
 				} else {
@@ -55,7 +55,7 @@ public class PrizePoolService {
 
 	@Transactional
 	protected Prize selectPrize(PrizePool prizePool) {
-		logger.info("Selecting prize...");
+		log.info("Selecting prize...");
 		ArrayList<Prize> allPrizes = new ArrayList<>();
 		for (Prize t : prizePool.getPrizes()) {
 			for (int i = 0; i < t.getAmount(); i++) {
@@ -70,13 +70,13 @@ public class PrizePoolService {
 
 	@Transactional
 	protected void resetChance(PrizePool prizePool) {
-		logger.info("Resetting chance for PrizePool " + prizePool.getType());
+		log.info("Resetting chance for PrizePool " + prizePool.getType());
 		setChance(prizePool, prizePool.getChance());
 	}
 
 	@Transactional
 	protected void removePrizeFromPool(PrizePool pool, Prize prize) {
-		logger.info("Removing prize from pool");
+		log.info("Removing prize from pool");
 
 		ArrayList<Prize> prizes = pool.getPrizes();
 		ArrayList<Prize> newPrizes = new ArrayList<>();
@@ -138,7 +138,7 @@ public class PrizePoolService {
 
 	@Transactional
 	protected PrizePool restorePrizePoolForType(int type) {
-		logger.info("Restoring presents for type " + type);
+		log.info("Restoring presents for type " + type);
 		PrizePool oldPrizePool = entityManager.find(PrizePool.class, type);
 		PrizePool prizePool = PrizeDefault.getPrizePoolForType(type);
 		if (prizePool != null) {

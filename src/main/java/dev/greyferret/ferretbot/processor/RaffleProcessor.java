@@ -1,8 +1,6 @@
 package dev.greyferret.ferretbot.processor;
 
-import dev.greyferret.ferretbot.client.FerretChatClient;
 import dev.greyferret.ferretbot.config.ApplicationConfig;
-import dev.greyferret.ferretbot.config.SpringConfig;
 import dev.greyferret.ferretbot.entity.Prize;
 import dev.greyferret.ferretbot.entity.Raffle;
 import dev.greyferret.ferretbot.entity.RaffleViewer;
@@ -11,11 +9,15 @@ import dev.greyferret.ferretbot.service.PrizePoolService;
 import dev.greyferret.ferretbot.service.RaffleService;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -24,8 +26,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
-public class RaffleProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ViewersProcessor.class);
+@Log4j2
+public class RaffleProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
+	@Value("${main.zone-id}")
+	private String zoneId;
 
 	@Autowired
 	private ApplicationContext context;
@@ -39,10 +43,12 @@ public class RaffleProcessor implements Runnable {
 	private ApiProcessor apiProcessor;
 	@Autowired
 	private ApplicationConfig applicationConfig;
+	@Autowired
+	private PointsProcessor pointsProcessor;
 
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
-	private FerretChatClient ferretChatClient;
+	private FerretChatProcessor ferretChatClient;
 	private DiscordProcessor discordProcessor;
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 
@@ -57,14 +63,14 @@ public class RaffleProcessor implements Runnable {
 
 	@Override
 	public void run() {
-		ferretChatClient = context.getBean("FerretChatClient", FerretChatClient.class);
+		ferretChatClient = context.getBean("FerretChatClient", FerretChatProcessor.class);
 		discordProcessor = context.getBean(DiscordProcessor.class);
 		boolean lastChannelStatus = apiProcessor.getChannelStatus();
 		while (isOn) {
 			try {
 				Thread.sleep(60000);
 			} catch (InterruptedException e) {
-				logger.error(e);
+				log.error(e.toString());
 			}
 
 			boolean currentChannelStatus = apiProcessor.getChannelStatus();
@@ -73,9 +79,9 @@ public class RaffleProcessor implements Runnable {
 				if (lastRaffle == null) {
 					rollRaffle();
 				} else {
-					ZonedDateTime lastTodayCal = lastRaffle.getDate().plusMinutes(30);
+					ZonedDateTime lastTodayCal = lastRaffle.getDate(applicationConfig.getZoneId()).plusMinutes(30);
 
-					if (lastTodayCal.isBefore(ZonedDateTime.now(SpringConfig.getZoneId()))) {
+					if (lastTodayCal.isBefore(ZonedDateTime.now(ZoneId.of(zoneId)))) {
 						if (lastChannelStatus) {
 							rollRaffle();
 						} else {
@@ -90,7 +96,7 @@ public class RaffleProcessor implements Runnable {
 
 	private void createBlankRaffle() {
 		Raffle raffle = new Raffle();
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId()).minusMinutes(20);
+		ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of(zoneId)).minusMinutes(20);
 		raffle.setDate(zdt);
 		raffleService.put(raffle);
 	}
@@ -146,7 +152,7 @@ public class RaffleProcessor implements Runnable {
 			message = " Зритель " + viewer.getLoginVisual() + " выиграл " + prize.getName() + "! Поздравляем! ";
 			messageDiscord = " Зритель " + FerretBotUtils.escapeNicknameForDiscord(viewer.getLoginVisual()) + " выиграл " + prize.getName() + "! Поздравляем! ";
 		}
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
+		ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of(zoneId));
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.forLanguageTag("ru"));
 		ferretChatClient.sendMessage(message);
 
@@ -171,10 +177,10 @@ public class RaffleProcessor implements Runnable {
 			try {
 				pointsToChange = Long.valueOf(pointsToChangeString);
 			} catch (NumberFormatException ex) {
-				logger.error("There was an error while attempting to convert String to Integer", ex);
+				log.error("There was an error while attempting to convert String to Integer", ex);
 			}
 			if (pointsToChange != null) {
-				streamElementsAPIProcessor.updatePoints(viewer.getLoginVisual(), pointsToChange);
+				pointsProcessor.updatePoints(viewer.getLoginVisual(), pointsToChange);
 			}
 		}
 
@@ -195,7 +201,7 @@ public class RaffleProcessor implements Runnable {
 				follower = apiProcessor.isFollowerByFollowedAtString(followDate);
 				viewerService.updateFollowerStatus(viewerByName, followDate, follower);
 				if (!follower) {
-					logger.info("User " + login + " was not added to raffle due him not being follower");
+					log.info("User " + login + " was not added to raffle due him not being follower");
 					return;
 				}
 			}
@@ -204,7 +210,7 @@ public class RaffleProcessor implements Runnable {
 				raffleViewer = new RaffleViewer(login);
 			} else {
 				raffleViewer = viewers.get(login);
-				raffleViewer.addMessageTime(ZonedDateTime.now(SpringConfig.getZoneId()));
+				raffleViewer.addMessageTime(ZonedDateTime.now(ZoneId.of(zoneId)));
 			}
 			viewers.put(login, raffleViewer);
 		}
@@ -214,5 +220,13 @@ public class RaffleProcessor implements Runnable {
 		synchronized (viewers) {
 			viewers = new HashMap<>();
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Raffle Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

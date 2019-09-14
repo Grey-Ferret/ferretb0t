@@ -2,6 +2,7 @@ package dev.greyferret.ferretbot.service;
 
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.entity.ViewerLootsMap;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,9 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Log4j2
 public class ViewerLootsMapService {
-	private static final Logger logger = LogManager.getLogger(ViewerLootsMapService.class);
-
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
@@ -102,7 +102,7 @@ public class ViewerLootsMapService {
 			return "No alias were found";
 		} else {
 			if (viewerLootsMapList.size() > 1)
-				logger.warn("Found more than 1 viewer with the same very same Loots name: " + lootsName);
+				log.warn("Found more than 1 viewer with the same very same Loots name: " + lootsName);
 			viewerLootsMap = viewerLootsMapList.get(0);
 			String twitchNick = "";
 			Viewer viewer = viewerLootsMap.getViewer();
@@ -128,7 +128,7 @@ public class ViewerLootsMapService {
 			entityManager.flush();
 			return "Успешно удалено!";
 		} catch (ConstraintViolationException ex) {
-			logger.error(ex);
+			log.error(ex.toString());
 			return "Что-то пошло не так...";
 		}
 	}

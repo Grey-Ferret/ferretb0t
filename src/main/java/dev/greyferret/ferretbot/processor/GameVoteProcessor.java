@@ -1,10 +1,10 @@
 package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.DiscordConfig;
-import dev.greyferret.ferretbot.entity.SubVoteEntity;
-import dev.greyferret.ferretbot.entity.SubVoteGame;
+import dev.greyferret.ferretbot.entity.GameVoteEntity;
+import dev.greyferret.ferretbot.entity.GameVoteGame;
 import dev.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
-import dev.greyferret.ferretbot.service.SubVoteGameService;
+import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.Emote;
@@ -13,8 +13,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.RateLimitedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
@@ -26,13 +24,13 @@ import java.util.List;
 
 @Component
 @Log4j2
-public class SubVoteProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
+public class GameVoteProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private DiscordConfig discordConfig;
 	@Autowired
 	private DiscordProcessor discordProcessor;
 	@Autowired
-	private SubVoteGameService subVoteGameService;
+	private GameVoteGameService gameVoteGameService;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -42,74 +40,73 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 	public void run() {
 	}
 
-	public void processSubVoteMessage(MessageReceivedEvent event) {
+	public void processGameVoteMessage(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentDisplay();
 		if (discordConfig.getSubVoteAdminId().contains(event.getMember().getUser().getId())) {
 			if (message.equalsIgnoreCase("!reset")) {
-				boolean reseted = subVoteGameService.reset();
+				boolean reseted = gameVoteGameService.reset();
 				if (reseted) {
-					discordProcessor.subsChannel.sendMessage("Список игр успешно сброшен!").queue();
+					discordProcessor.readVoteChannel.sendMessage("Список игр успешно сброшен!").queue();
 				} else {
-					discordProcessor.subsChannel.sendMessage("Что-то пошло не так...").queue();
+					discordProcessor.readVoteChannel.sendMessage("Что-то пошло не так...").queue();
 				}
 			} else if (message.equalsIgnoreCase("!publish")) {
-				postSubVote(discordProcessor.subVoteChannel, true);
+				postGameVote(discordProcessor.writeVoteChannel, true);
 			}
 		}
 		if (message.toLowerCase().startsWith("!игры")) {
-			postSubVote(discordProcessor.subsChannel, false);
+			postGameVote(discordProcessor.readVoteChannel, false);
 		}
 		if (message.toLowerCase().startsWith("!игра")) {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
 				if (StringUtils.isBlank(game)) {
-					discordProcessor.subsChannel.sendMessage("Ошибка получения игры...").queue();
+					discordProcessor.readVoteChannel.sendMessage("Ошибка получения игры...").queue();
 				} else {
 					boolean foundOption = false;
-					List<SubVoteGame> subVoteGameList = subVoteGameService.getByGame(game);
-					for (SubVoteGame subVoteGame : subVoteGameList) {
-						String _game = subVoteGame.getGame();
+					List<GameVoteGame> gameVoteList = gameVoteGameService.getByGame(game);
+					for (GameVoteGame gameVoteGame : gameVoteList) {
+						String _game = gameVoteGame.getGame();
 						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
-							if (event.getMember().getUser().getId().equals(subVoteGame.getId())) {
-								discordProcessor.subsChannel.sendMessage("Такая игра уже предложена вами!").queue();
+							if (event.getMember().getUser().getId().equals(gameVoteGame.getId())) {
+								discordProcessor.readVoteChannel.sendMessage("Такая игра уже предложена вами!").queue();
 							} else {
-								discordProcessor.subsChannel.sendMessage("Такая игра уже предложена...").queue();
+								discordProcessor.readVoteChannel.sendMessage("Такая игра уже предложена...").queue();
 							}
 							foundOption = true;
 							break;
 						}
 					}
 					if (!foundOption) {
-						if (subVoteGameService.containsId(event.getMember().getUser().getId())) {
-							discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
+						if (gameVoteGameService.containsId(event.getMember().getUser().getId())) {
+							discordProcessor.readVoteChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
 						} else {
-							discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
+							discordProcessor.readVoteChannel.sendMessage("Игра была успешно добавлена!").queue();
 						}
-						subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
+						gameVoteGameService.addOrUpdate(new GameVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
 					}
 				}
 			}
 		}
 	}
 
-	private void postSubVote(TextChannel channel, boolean withEmotes) {
+	private void postGameVote(TextChannel channel, boolean withEmotes) {
 		try {
-			List<SubVoteGame> subGames = subVoteGameService.getAll();
+			List<GameVoteGame> subGames = gameVoteGameService.getAll();
 			log.info("Found " + subGames.size() + " SubGames");
 			log.info(subGames.toString());
 			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
 			log.info("Found " + publicEmotes.size() + " emotes");
-			SubVoteEntity subVoteEntity = null;
-			subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
-			log.info("Formed subVoteEntity.");
-			log.info(subVoteEntity.toString());
-			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
+			GameVoteEntity gameVoteEntity = FerretBotUtils.formGameVoteEntity(subGames, publicEmotes, withEmotes);
+			log.info("Formed GameVoteEntity.");
+			log.info(gameVoteEntity.toString());
+			if (StringUtils.isBlank(gameVoteEntity.getMessage())) {
 				channel.sendMessage("Нет предложенных игр...").queue();
 			} else {
-				Message complete = channel.sendMessage(subVoteEntity.getMessage()).complete(true);
+				Message complete = channel.sendMessage(gameVoteEntity.getMessage()).complete(true);
 				String voteId = complete.getId();
 				if (withEmotes) {
-					for (Emote emote : subVoteEntity.getEmotes()) {
+					for (Emote emote : gameVoteEntity.getEmotes()) {
 						channel.addReactionById(voteId, emote).queue();
 					}
 				}
@@ -125,7 +122,7 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 	@Override
 	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
 		Thread thread = new Thread(this);
-		thread.setName("SubVote Thread");
+		thread.setName("GameVote Thread");
 		thread.start();
 		log.info(thread.getName() + " started");
 	}

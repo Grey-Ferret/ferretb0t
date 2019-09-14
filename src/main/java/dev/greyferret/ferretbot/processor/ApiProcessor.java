@@ -10,6 +10,7 @@ import dev.greyferret.ferretbot.entity.json.twitch.streams.TwitchStreamsJson;
 import dev.greyferret.ferretbot.entity.json.twitch.users.Users;
 import dev.greyferret.ferretbot.entity.json.twitch.users.follows.Follows;
 import dev.greyferret.ferretbot.service.ViewerService;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +18,8 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -26,10 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@EnableConfigurationProperties({ChatConfig.class})
-public class ApiProcessor implements Runnable {
-	private static final Logger logger = LogManager.getLogger(ApiProcessor.class);
-
+@Log4j2
+public class ApiProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	private static final String twitchAPIPrefix = "https://api.twitch.tv/helix/";
 	private String channelStatusUrl;
 	private String gameInfoUrl;
@@ -72,7 +73,7 @@ public class ApiProcessor implements Runnable {
 					.execute();
 			String body = response.body();
 			if (StringUtils.isBlank(body)) {
-				logger.error("Could not request Channel Status, response was blank");
+				log.error("Could not request Channel Status, response was blank");
 			} else {
 				Gson g = new Gson();
 				TwitchStreamsJson json = g.fromJson(body, TwitchStreamsJson.class);
@@ -89,13 +90,13 @@ public class ApiProcessor implements Runnable {
 							String gameId = twitchInfo.getGameId();
 							TwitchGames gameInfo = getGameInfo(gameId);
 							if (gameInfo == null || gameInfo.getData() == null || gameInfo.getData().size() == 0 || StringUtils.isBlank(gameInfo.getData().get(0).getName())) {
-								logger.warn("Stream in JSON was not null, had Stream Type, had Game Id, but could not parse games request");
+								log.warn("Stream in JSON was not null, had Stream Type, had Game Id, but could not parse games request");
 								result = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();
 							} else {
 								result = Messages.ANNOUNCE_MESSAGE_1 + gameInfo.getData().get(0).getName() + Messages.ANNOUNCE_MESSAGE_2 + chatConfig.getChannel();
 							}
 						} else {
-							logger.warn("Stream in JSON was not null, had Stream Type, but no Game was found");
+							log.warn("Stream in JSON was not null, had Stream Type, but no Game was found");
 							result = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();
 						}
 					}
@@ -105,7 +106,7 @@ public class ApiProcessor implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			logger.error("Could not request Channel Status", e);
+			log.error("Could not request Channel Status", e);
 			return result;
 		}
 		return result;
@@ -127,14 +128,14 @@ public class ApiProcessor implements Runnable {
 			Gson gson = new Gson();
 			twitchGames = gson.fromJson(body, TwitchGames.class);
 		} catch (IOException e) {
-			logger.error(e);
+			log.error(e.toString());
 			return twitchGames;
 		}
 		return twitchGames;
 	}
 
 	public String getUserIdByLogin(String login) {
-		logger.info("Getting id for Twitch Login " + login);
+		log.info("Getting id for Twitch Login " + login);
 		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();
@@ -151,13 +152,13 @@ public class ApiProcessor implements Runnable {
 				return "";
 			} else {
 				if (users.getData().size() != 1) {
-					logger.warn("There was found more or less than one user by login " + login + ". Result: " + users.getData());
+					log.warn("There was found more or less than one user by login " + login + ". Result: " + users.getData());
 				} else {
 					return users.getData().get(0).getId();
 				}
 			}
 		} catch (Exception ex) {
-			logger.error("Error while checking for twitch id: " + ex);
+			log.error("Error while checking for twitch id: " + ex);
 			return null;
 		}
 		return "";
@@ -183,13 +184,13 @@ public class ApiProcessor implements Runnable {
 	}
 
 	public String getFollowDateByUserId(String userId) {
-		logger.info("Checking is follower for user id " + userId);
+		log.info("Checking is follower for user id " + userId);
 		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("Client-ID", chatConfig.getClientId());
 			if (StringUtils.isBlank(userId)) {
-				logger.error("Error while checking for follower  (userId): " + userId);
+				log.error("Error while checking for follower  (userId): " + userId);
 			}
 			response = Jsoup.connect(followerInfoUrl + userId + "&to_id=" + streamerId())
 					.method(Connection.Method.GET)
@@ -205,7 +206,7 @@ public class ApiProcessor implements Runnable {
 				return follows.getData().get(0).getFollowedAt();
 			}
 		} catch (Exception ex) {
-			logger.error("Error while checking for follower (userId): " + userId + "Exception: " + ex);
+			log.error("Error while checking for follower (userId): " + userId + "Exception: " + ex);
 		}
 		return "";
 	}
@@ -217,12 +218,20 @@ public class ApiProcessor implements Runnable {
 			userId = getUserIdByLogin(login);
 		}
 		if (StringUtils.isBlank(userId)) {
-			logger.error("Error while checking for follower: " + login);
+			log.error("Error while checking for follower: " + login);
 		}
 		return getFollowDateByUserId(userId);
 	}
 
 	public boolean getChannelStatus() {
 		return this.currentChannelStatus == ChannelStatus.ONLINE;
+	}
+
+	@Override
+	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
+		Thread thread = new Thread(this);
+		thread.setName("Api Thread");
+		thread.start();
+		log.info(thread.getName() + " started");
 	}
 }

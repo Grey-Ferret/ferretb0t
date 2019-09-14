@@ -1,39 +1,36 @@
 package dev.greyferret.ferretbot.config;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
+
+import java.time.ZoneId;
 
 /**
  * Created by GreyFerret on 15/12/2017.
  */
-@Component
-@Validated
 @ConfigurationProperties(prefix = "main")
 public class ApplicationConfig {
-	private static final Logger logger = LogManager.getLogger(ApplicationConfig.class);
-
-	@NotEmpty
-	private String debug;
-	private boolean isDebug;
-
-	public boolean isDebug() {
-		return this.isDebug;
-	}
+	private boolean _debug;
+	private String _zoneId;
 
 	public void setDebug(String debug) {
-		this.debug = debug;
-		if (this.debug.equalsIgnoreCase("true")) {
-			logger.info("Application running in DEBUG mode");
-			this.isDebug = true;
-		} else if (this.debug.equalsIgnoreCase("false")) {
-			this.isDebug = false;
+		if (StringUtils.isNotBlank(debug) &&
+				(debug.equalsIgnoreCase("true") || debug.equalsIgnoreCase("1"))) {
+			this._debug = true;
 		} else {
-			logger.fatal("Could not parse 'main.debug' property " + this.debug);
-			throw new RuntimeException();
+			this._debug = false;
 		}
+	}
+
+	public void setZoneId(String zoneId) {
+		this._zoneId = zoneId;
+	}
+
+	public ZoneId getZoneId() {
+		return ZoneId.of(_zoneId);
+	}
+
+	public boolean isDebug() {
+		return this._debug;
 	}
 }

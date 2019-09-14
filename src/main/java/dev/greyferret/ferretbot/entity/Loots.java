@@ -1,15 +1,21 @@
 package dev.greyferret.ferretbot.entity;
 
 import com.google.gson.internal.LinkedTreeMap;
-import dev.greyferret.ferretbot.config.SpringConfig;
+import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.entity.json.loots.Ok;
 import dev.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import org.hibernate.annotations.Type;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -21,6 +27,7 @@ import java.util.Locale;
  */
 @Entity
 @Table(name = "loots")
+@EnableConfigurationProperties({ApplicationConfig.class})
 public class Loots implements Serializable {
 	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "message")
@@ -41,11 +48,11 @@ public class Loots implements Serializable {
 	private Loots() {
 	}
 
-	public Loots(Ok entry) {
+	public Loots(Ok entry, ZoneId zoneId) {
 		this.message = entry.getAttachments().getMessage();
 		this.id = entry.getId();
 		this.paid = false;
-		this.date = ZonedDateTime.now(SpringConfig.getZoneId()).toLocalDateTime();
+		this.date = ZonedDateTime.now(zoneId).toLocalDateTime();
 		String name = FerretBotUtils.parseLootsAuthor(entry.getFrom().getAccount().getName());
 		this.lootsName = name;
 	}
@@ -55,7 +62,7 @@ public class Loots implements Serializable {
 	 *
 	 * @param runningLoots
 	 */
-	public Loots(LinkedTreeMap<String, java.lang.Object> runningLoots) throws LootsRunningLootsParsingException {
+	public Loots(LinkedTreeMap<String, Object> runningLoots, ZoneId zoneId) throws LootsRunningLootsParsingException {
 		try {
 			this.id = String.valueOf(runningLoots.get("_id"));
 			LinkedTreeMap<String, Object> attachments = (LinkedTreeMap<String, Object>) runningLoots.get("attachments");
@@ -63,22 +70,15 @@ public class Loots implements Serializable {
 			LinkedTreeMap<String, Object> from = (LinkedTreeMap<String, Object>) runningLoots.get("from");
 			LinkedTreeMap<String, Object> account = (LinkedTreeMap<String, Object>) from.get("account");
 			this.lootsName = FerretBotUtils.parseLootsAuthor((String) account.get("name"));
-			this.date = ZonedDateTime.now(SpringConfig.getZoneId()).toLocalDateTime();
+			this.date = ZonedDateTime.now(zoneId).toLocalDateTime();
 			this.paid = false;
 		} catch (Exception e) {
 			throw new LootsRunningLootsParsingException(e);
 		}
 	}
 
-	@PostPersist
-	private void postPersist() {
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
-		setDate(zdt);
-	}
-
 	@Override
 	public String toString() {
-		ZonedDateTime zdt = ZonedDateTime.now(SpringConfig.getZoneId());
 		String lootsName = this.lootsName;
 		String twitchName = this.lootsName;
 		if (viewerLootsMap != null) {
@@ -108,7 +108,7 @@ public class Loots implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		return id == null ? 0 : id.hashCode();
 	}
 
 	public String getMessage() {
@@ -127,11 +127,11 @@ public class Loots implements Serializable {
 		this.id = id;
 	}
 
-	public ZonedDateTime getDate() {
+	public ZonedDateTime getDate(ZoneId zoneId) {
 		if (this.date == null) {
 			return null;
 		}
-		return ZonedDateTime.of(this.date, SpringConfig.getZoneId());
+		return ZonedDateTime.of(this.date, zoneId);
 	}
 
 	public void setDate(LocalDateTime date) {

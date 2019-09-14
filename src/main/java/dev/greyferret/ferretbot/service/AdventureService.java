@@ -27,8 +27,6 @@ import java.util.Random;
  */
 @Service
 public class AdventureService {
-	private static final Logger logger = LogManager.getLogger(AdventureService.class);
-
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired

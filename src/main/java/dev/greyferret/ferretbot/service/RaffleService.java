@@ -17,8 +17,6 @@ import java.util.List;
 
 @Service
 public class RaffleService {
-	private static final Logger logger = LogManager.getLogger(RaffleService.class);
-
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
