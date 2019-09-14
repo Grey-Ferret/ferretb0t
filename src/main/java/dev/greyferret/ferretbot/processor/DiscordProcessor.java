@@ -1,10 +1,9 @@
 package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.ApplicationConfig;
-import dev.greyferret.ferretbot.config.ChatConfig;
+import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.config.Messages;
-import dev.greyferret.ferretbot.entity.json.account.Discord;
 import dev.greyferret.ferretbot.listener.DiscordListener;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
@@ -15,8 +14,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -32,7 +29,7 @@ import java.util.List;
 
 @Component
 @Log4j2
-@EnableConfigurationProperties(DiscordConfig.class)
+@EnableConfigurationProperties({DiscordConfig.class, BotConfig.class})
 public class DiscordProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
 	private ApplicationContext context;
@@ -40,6 +37,8 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 	private DiscordConfig discordConfig;
 	@Autowired
 	private ApplicationConfig applicationConfig;
+	@Autowired
+	private BotConfig botConfig;
 
 	private JDA jda;
 	public TextChannel announcementChannel;
@@ -119,9 +118,13 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 
 	@Override
 	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
-		Thread thread = new Thread(this);
-		thread.setName("Discord Thread");
-		thread.start();
-		log.info(thread.getName() + " started");
+		if (botConfig.isDiscordOn()) {
+			Thread thread = new Thread(this);
+			thread.setName("Discord Thread");
+			thread.start();
+			log.info(thread.getName() + " started");
+		} else {
+			log.info("Discord is off");
+		}
 	}
 }

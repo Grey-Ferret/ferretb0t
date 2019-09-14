@@ -2,10 +2,7 @@ package dev.greyferret.ferretbot.processor;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import dev.greyferret.ferretbot.config.ApplicationConfig;
-import dev.greyferret.ferretbot.config.ChatConfig;
-import dev.greyferret.ferretbot.config.LootsConfig;
-import dev.greyferret.ferretbot.config.StreamelementsConfig;
+import dev.greyferret.ferretbot.config.*;
 import dev.greyferret.ferretbot.entity.Loots;
 import dev.greyferret.ferretbot.entity.json.account.AccountJson;
 import dev.greyferret.ferretbot.entity.json.loots.LootsJson;
@@ -15,8 +12,6 @@ import dev.greyferret.ferretbot.service.LootsService;
 import dev.greyferret.ferretbot.service.ViewerService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
@@ -32,9 +27,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Loots bot
@@ -42,7 +35,7 @@ import java.util.stream.Collectors;
  * Created by GreyFerret on 07.12.2017.
  */
 @Component
-@EnableConfigurationProperties({StreamelementsConfig.class, LootsConfig.class, ChatConfig.class, ApplicationConfig.class})
+@EnableConfigurationProperties({StreamelementsConfig.class, LootsConfig.class, ChatConfig.class, ApplicationConfig.class, BotConfig.class})
 @Log4j2
 public class LootsProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
@@ -59,6 +52,8 @@ public class LootsProcessor implements Runnable, ApplicationListener<ContextStar
 	private ApplicationConfig applicationConfig;
 	@Autowired
 	private PointsProcessor pointsProcessor;
+	@Autowired
+	private BotConfig botConfig;
 
 	private long timeRetryMS;
 	private boolean isOn;
@@ -313,9 +308,13 @@ public class LootsProcessor implements Runnable, ApplicationListener<ContextStar
 
 	@Override
 	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
-		Thread thread = new Thread(this);
-		thread.setName("Loots Thread");
-		thread.start();
-		log.info(thread.getName() + " started");
+		if (botConfig.isLootsOn()) {
+			Thread thread = new Thread(this);
+			thread.setName("Loots Thread");
+			thread.start();
+			log.info(thread.getName() + " started");
+		} else {
+			log.info("Loots off");
+		}
 	}
 }

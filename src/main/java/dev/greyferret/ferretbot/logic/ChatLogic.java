@@ -75,7 +75,7 @@ public class ChatLogic {
 				adventureProcessor.checkAdventurer(event);
 			}
 			boolean foundCustomLogicCommand = false;
-			if (message.toLowerCase().startsWith("!иду") && botConfig.getStreamElementsIntegrationOn()) {
+			if (message.toLowerCase().startsWith("!иду") && botConfig.isStreamElementsIntegrationOn()) {
 				adventureProcessor.joinAdventure(event);
 			} else if (message.length() == 2 || message.length() == 1) {
 				String keyword = StringUtils.replace(message.toLowerCase(), "!", "");
@@ -83,11 +83,11 @@ public class ChatLogic {
 					adventureProcessor.setAdventurerResponse(event, keyword);
 				}
 			}
-			if (botConfig.getQueueOn()) {
+			if (botConfig.isQueueOn()) {
 				QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);
 				queueProcessor.proceed(event);
 			}
-			if (botConfig.getMtgaCardsOn() && (message.toLowerCase().startsWith("!card") || message.toLowerCase().startsWith("!карта"))) {
+			if (botConfig.isMtgaCardsOn() && (message.toLowerCase().startsWith("!card") || message.toLowerCase().startsWith("!карта"))) {
 				if (message.contains(" ") && message.length() > message.indexOf(" ") + 1) {
 					String keyword = message.substring(message.indexOf(" ") + 1);
 					if (keyword != null && keyword.length() > 0) {
@@ -105,7 +105,7 @@ public class ChatLogic {
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollSmack(event.getLoginVisual());
 			}
-			if (!foundCustomLogicCommand && botConfig.getCustomCommandsOn()) {
+			if (!foundCustomLogicCommand && botConfig.isCustomCommandsOn()) {
 				CommandService commandService = context.getBean(CommandService.class);
 				commandService.proceedTextCommand(split[0].toLowerCase(), event);
 			}
@@ -123,7 +123,7 @@ public class ChatLogic {
 		String[] split = StringUtils.split(message, " ");
 
 		if (split[0].toLowerCase().startsWith("!")) {
-			if (botConfig.getCustomCommandsOn()) {
+			if (botConfig.isCustomCommandsOn()) {
 				if (split[0].toLowerCase().startsWith("!command")) {
 					if (split.length >= 3) {
 						if (split.length > 3) {
@@ -154,7 +154,7 @@ public class ChatLogic {
 					}
 				}
 			}
-			if (botConfig.getQueueOn()) {
+			if (botConfig.isQueueOn()) {
 				if (message.toLowerCase().startsWith("!queue")) {
 					if (message.toLowerCase().startsWith("!queue add ") && split.length >= 3) {
 						QueueProcessor queueProcessor = context.getBean(QueueProcessor.class);

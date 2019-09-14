@@ -8,16 +8,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @ConfigurationProperties(prefix = "bot")
 public class BotConfig {
-	private Boolean discordOn;
-	private Boolean lootsOn;
-	private Boolean queueOn;
-	private Boolean raffleOn;
-	private Boolean customCommandsOn;
-	private Boolean subAlertOn;
-	private Boolean bitsOn;
-	private Boolean viewersServiceOn;
-	private Boolean viewersPassivePointsOn;
-	private Boolean streamElementsIntegrationOn;
-	private Boolean mtgaCardsOn;
-	private Boolean subVoteOn;
+	private boolean discordOn = false;
+	private boolean lootsOn = false;
+	private boolean queueOn = false;
+	private boolean raffleOn = false;
+	private boolean customCommandsOn = false;
+	private boolean subAlertOn = false;
+	private boolean bitsOn = false;
+	private boolean viewersPassivePointsOn = false;
+	private boolean streamElementsIntegrationOn = false;
+	private boolean mtgaCardsOn = false;
+	private boolean subVoteOn = false;
 }

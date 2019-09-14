@@ -1,5 +1,6 @@
 package dev.greyferret.ferretbot.processor;
 
+import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.GameVoteEntity;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
@@ -23,6 +24,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Component
+@EnableConfigurationProperties({BotConfig.class})
 @Log4j2
 public class GameVoteProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Autowired
@@ -31,6 +33,8 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 	private DiscordProcessor discordProcessor;
 	@Autowired
 	private GameVoteGameService gameVoteGameService;
+	@Autowired
+	private BotConfig botConfig;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -121,9 +125,13 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 
 	@Override
 	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
-		Thread thread = new Thread(this);
-		thread.setName("GameVote Thread");
-		thread.start();
-		log.info(thread.getName() + " started");
+		if (botConfig.isSubVoteOn()) {
+			Thread thread = new Thread(this);
+			thread.setName("GameVote Thread");
+			thread.start();
+			log.info(thread.getName() + " started");
+		} else {
+			log.info("Game Vote off");
+		}
 	}
 }

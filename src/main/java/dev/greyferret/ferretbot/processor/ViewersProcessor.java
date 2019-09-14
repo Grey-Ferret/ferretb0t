@@ -74,7 +74,7 @@ public class ViewersProcessor implements Runnable, ApplicationListener<ContextSt
 				log.error(e.toString());
 			}
 
-			if (botConfig.getViewersPassivePointsOn()) {
+			if (botConfig.isViewersPassivePointsOn()) {
 				lastResult = checkViewersAndAddPoints();
 			} else {
 				lastResult = true;

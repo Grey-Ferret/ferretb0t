@@ -80,7 +80,7 @@ public class FerretBotChatListener extends TwitchListener {
 	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
 		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), context);
 
-		if (botConfig.getRaffleOn()) {
+		if (botConfig.isRaffleOn()) {
 			if (raffleProcessor == null) {
 				raffleProcessor = context.getBean(RaffleProcessor.class);
 			}
@@ -90,39 +90,37 @@ public class FerretBotChatListener extends TwitchListener {
 		String login = eventWrapper.getLogin();
 //		chatlog.info(login + ": " + eventWrapper.getMessage());
 
-		if (botConfig.getViewersServiceOn()) {
-			Viewer viewer = viewerService.getViewerByName(login);
-			if (viewer != null) {
-				String subscriber = eventWrapper.getTag("subscriber");
-				if (subscriber.equalsIgnoreCase("1"))
-					viewerService.setSubscriber(viewer, true);
-				else
-					viewerService.setSubscriber(viewer, false);
-				String vip = eventWrapper.getTag("vip");
-				if (vip.equalsIgnoreCase("1"))
-					viewerService.setVip(viewer, true);
-				else
-					viewerService.setVip(viewer, false);
-				boolean toUpdateMeta = false;
-				if (viewer.getUpdatedVisual(applicationConfig.getZoneId()) != null) {
-					ZonedDateTime zdt = viewer.getUpdatedVisual(applicationConfig.getZoneId()).plusHours(Viewer.hoursToUpdateVisual);
-					if (zdt.isBefore(ZonedDateTime.now(ZoneId.of(zoneId)))) {
-						toUpdateMeta = true;
-					}
-				} else {
+		Viewer viewer = viewerService.getViewerByName(login);
+		if (viewer != null) {
+			String subscriber = eventWrapper.getTag("subscriber");
+			if (subscriber.equalsIgnoreCase("1"))
+				viewerService.setSubscriber(viewer, true);
+			else
+				viewerService.setSubscriber(viewer, false);
+			String vip = eventWrapper.getTag("vip");
+			if (vip.equalsIgnoreCase("1"))
+				viewerService.setVip(viewer, true);
+			else
+				viewerService.setVip(viewer, false);
+			boolean toUpdateMeta = false;
+			if (viewer.getUpdatedVisual(applicationConfig.getZoneId()) != null) {
+				ZonedDateTime zdt = viewer.getUpdatedVisual(applicationConfig.getZoneId()).plusHours(Viewer.hoursToUpdateVisual);
+				if (zdt.isBefore(ZonedDateTime.now(ZoneId.of(zoneId)))) {
 					toUpdateMeta = true;
 				}
-				if (toUpdateMeta) {
-					viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
-					String userId = apiProcessor.getUserIdByLogin(viewer.getLogin());
-					viewer.setTwitchUserId(userId);
-					String followDate = apiProcessor.getFollowDateByUserId(userId);
-					boolean isFollower = !StringUtils.isBlank(followDate);
-					viewerService.updateFollowerStatus(viewer, followDate, isFollower);
-				}
 			} else {
-				viewer = viewerService.createViewer(login);
+				toUpdateMeta = true;
 			}
+			if (toUpdateMeta) {
+				viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
+				String userId = apiProcessor.getUserIdByLogin(viewer.getLogin());
+				viewer.setTwitchUserId(userId);
+				String followDate = apiProcessor.getFollowDateByUserId(userId);
+				boolean isFollower = !StringUtils.isBlank(followDate);
+				viewerService.updateFollowerStatus(viewer, followDate, isFollower);
+			}
+		} else {
+			viewer = viewerService.createViewer(login);
 		}
 
 		if (true) {
@@ -151,7 +149,7 @@ public class FerretBotChatListener extends TwitchListener {
 			adventureProcessor.setAdventurerResponse(eventWrapper, eventWrapper.getMessage().toLowerCase());
 		}
 
-		if (botConfig.getMtgaCardsOn()) {
+		if (botConfig.isMtgaCardsOn()) {
 			String mtgText = eventWrapper.getMessage();
 			if (mtgText.indexOf("[[") > -1 && mtgText.indexOf("]]") > -1 && mtgText.indexOf("]]") > mtgText.indexOf("[[")) {
 				String text = eventWrapper.getMessage().substring(eventWrapper.getMessage().indexOf("[[") + 2, eventWrapper.getMessage().indexOf("]]"));
@@ -159,7 +157,7 @@ public class FerretBotChatListener extends TwitchListener {
 			}
 		}
 
-		if (botConfig.getBitsOn()) {
+		if (botConfig.isBitsOn()) {
 			String bits = eventWrapper.getTag("bits");
 			if (StringUtils.isNotBlank(bits)) {
 				Long points = NumberUtils.toLong(bits, 0);
@@ -179,7 +177,7 @@ public class FerretBotChatListener extends TwitchListener {
 		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), context);
 		String msgId = wrapper.getTag("msg-id");
 
-		if (botConfig.getSubAlertOn()) {
+		if (botConfig.isSubAlertOn()) {
 			if (StringUtils.isNotBlank(msgId)) {
 				if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
 					log.info("Sub Alert triggered for " + msgId);

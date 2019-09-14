@@ -1,5 +1,6 @@
 package dev.greyferret.ferretbot.processor;
 
+import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.StreamelementsConfig;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
@@ -9,7 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 @Component
-@EnableConfigurationProperties({StreamelementsConfig.class})
+@EnableConfigurationProperties({StreamelementsConfig.class, BotConfig.class})
 @Log4j2
 public class PointsProcessor {
 	@Autowired
@@ -18,9 +19,13 @@ public class PointsProcessor {
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	@Autowired
 	private FerretChatProcessor ferretChatProcessor;
+	@Autowired
+	private BotConfig botConfig;
 
 	public boolean updatePoints(String nick, Long points) {
-		if (StringUtils.isNotBlank(streamelementsConfig.getChannelId()) && StringUtils.isNotBlank(streamelementsConfig.getJwtToken())) {
+		if (botConfig.isStreamElementsIntegrationOn() &&
+				StringUtils.isNotBlank(streamelementsConfig.getChannelId()) &&
+				StringUtils.isNotBlank(streamelementsConfig.getJwtToken())) {
 			return streamElementsAPIProcessor.updatePoints(nick, points);
 		} else {
 			ferretChatProcessor.sendMessage(FerretBotUtils.buildMessageAddPoints(nick, points));

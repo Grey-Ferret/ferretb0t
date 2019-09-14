@@ -1,6 +1,7 @@
 package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.ApplicationConfig;
+import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.entity.Prize;
 import dev.greyferret.ferretbot.entity.Raffle;
 import dev.greyferret.ferretbot.entity.RaffleViewer;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
@@ -26,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
+@EnableConfigurationProperties({BotConfig.class})
 @Log4j2
 public class RaffleProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
 	@Value("${main.zone-id}")
@@ -45,6 +48,8 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 	private ApplicationConfig applicationConfig;
 	@Autowired
 	private PointsProcessor pointsProcessor;
+	@Autowired
+	private BotConfig botConfig;
 
 	private boolean isOn;
 	private HashMap<String, RaffleViewer> viewers;
@@ -224,9 +229,13 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 
 	@Override
 	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) {
-		Thread thread = new Thread(this);
-		thread.setName("Raffle Thread");
-		thread.start();
-		log.info(thread.getName() + " started");
+		if (botConfig.isRaffleOn()) {
+			Thread thread = new Thread(this);
+			thread.setName("Raffle Thread");
+			thread.start();
+			log.info(thread.getName() + " started");
+		} else {
+			log.info("Raffle off");
+		}
 	}
 }
