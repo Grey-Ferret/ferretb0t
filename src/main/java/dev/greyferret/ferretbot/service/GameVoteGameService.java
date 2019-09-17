@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -43,33 +44,42 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public boolean containsId(String id) {
-		GameVoteGame gameVoteGame = entityManager.find(GameVoteGame.class, id);
-		if (gameVoteGame != null) {
-			return true;
-		}
-		return false;
-	}
-
-	@Transactional
-	public List<GameVoteGame> getByGame(String game) {
+	public GameVoteGame getByGame(String game) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
 		criteria.select(root);
 		criteria.where(builder.equal(root.get("game"), game));
-		List<GameVoteGame> gameVoteGames = entityManager.createQuery(criteria).getResultList();
-		return gameVoteGames;
+		try {
+			return entityManager.createQuery(criteria).getSingleResult();
+		} catch (NoResultException ex) {
+			return null;
+		}
 	}
 
 	@Transactional
-	public boolean addOrUpdate(GameVoteGame gameVoteGame) {
+	public GameVoteGame getGameByName(String name) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
+		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
+		criteria.select(root);
+		criteria.where(builder.equal(root.get("name"), name));
+		try {
+			return entityManager.createQuery(criteria).getSingleResult();
+		} catch (NoResultException ex) {
+			return null;
+		}
+	}
+
+	@Transactional
+	public boolean addOrUpdate(GameVoteGame _gameVoteGame) {
 		boolean found = false;
-		GameVoteGame _gameVoteGame = entityManager.find(GameVoteGame.class, gameVoteGame.getId());
-		if (_gameVoteGame == null) {
-			entityManager.persist(gameVoteGame);
+		GameVoteGame gameVoteGame = entityManager.find(GameVoteGame.class, _gameVoteGame.getId());
+		if (gameVoteGame == null) {
+			entityManager.persist(_gameVoteGame);
 		} else {
 			found = true;
+			gameVoteGame.setGame(_gameVoteGame.getGame());
 			entityManager.merge(gameVoteGame);
 		}
 		entityManager.flush();
@@ -147,5 +157,18 @@ public class GameVoteGameService {
 			entityManager.flush();
 		}
 		return true;
+	}
+
+	@Transactional
+	public void saveGameForVote() {
+		List<GameVoteGame> games = getAll();
+		for (GameVoteGame game : games) {
+			game.setInVote(true);
+			game.setGameVote(game.getGame());
+			entityManager.merge(game);
+		}
+		if (games != null && games.size() > 0) {
+			entityManager.flush();
+		}
 	}
 }

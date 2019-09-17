@@ -157,22 +157,23 @@ public class FerretBotUtils {
 	}
 
 	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes) {
-		return formGameVoteEntity(games, jda, withEmotes, false);
+		return formGameVoteEntity(games, jda, withEmotes, false, false);
 	}
 
-	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes, boolean withVotes) {
+	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes, boolean withVotes, boolean isVote) {
 		String res = "";
 		for (GameVoteGame game : games) {
+			String gameName = (isVote) ? game.getGameVote() : game.getGame();
 			Emote emote = jda.getEmoteById(game.getEmoteId());
 			String t = "";
 			if (withEmotes && withVotes) {
-				t = game.getVoters().size() + " - " + emote.getAsMention() + " - " + game.getGame() + " (" + game.getName() + ")";
+				t = game.getVoters().size() + " - " + emote.getAsMention() + " - " + gameName + " (" + game.getName() + ")";
 			} else if (withEmotes) {
-				t = emote.getAsMention() + " - " + game.getGame() + " (" + game.getName() + ")";
+				t = emote.getAsMention() + " - " + gameName + " (" + game.getName() + ")";
 			} else if (withVotes) {
-				t = game.getVoters().size() + " - " + game.getGame() + " (" + game.getName() + ")";
+				t = game.getVoters().size() + " - " + gameName + " (" + game.getName() + ")";
 			} else {
-				t = game.getGame() + " (" + game.getName() + ")";
+				t = gameName + " (" + game.getName() + ")";
 			}
 			if (StringUtils.isNotBlank(res)) {
 				res = res + "\n" + t;
@@ -183,10 +184,16 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static String formResultsGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes, boolean withVoters) {
+	public static String formResultsGameVoteEntity(List<GameVoteGame> _games, JDA jda, boolean withEmotes, boolean withVoters) {
+		ArrayList<GameVoteGame> games = new ArrayList<>();
+		for (GameVoteGame game : _games) {
+			if (game.isInVote()) {
+				games.add(game);
+			}
+		}
 		Collections.sort(games);
-		games = games.subList(0, 10);
-		String text = formGameVoteEntity(games, jda, withEmotes, withVoters);
+		games = new ArrayList<>(games.subList(0, Math.min(10, games.size())));
+		String text = formGameVoteEntity(games, jda, withEmotes, withVoters, true);
 		return "РЕЗУЛЬТАТЫ: \n" + text;
 	}
 

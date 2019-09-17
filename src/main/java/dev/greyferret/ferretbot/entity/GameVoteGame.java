@@ -20,6 +20,10 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 	private String name;
 	@Column(name = "game")
 	private String game;
+	@Column(name = "in_vote")
+	private boolean inVote = false;
+	@Column(name = "gameVote")
+	private String gameVote;
 	@Column(name = "emote_id")
 	private Long emoteId;
 	@Column(name = "voters")
@@ -38,6 +42,8 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 		this.name = nickname;
 		this.emoteId = emoteId;
 		this.voters = new HashSet<>();
+		this.inVote = false;
+		this.gameVote = game;
 	}
 
 	public String getName() {
@@ -82,16 +88,35 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 
 	@Override
 	public String toString() {
-		return "SubVoteGame{" +
+		return "GameVoteGame{" +
 				"id='" + id + '\'' +
 				", name='" + name + '\'' +
 				", game='" + game + '\'' +
+				", inVote=" + inVote +
+				", gameVote='" + gameVote + '\'' +
+				", emoteId=" + emoteId +
+				", voters=" + voters +
 				'}';
 	}
-
 
 	@Override
 	public int compareTo(@NotNull GameVoteGame o) {
 		return o.getVoters().size() - this.getVoters().size();
+	}
+
+	public boolean isInVote() {
+		return inVote;
+	}
+
+	public void setInVote(boolean inVote) {
+		this.inVote = inVote;
+	}
+
+	public String getGameVote() {
+		return gameVote;
+	}
+
+	public void setGameVote(String gameVote) {
+		this.gameVote = gameVote;
 	}
 }

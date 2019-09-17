@@ -69,6 +69,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 			} else if (message.equalsIgnoreCase("!publish")) {
 				boolean cleared = gameVoteGameService.clearVoters();
 				resetMessageIds();
+				gameVoteGameService.saveGameForVote();
 				postGameVote(discordProcessor.writeVoteChannel, true);
 			} else if (message.equalsIgnoreCase("!clear")) {
 				boolean cleared = gameVoteGameService.clearVoters();
@@ -89,9 +90,8 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				if (StringUtils.isBlank(game)) {
 					discordProcessor.readVoteChannel.sendMessage("Ошибка получения игры...").queue();
 				} else {
-					boolean foundOption = false;
-					List<GameVoteGame> gameVoteList = gameVoteGameService.getByGame(game);
-					for (GameVoteGame gameVoteGame : gameVoteList) {
+					GameVoteGame gameVoteGame = gameVoteGameService.getByGame(game);
+					if (gameVoteGame != null) {
 						String _game = gameVoteGame.getGame();
 						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
 							if (event.getMember().getUser().getId().equals(gameVoteGame.getId())) {
@@ -99,11 +99,8 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 							} else {
 								discordProcessor.readVoteChannel.sendMessage("Такая игра уже предложена...").queue();
 							}
-							foundOption = true;
-							break;
 						}
-					}
-					if (!foundOption) {
+					} else {
 						Long newEmoteId = gameVoteGameService.findNewEmoteId(discordProcessor.getPublicEmotes());
 						if (newEmoteId == null) {
 							discordProcessor.readVoteChannel.sendMessage("Игр больше чем смайликов! Обратитесь к админам.");
