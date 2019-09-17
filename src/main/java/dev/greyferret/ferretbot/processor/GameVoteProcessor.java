@@ -136,7 +136,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		for (int i = 0; i < postsAmount; i++) {
 			ArrayList<GameVoteGame> temp = new ArrayList<>();
 			int to = Math.min(gamesPerPost, subGames.size() - gamesPerPost * i);
-			temp.addAll(subGames.subList(i, to));
+			temp.addAll(subGames.subList(i * gamesPerPost, i * gamesPerPost + to));
 			posts.add(temp);
 		}
 		for (ArrayList<GameVoteGame> games : posts) {
