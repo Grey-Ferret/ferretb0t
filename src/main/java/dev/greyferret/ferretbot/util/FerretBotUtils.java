@@ -1,14 +1,14 @@
 package dev.greyferret.ferretbot.util;
 
-import dev.greyferret.ferretbot.entity.*;
-import dev.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
+import dev.greyferret.ferretbot.entity.AdventureResponse;
+import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.Viewer;
 import io.magicthegathering.javasdk.resource.Card;
 import lombok.extern.log4j.Log4j2;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Message;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -156,76 +156,38 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static SubVoteEntity formSubVoteEntity(List<SubVoteGame> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
-		String res = "";
-		List<Emote> selectedEmotes = new ArrayList<>();
-		HashSet<Integer> selectedEmotesId = new HashSet<>();
-		if (games.size() < emotes.size()) {
-			for (SubVoteGame subVoteGame : games) {
-				String game = subVoteGame.getGame();
-				String name = subVoteGame.getName();
-				Random rand = new Random();
-				boolean added = false;
-				int idE = -1;
-				while (!added) {
-					idE = rand.nextInt(emotes.size());
-					Emote emote = emotes.get(idE);
-					if (emote.getRoles() == null || emote.getRoles().size() == 0) {
-						added = selectedEmotesId.add(idE);
-					}
-				}
-				if (idE >= 0) {
-					Emote emote = emotes.get(idE);
-					selectedEmotes.add(emote);
-					if (StringUtils.isNoneBlank(res)) {
-						res = res + "\n";
-					}
-					if (withEmotes) {
-						res = res + emote.getAsMention() + " - ";
-					}
-					res = res + game + " (" + name + ")";
-				}
-			}
-		} else {
-			throw new NotEnoughEmotesDiscordException("Games amount:" + games.size() + "; Emotes amount: " + emotes.size());
-		}
-		return new SubVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
+	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes) {
+		return formGameVoteEntity(games, jda, withEmotes, false);
 	}
 
-	public static GameVoteEntity formGameVoteEntity(List<GameVoteGame> games, List<Emote> emotes, boolean withEmotes) throws NotEnoughEmotesDiscordException {
+	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes, boolean withVotes) {
 		String res = "";
-		List<Emote> selectedEmotes = new ArrayList<>();
-		HashSet<Integer> selectedEmotesId = new HashSet<>();
-		if (games.size() < emotes.size()) {
-			for (GameVoteGame subVoteGame : games) {
-				String game = subVoteGame.getGame();
-				String name = subVoteGame.getName();
-				Random rand = new Random();
-				boolean added = false;
-				int idE = -1;
-				while (!added) {
-					idE = rand.nextInt(emotes.size());
-					Emote emote = emotes.get(idE);
-					if (emote.getRoles() == null || emote.getRoles().size() == 0) {
-						added = selectedEmotesId.add(idE);
-					}
-				}
-				if (idE >= 0) {
-					Emote emote = emotes.get(idE);
-					selectedEmotes.add(emote);
-					if (StringUtils.isNoneBlank(res)) {
-						res = res + "\n";
-					}
-					if (withEmotes) {
-						res = res + emote.getAsMention() + " - ";
-					}
-					res = res + game + " (" + name + ")";
-				}
+		for (GameVoteGame game : games) {
+			Emote emote = jda.getEmoteById(game.getEmoteId());
+			String t = "";
+			if (withEmotes && withVotes) {
+				t = game.getVoters().size() + " - " + emote.getAsMention() + " - " + game.getGame() + " (" + game.getName() + ")";
+			} else if (withEmotes) {
+				t = emote.getAsMention() + " - " + game.getGame() + " (" + game.getName() + ")";
+			} else if (withVotes) {
+				t = game.getVoters().size() + " - " + game.getGame() + " (" + game.getName() + ")";
+			} else {
+				t = game.getGame() + " (" + game.getName() + ")";
 			}
-		} else {
-			throw new NotEnoughEmotesDiscordException("Games amount:" + games.size() + "; Emotes amount: " + emotes.size());
+			if (StringUtils.isNotBlank(res)) {
+				res = res + "\n" + t;
+			} else {
+				res = t;
+			}
 		}
-		return new GameVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
+		return res;
+	}
+
+	public static String formResultsGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes, boolean withVoters) {
+		Collections.sort(games);
+		games = games.subList(0, 10);
+		String text = formGameVoteEntity(games, jda, withEmotes, withVoters);
+		return "РЕЗУЛЬТАТЫ: \n" + text;
 	}
 
 

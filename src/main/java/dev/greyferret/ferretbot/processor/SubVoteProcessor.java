@@ -4,7 +4,6 @@ import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.SubVoteEntity;
 import dev.greyferret.ferretbot.entity.SubVoteGame;
-import dev.greyferret.ferretbot.exception.NotEnoughEmotesDiscordException;
 import dev.greyferret.ferretbot.service.SubVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
@@ -14,8 +13,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.RateLimitedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
@@ -48,7 +45,7 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 
 	public void processSubVoteMessage(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentDisplay();
-		if (discordConfig.getSubVoteAdminId().contains(event.getMember().getUser().getId())) {
+		if (discordConfig.getSubVoteAdminId().contains(event.getMember().getUser().getIdLong())) {
 			if (message.equalsIgnoreCase("!reset")) {
 				boolean reseted = subVoteGameService.reset();
 				if (reseted) {
@@ -97,33 +94,33 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 	}
 
 	private void postSubVote(TextChannel channel, boolean withEmotes) {
-		try {
-			List<SubVoteGame> subGames = subVoteGameService.getAll();
-			log.info("Found " + subGames.size() + " SubGames");
-			log.info(subGames.toString());
-			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
-			log.info("Found " + publicEmotes.size() + " emotes");
-			SubVoteEntity subVoteEntity = null;
-			subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
-			log.info("Formed subVoteEntity.");
-			log.info(subVoteEntity.toString());
-			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
-				channel.sendMessage("Нет предложенных игр...").queue();
-			} else {
-				Message complete = channel.sendMessage(subVoteEntity.getMessage()).complete(true);
-				String voteId = complete.getId();
-				if (withEmotes) {
-					for (Emote emote : subVoteEntity.getEmotes()) {
-						channel.addReactionById(voteId, emote).queue();
-					}
-				}
-			}
-		} catch (RateLimitedException e) {
-			log.error(e.toString());
-		} catch (NotEnoughEmotesDiscordException e) {
-			log.error(e.toString());
-			channel.sendMessage("Кол-во доступных эмоций меньше чем количество игр.").queue();
-		}
+//		try {
+//			List<SubVoteGame> subGames = subVoteGameService.getAll();
+//			log.info("Found " + subGames.size() + " SubGames");
+//			log.info(subGames.toString());
+//			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
+//			log.info("Found " + publicEmotes.size() + " emotes");
+//			SubVoteEntity subVoteEntity = null;
+//			subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
+//			log.info("Formed subVoteEntity.");
+//			log.info(subVoteEntity.toString());
+//			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
+//				channel.sendMessage("Нет предложенных игр...").queue();
+//			} else {
+//				Message complete = channel.sendMessage(subVoteEntity.getMessage()).complete(true);
+//				String voteId = complete.getId();
+//				if (withEmotes) {
+//					for (Emote emote : subVoteEntity.getEmotes()) {
+//						channel.addReactionById(voteId, emote).queue();
+//					}
+//				}
+//			}
+//		} catch (RateLimitedException e) {
+//			log.error(e.toString());
+//		} catch (NotEnoughEmotesDiscordException e) {
+//			log.error(e.toString());
+//			channel.sendMessage("Кол-во доступных эмоций меньше чем количество игр.").queue();
+//		}
 	}
 
 	@Override

@@ -22,5 +22,6 @@ public class DiscordConfig {
 	private Long writeVoteChannel;
 	private Long raffleChannel;
 	private Long checkTime;
-	private List<String> subVoteAdminId;
+	private List<Long> subVoteAdminId;
+	private Long selfId;
 }
