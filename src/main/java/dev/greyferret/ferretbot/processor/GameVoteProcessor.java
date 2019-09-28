@@ -15,15 +15,21 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.RateLimitedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @EnableConfigurationProperties({BotConfig.class})
@@ -38,17 +44,25 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 	@Autowired
 	private BotConfig botConfig;
 	@Autowired
-	private ApplicationContext context;
+	private CalcVoteResultsProcessor calcVoteResultsProcessor;
+
+	@Value("${discord.delay-to-one-minute}")
+	private int minsBeforeCountDown;
 
 	public static int gamesPerPost = 10;
 	private ArrayList<Long> messages = new ArrayList<>();
 	private Long messageWithResult = -1L;
 	private final Object MESSAGES_LOCKER = new Object();
 
-	private Thread voteCheckThread;
+	private ScheduledExecutorService ses;
+	private ScheduledFuture<?> scheduledFuture;
+	private HashMap<Long, Long> removeVoteUsers = new HashMap<>();
+
+	private final Object REMOVE_VOTE_USERS_LOCK = new Object();
 
 	@PostConstruct
 	private void postConstruct() {
+		ses = Executors.newScheduledThreadPool(1);
 	}
 
 	@Override
@@ -62,7 +76,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				boolean reseted = gameVoteGameService.reset();
 				resetMessageIds();
 				if (reseted) {
-					discordProcessor.readVoteChannel.sendMessage("Список игр успешно сброшен!").queue();
+					event.getMessage().addReaction("\uD83D\uDC4D").queue();
 				} else {
 					discordProcessor.readVoteChannel.sendMessage("Что-то пошло не так...").queue();
 				}
@@ -71,14 +85,11 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				resetMessageIds();
 				gameVoteGameService.saveGameForVote();
 				postGameVote(discordProcessor.writeVoteChannel, true);
-			} else if (message.equalsIgnoreCase("!clear")) {
-				boolean cleared = gameVoteGameService.clearVoters();
-				createOrUpdatePost();
-				if (cleared) {
-					discordProcessor.readVoteChannel.sendMessage("Список проголосовавших успешно сброшен!").queue();
-				} else {
-					discordProcessor.readVoteChannel.sendMessage("Что-то пошло не так...").queue();
+				if (scheduledFuture != null) {
+					scheduledFuture.cancel(true);
 				}
+				resetUsersRemoveChance();
+				scheduledFuture = ses.schedule(calcVoteResultsProcessor, minsBeforeCountDown, TimeUnit.MINUTES);
 			}
 		}
 		if (message.toLowerCase().startsWith("!игры")) {
@@ -87,6 +98,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		if (message.toLowerCase().startsWith("!игра")) {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
+				game = game.replaceAll("\n|\r\n", " ");
 				if (StringUtils.isBlank(game)) {
 					discordProcessor.readVoteChannel.sendMessage("Ошибка получения игры...").queue();
 				} else {
@@ -107,11 +119,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 							return;
 						}
 						boolean found = gameVoteGameService.addOrUpdate(new GameVoteGame(event.getMember().getUser().getId(), event.getMember(), game, newEmoteId));
-						if (found) {
-							discordProcessor.readVoteChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
-						} else {
-							discordProcessor.readVoteChannel.sendMessage("Игра была успешно добавлена!").queue();
-						}
+						event.getMessage().addReaction("\uD83D\uDC4D").queue();
 					}
 				}
 			}
@@ -210,5 +218,28 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 
 	public void setMessageWithResult(Long messageWithResult) {
 		this.messageWithResult = messageWithResult;
+	}
+
+	public void resetUsersRemoveChance() {
+		synchronized (REMOVE_VOTE_USERS_LOCK) {
+			removeVoteUsers = new HashMap<>();
+		}
+	}
+
+	public HashMap<Long, Long> getUsersRemoveChance() {
+		synchronized (REMOVE_VOTE_USERS_LOCK) {
+			return removeVoteUsers;
+		}
+	}
+
+	public boolean addUserRemoveChance(Long userId, long emoteId) {
+		synchronized (REMOVE_VOTE_USERS_LOCK) {
+			if (removeVoteUsers.keySet().contains(userId)) {
+				return false;
+			} else {
+				removeVoteUsers.put(userId, emoteId);
+				return true;
+			}
+		}
 	}
 }

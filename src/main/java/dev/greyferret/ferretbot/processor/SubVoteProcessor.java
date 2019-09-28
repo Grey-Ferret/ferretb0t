@@ -49,7 +49,7 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 			if (message.equalsIgnoreCase("!reset")) {
 				boolean reseted = subVoteGameService.reset();
 				if (reseted) {
-					discordProcessor.subsChannel.sendMessage("Список игр успешно сброшен!").queue();
+					event.getMessage().addReaction("\uD83D\uDC4D").queue();
 				} else {
 					discordProcessor.subsChannel.sendMessage("Что-то пошло не так...").queue();
 				}
@@ -63,6 +63,7 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 		if (message.toLowerCase().startsWith("!игра")) {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
+				game = game.replaceAll("\n|\r\n", " ");
 				if (StringUtils.isBlank(game)) {
 					discordProcessor.subsChannel.sendMessage("Ошибка получения игры...").queue();
 				} else {
@@ -81,12 +82,8 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 						}
 					}
 					if (!foundOption) {
-						if (subVoteGameService.containsId(event.getMember().getUser().getId())) {
-							discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена, заменив старый вариант.").queue();
-						} else {
-							discordProcessor.subsChannel.sendMessage("Игра была успешно добавлена!").queue();
-						}
 						subVoteGameService.addOrUpdate(new SubVoteGame(event.getMember().getUser().getId(), event.getMember(), game));
+						event.getMessage().addReaction("\uD83D\uDC4D").queue();
 					}
 				}
 			}
@@ -94,33 +91,32 @@ public class SubVoteProcessor implements Runnable, ApplicationListener<ContextSt
 	}
 
 	private void postSubVote(TextChannel channel, boolean withEmotes) {
-//		try {
-//			List<SubVoteGame> subGames = subVoteGameService.getAll();
-//			log.info("Found " + subGames.size() + " SubGames");
-//			log.info(subGames.toString());
-//			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
-//			log.info("Found " + publicEmotes.size() + " emotes");
-//			SubVoteEntity subVoteEntity = null;
-//			subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
-//			log.info("Formed subVoteEntity.");
-//			log.info(subVoteEntity.toString());
-//			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
-//				channel.sendMessage("Нет предложенных игр...").queue();
-//			} else {
-//				Message complete = channel.sendMessage(subVoteEntity.getMessage()).complete(true);
-//				String voteId = complete.getId();
-//				if (withEmotes) {
-//					for (Emote emote : subVoteEntity.getEmotes()) {
-//						channel.addReactionById(voteId, emote).queue();
-//					}
-//				}
-//			}
-//		} catch (RateLimitedException e) {
-//			log.error(e.toString());
-//		} catch (NotEnoughEmotesDiscordException e) {
-//			log.error(e.toString());
-//			channel.sendMessage("Кол-во доступных эмоций меньше чем количество игр.").queue();
-//		}
+		try {
+			List<SubVoteGame> subGames = subVoteGameService.getAll();
+			log.info("Found " + subGames.size() + " SubGames");
+			log.info(subGames.toString());
+			List<Emote> publicEmotes = discordProcessor.getPublicEmotes();
+			log.info("Found " + publicEmotes.size() + " emotes");
+			SubVoteEntity subVoteEntity = null;
+			subVoteEntity = FerretBotUtils.formSubVoteEntity(subGames, publicEmotes, withEmotes);
+			log.info("Formed subVoteEntity.");
+			log.info(subVoteEntity.toString());
+			if (StringUtils.isBlank(subVoteEntity.getMessage())) {
+				channel.sendMessage("Нет предложенных игр...").queue();
+			} else {
+				Message complete = channel.sendMessage(subVoteEntity.getMessage()).complete(true);
+				String voteId = complete.getId();
+				if (withEmotes) {
+					for (Emote emote : subVoteEntity.getEmotes()) {
+						channel.addReactionById(voteId, emote).queue();
+					}
+				}
+			}
+		} catch (RateLimitedException e) {
+			log.error(e.toString());
+		} catch (Exception e) {
+			log.error(e.toString());
+		}
 	}
 
 	@Override

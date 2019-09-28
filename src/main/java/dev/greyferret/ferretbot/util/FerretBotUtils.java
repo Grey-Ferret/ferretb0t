@@ -1,8 +1,6 @@
 package dev.greyferret.ferretbot.util;
 
-import dev.greyferret.ferretbot.entity.AdventureResponse;
-import dev.greyferret.ferretbot.entity.GameVoteGame;
-import dev.greyferret.ferretbot.entity.Viewer;
+import dev.greyferret.ferretbot.entity.*;
 import io.magicthegathering.javasdk.resource.Card;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
@@ -210,6 +208,57 @@ public class FerretBotUtils {
 			}
 			res = res + response.getText();
 		}
+		return res;
+	}
+
+	public static SubVoteEntity formSubVoteEntity(List<SubVoteGame> games, List<Emote> emotes, boolean withEmotes) throws Exception {
+		String res = "";
+		List<Emote> selectedEmotes = new ArrayList<>();
+		HashSet<Integer> selectedEmotesId = new HashSet<>();
+		if (games.size() < emotes.size()) {
+			for (SubVoteGame subVoteGame : games) {
+				String game = subVoteGame.getGame();
+				String name = subVoteGame.getName();
+				Random rand = new Random();
+				boolean added = false;
+				int idE = -1;
+				while (!added) {
+					idE = rand.nextInt(emotes.size());
+					Emote emote = emotes.get(idE);
+					if (emote.getRoles() == null || emote.getRoles().size() == 0) {
+						added = selectedEmotesId.add(idE);
+					}
+				}
+				if (idE >= 0) {
+					Emote emote = emotes.get(idE);
+					selectedEmotes.add(emote);
+					if (StringUtils.isNoneBlank(res)) {
+						res = res + "\n";
+					}
+					if (withEmotes) {
+						res = res + emote.getAsMention() + " - ";
+					}
+					res = res + game + " (" + name + ")";
+				}
+			}
+		} else {
+			throw new Exception("Games amount:" + games.size() + "; Emotes amount: " + emotes.size());
+		}
+		return new SubVoteEntity(res, (ArrayList<Emote>) selectedEmotes);
+	}
+
+	public static String joinGamesBySeparator(List<GameVoteGame> games, String separator) {
+		String res = "";
+		if (games == null || games.size() == 0) return res;
+
+		for (GameVoteGame game : games) {
+			if (StringUtils.isBlank(res)) {
+				res = game.getGameVote();
+			} else {
+				res = res + separator + game.getGameVote();
+			}
+		}
+
 		return res;
 	}
 }

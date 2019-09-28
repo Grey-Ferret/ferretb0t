@@ -147,6 +147,26 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
+	public void removeVoter(long emoteId, long userId) {
+		GameVoteGame game = getGameByEmoteId(emoteId);
+		HashSet<Long> voters = game.getVoters();
+		HashSet<Long> newVoters = new HashSet<>();
+		boolean deleted = false;
+		for (Long _userId : voters) {
+			if (userId != _userId) {
+				newVoters.add(_userId);
+			} else {
+				deleted = true;
+			}
+		}
+		if (deleted) {
+			game.setVoters(newVoters);
+			entityManager.merge(game);
+			entityManager.flush();
+		}
+	}
+
+	@Transactional
 	public boolean clearVoters() {
 		List<GameVoteGame> games = getAll();
 		for (GameVoteGame gameVoteGame : games) {
