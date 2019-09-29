@@ -47,7 +47,7 @@ public class CalcVoteResultsProcessor implements Runnable {
 			int i = rand.nextInt(topGames.size());
 			log.info("Rolling Game Vote Winner out of " + topGames.size() + ". Result is: " + i);
 			GameVoteGame game = topGames.get(i);
-			discordProcessor.writeVoteChannel.sendMessage("**ПОБЕДИТЕЛ**Ь: " + game.getGameVote() + "!\n\n**Рандом решил между**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
+			discordProcessor.writeVoteChannel.sendMessage("**ПОБЕДИТЕЛЬ**: " + game.getGameVote() + "!\n\n**Рандом решил между**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
 		}
 	}
 
