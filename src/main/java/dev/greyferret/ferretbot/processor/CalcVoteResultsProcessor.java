@@ -26,9 +26,9 @@ public class CalcVoteResultsProcessor implements Runnable {
 		if (topGames.size() == 0) {
 			discordProcessor.writeVoteChannel.sendMessage("Голосуем?").queue();
 		} else if (topGames.size() == 1) {
-			discordProcessor.writeVoteChannel.sendMessage("До окончания голосования осталась одна минута!\n\nТекущий фаворит: " + topGames.get(0).getGameVote()).queue();
+			discordProcessor.writeVoteChannel.sendMessage("До окончания голосования осталась **одна минута**!\n\n**Текущий фаворит**: " + topGames.get(0).getGameVote()).queue();
 		} else {
-			discordProcessor.writeVoteChannel.sendMessage("До окончания голосования осталась одна минута!\n\nТекущие фавориты: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
+			discordProcessor.writeVoteChannel.sendMessage("До окончания голосования осталась **одна минута**!\n\n**Текущие фавориты**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
 		}
 
 		try {
@@ -41,11 +41,13 @@ public class CalcVoteResultsProcessor implements Runnable {
 		if (topGames.size() == 0) {
 			discordProcessor.writeVoteChannel.sendMessage("Голосуем?").queue();
 		} else if (topGames.size() == 1) {
-			discordProcessor.writeVoteChannel.sendMessage("ПОБЕДИТЕЛЬ: " + topGames.get(0).getGameVote()).queue();
+			discordProcessor.writeVoteChannel.sendMessage("**ПОБЕДИТЕЛЬ**: " + topGames.get(0).getGameVote()).queue();
 		} else {
 			Random rand = new Random();
-			GameVoteGame game = topGames.get(rand.nextInt(topGames.size()));
-			discordProcessor.writeVoteChannel.sendMessage("ПОБЕДИТЕЛЬ: " + game.getGameVote() + "!\n\nРандом решил между: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
+			int i = rand.nextInt(topGames.size());
+			log.info("Rolling Game Vote Winner out of " + topGames.size() + ". Result is: " + i);
+			GameVoteGame game = topGames.get(i);
+			discordProcessor.writeVoteChannel.sendMessage("**ПОБЕДИТЕЛ**Ь: " + game.getGameVote() + "!\n\n**Рандом решил между**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
 		}
 	}
 

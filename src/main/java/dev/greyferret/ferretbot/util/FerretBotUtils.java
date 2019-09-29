@@ -192,7 +192,7 @@ public class FerretBotUtils {
 		Collections.sort(games);
 		games = new ArrayList<>(games.subList(0, Math.min(10, games.size())));
 		String text = formGameVoteEntity(games, jda, withEmotes, withVoters, true);
-		return "РЕЗУЛЬТАТЫ: \n" + text;
+		return "**РЕЗУЛЬТАТЫ**: \n" + text;
 	}
 
 
