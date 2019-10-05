@@ -1,11 +1,5 @@
 package dev.greyferret.ferretbot.entity;
 
-import dev.greyferret.ferretbot.config.ApplicationConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -14,9 +8,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class RaffleViewer implements Serializable {
-	@Value("${main.zone-id}")
-	private String zoneId;
-
 	private String login;
 	private Queue<ZonedDateTime> messageTimes;
 	private final int amountOfTimes = 2;
@@ -45,11 +36,11 @@ public class RaffleViewer implements Serializable {
 		}
 	}
 
-	public boolean ifSuitable() {
+	public boolean ifSuitable(ZoneId zoneId) {
 		if (this.messageTimes.size() < amountOfTimes) {
 			return false;
 		}
-		ZonedDateTime suitablePeriod = ZonedDateTime.now(ZoneId.of(zoneId)).minusMinutes(30);
+		ZonedDateTime suitablePeriod = ZonedDateTime.now(zoneId).minusMinutes(30);
 		boolean res = true;
 		for (ZonedDateTime zdt : messageTimes) {
 			if (zdt.isBefore(suitablePeriod)) {

@@ -1,10 +1,5 @@
 package dev.greyferret.ferretbot.entity;
 
-import dev.greyferret.ferretbot.config.ApplicationConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -14,9 +9,6 @@ import java.time.ZonedDateTime;
 @Entity
 @Table(name = "raffle")
 public class Raffle implements Serializable {
-	@Value("${main.zone-id}")
-	private String zoneId;
-
 	@Id
 	@GeneratedValue
 	@Column(name = "id", updatable = false, nullable = false)
@@ -33,10 +25,10 @@ public class Raffle implements Serializable {
 
 	}
 
-	public Raffle(Prize prize, Viewer viewer) {
+	public Raffle(Prize prize, Viewer viewer, ZoneId zoneId) {
 		this.prize = prize.getName();
 		this.winner = viewer;
-		setDate(ZonedDateTime.now(ZoneId.of(zoneId)));
+		setDate(ZonedDateTime.now(zoneId));
 	}
 
 	public int getId() {

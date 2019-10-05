@@ -12,8 +12,6 @@ import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,14 +50,14 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 	private BotConfig botConfig;
 
 	private boolean isOn;
-	private HashMap<String, RaffleViewer> viewers;
+	private HashMap<String, RaffleViewer> raffleViewersMap;
 	private FerretChatProcessor ferretChatClient;
 	private DiscordProcessor discordProcessor;
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 
 	@PostConstruct
 	private void postConstruct() {
-		viewers = new HashMap<>();
+		raffleViewersMap = new HashMap<>();
 		isOn = true;
 
 		apiProcessor = context.getBean(ApiProcessor.class);
@@ -108,9 +106,9 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 
 	private void rollRaffle() {
 		HashSet<Viewer> raffleViewers = new HashSet<>();
-		synchronized (viewers) {
-			for (RaffleViewer viewer : viewers.values()) {
-				if (viewer.ifSuitable()) {
+		synchronized (raffleViewersMap) {
+			for (RaffleViewer viewer : raffleViewersMap.values()) {
+				if (viewer.ifSuitable(ZoneId.of(zoneId))) {
 					Viewer viewerByName = viewerService.getViewerByName(viewer.getLogin());
 					if (viewerByName != null && viewerByName.isSuitableForRaffle()) {
 						raffleViewers.add(viewerByName);
@@ -125,7 +123,7 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 			if (isChannelOnline && rollList.size() > 0) {
 				Viewer viewer = rollList.get(0);
 				Prize prize = rollPresent(viewer);
-				Raffle raffle = new Raffle(prize, viewer);
+				Raffle raffle = new Raffle(prize, viewer, ZoneId.of(zoneId));
 
 				raffleService.put(raffle);
 			}
@@ -194,7 +192,7 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 	}
 
 	public void newMessage(String login) {
-		synchronized (viewers) {
+		synchronized (raffleViewersMap) {
 			login = login.toLowerCase();
 			Viewer viewerByName = viewerService.getViewerByName(login);
 			if (viewerByName == null) {
@@ -211,19 +209,19 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 				}
 			}
 			RaffleViewer raffleViewer;
-			if (!viewers.keySet().contains(login)) {
+			if (!raffleViewersMap.keySet().contains(login)) {
 				raffleViewer = new RaffleViewer(login);
 			} else {
-				raffleViewer = viewers.get(login);
+				raffleViewer = raffleViewersMap.get(login);
 				raffleViewer.addMessageTime(ZonedDateTime.now(ZoneId.of(zoneId)));
 			}
-			viewers.put(login, raffleViewer);
+			raffleViewersMap.put(login, raffleViewer);
 		}
 	}
 
 	public void resetMessages() {
-		synchronized (viewers) {
-			viewers = new HashMap<>();
+		synchronized (raffleViewersMap) {
+			raffleViewersMap = new HashMap<>();
 		}
 	}
 
