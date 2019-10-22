@@ -23,7 +23,6 @@ import org.kitteh.irc.client.library.feature.twitch.event.UserStateEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
@@ -92,13 +91,11 @@ public class FerretBotChatListener extends TwitchListener {
 
 		Viewer viewer = viewerService.getViewerByName(login);
 		if (viewer != null) {
-			String subscriber = eventWrapper.getTag("subscriber");
-			if (subscriber.equalsIgnoreCase("1"))
+			if (eventWrapper.hasBadge("subscriber") || eventWrapper.hasBadge("founder"))
 				viewerService.setSubscriber(viewer, true);
 			else
 				viewerService.setSubscriber(viewer, false);
-			String vip = eventWrapper.getTag("vip");
-			if (vip.equalsIgnoreCase("1"))
+			if (eventWrapper.hasBadge("vip"))
 				viewerService.setVip(viewer, true);
 			else
 				viewerService.setVip(viewer, false);
@@ -132,10 +129,8 @@ public class FerretBotChatListener extends TwitchListener {
 			}
 		}
 
-		String badges = eventWrapper.getTag("badges");
-		boolean isBroadcaster = badges.toLowerCase().contains("broadcaster/1".toLowerCase());
-		String userType = eventWrapper.getTag("user-type");
-		boolean isModerator = StringUtils.isNotBlank(userType) && userType.equalsIgnoreCase("mod");
+		boolean isBroadcaster = eventWrapper.hasBadge("broadcaster");
+		boolean isModerator = eventWrapper.hasBadge("moderator");
 
 		if (eventWrapper.getMessage().startsWith("!")) {
 			chatLogic.proceedCommandLogic(eventWrapper);

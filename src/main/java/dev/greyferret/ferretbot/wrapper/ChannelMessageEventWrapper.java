@@ -1,18 +1,18 @@
 package dev.greyferret.ferretbot.wrapper;
 
-import dev.greyferret.ferretbot.listener.FerretBotChatListener;
 import dev.greyferret.ferretbot.processor.FerretChatProcessor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.kitteh.irc.client.library.defaults.element.DefaultUser;
 import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.MessageTag;
 import org.kitteh.irc.client.library.event.client.ClientReceiveCommandEvent;
+import org.kitteh.irc.client.library.feature.twitch.messagetag.Badges;
 import org.springframework.context.ApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Log4j2
@@ -103,5 +103,35 @@ public class ChannelMessageEventWrapper {
 		if (event.getParameters() != null && event.getParameters().size() > 1)
 			return event.getParameters().get(1);
 		return "";
+	}
+
+	public boolean hasBadge(String badgeName) {
+		List<Badges.Badge> badges = getBadges(badgeName);
+		if (badges == null)
+			return false;
+		for (Badges.Badge badge : badges) {
+			if (badge.getName().equalsIgnoreCase(badgeName))
+				return true;
+		}
+		return false;
+	}
+
+	public List<Badges.Badge> getBadges(String badgeName) {
+		Optional<MessageTag> _tag = event.getTag("badges");
+		if (!_tag.isPresent()) {
+			return new ArrayList<>();
+		}
+		MessageTag messageTag = _tag.get();
+		Badges _badges;
+		try {
+			_badges = (Badges) messageTag;
+		} catch (Exception ex) {
+			return new ArrayList<>();
+		}
+		List<Badges.Badge> badges = _badges.getBadges();
+		if (badges == null) {
+			return new ArrayList<>();
+		}
+		return badges;
 	}
 }

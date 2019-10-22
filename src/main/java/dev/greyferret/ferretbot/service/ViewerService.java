@@ -181,6 +181,7 @@ public class ViewerService {
 		entityManager.flush();
 	}
 
+	@Transactional
 	public void setVip(Viewer viewer, boolean isVip) {
 		if (viewer.isVip() != isVip) {
 			viewer.setVip(isVip);
