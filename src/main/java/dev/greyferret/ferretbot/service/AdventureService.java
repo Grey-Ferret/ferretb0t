@@ -2,11 +2,6 @@ package dev.greyferret.ferretbot.service;
 
 import dev.greyferret.ferretbot.entity.Adventure;
 import dev.greyferret.ferretbot.entity.AdventureResponse;
-import dev.greyferret.ferretbot.entity.Viewer;
-import dev.greyferret.ferretbot.entity.ViewerLootsMap;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +13,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by GreyFerret on 27.12.2017.
@@ -55,8 +49,7 @@ public class AdventureService {
 		if (adventures == null || adventures.size() == 0) {
 			return null;
 		}
-		Random rand = new Random();
-		int i = rand.nextInt(adventures.size());
+		int i = ThreadLocalRandom.current().nextInt(adventures.size());
 		return adventures.get(i);
 	}
 

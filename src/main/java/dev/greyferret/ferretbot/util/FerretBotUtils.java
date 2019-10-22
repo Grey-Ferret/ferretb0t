@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by GreyFerret on 18.12.2017.
@@ -219,11 +220,10 @@ public class FerretBotUtils {
 			for (SubVoteGame subVoteGame : games) {
 				String game = subVoteGame.getGame();
 				String name = subVoteGame.getName();
-				Random rand = new Random();
 				boolean added = false;
 				int idE = -1;
 				while (!added) {
-					idE = rand.nextInt(emotes.size());
+					idE = ThreadLocalRandom.current().nextInt(emotes.size());
 					Emote emote = emotes.get(idE);
 					if (emote.getRoles() == null || emote.getRoles().size() == 0) {
 						added = selectedEmotesId.add(idE);

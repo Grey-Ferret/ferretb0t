@@ -17,6 +17,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Log4j2
@@ -28,7 +29,6 @@ public class PrizePoolService {
 
 	@Transactional
 	public Prize rollPrize() {
-		Random rand = new Random();
 		HashMap<Integer, PrizePool> prizePoolMap = getEntireCurrentPrizePool();
 		Prize prize = null;
 		log.info("Rolling raffle!");
@@ -36,7 +36,7 @@ public class PrizePoolService {
 		for (Integer i : prizePoolMap.keySet()) {
 			PrizePool prizePool = prizePoolMap.get(i);
 			if (prize == null) {
-				double randDouble = rand.nextDouble();
+				double randDouble = ThreadLocalRandom.current().nextDouble();
 				boolean rollResult = randDouble < (prizePool.getCurrentChance() / 100);
 				log.info("Rolled (" + rollResult + ") PrizePool #" + i + ": " + randDouble + " against " + prizePool.getCurrentChance() / 100);
 				if (rollResult) {

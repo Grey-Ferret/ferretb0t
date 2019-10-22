@@ -16,7 +16,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Log4j2
@@ -102,11 +102,10 @@ public class GameVoteGameService {
 			return null;
 		}
 		int idE = -1;
-		Random rand = new Random();
 		boolean added = false;
 		Emote emote = null;
 		while (!added) {
-			idE = rand.nextInt(emotes.size());
+			idE = ThreadLocalRandom.current().nextInt(emotes.size());
 			emote = emotes.get(idE);
 			if (emote.getRoles() == null || emote.getRoles().size() == 0) {
 				added = foundEmotes.add(emote.getIdLong());

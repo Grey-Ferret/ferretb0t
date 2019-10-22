@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -88,8 +87,7 @@ public class AdventureProcessor implements Runnable, ApplicationListener<Context
 	}
 
 	private void endStage() {
-		Random rand = new Random();
-		int i = rand.nextInt(responses.size());
+		int i = ThreadLocalRandom.current().nextInt(responses.size());
 		AdventureResponse winningResponse = null;
 		int j = 0;
 		for (String key : responses.keySet()) {
@@ -251,10 +249,9 @@ public class AdventureProcessor implements Runnable, ApplicationListener<Context
 
 	private void startAdventure(ChannelMessageEventWrapper event) {
 		pastAdventures = new HashSet<>();
-		Random rand = new Random();
 		this.adventureStage = AdventureStage.LFG;
 		this.step = 1;
-		this.cost = rand.nextInt(90) + 10L;
+		this.cost = ThreadLocalRandom.current().nextInt(90) + 10L;
 		event.sendMessageMe(event.getLoginVisual() + " собирает в поход! Для того чтобы принять участие в походе, пишите в чат !иду - стоимость экипировки для похода: " + this.cost + " IQ.");
 		this.adventurers = new HashSet<>();
 		this.responses = new HashMap<>();

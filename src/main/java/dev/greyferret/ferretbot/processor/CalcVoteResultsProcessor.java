@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @Log4j2
@@ -43,8 +43,7 @@ public class CalcVoteResultsProcessor implements Runnable {
 		} else if (topGames.size() == 1) {
 			discordProcessor.writeVoteChannel.sendMessage("**ПОБЕДИТЕЛЬ**: " + topGames.get(0).getGameVote()).queue();
 		} else {
-			Random rand = new Random();
-			int i = rand.nextInt(topGames.size());
+			int i = ThreadLocalRandom.current().nextInt(topGames.size());
 			log.info("Rolling Game Vote Winner out of " + topGames.size() + ". Result is: " + i);
 			GameVoteGame game = topGames.get(i);
 			discordProcessor.writeVoteChannel.sendMessage("**ПОБЕДИТЕЛЬ**: " + game.getGameVote() + "!\n\n**Рандом решил между**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();

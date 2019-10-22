@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @EnableConfigurationProperties({BotConfig.class})
@@ -136,10 +137,9 @@ public class RaffleProcessor implements Runnable, ApplicationListener<ContextSta
 		String messageDiscord;
 		int type = 0;
 		if (prize == null) {
-			Random rand = new Random();
 			int resPts = 50;
 			final int chance = 66;
-			if (rand.nextInt(100) > chance) {
+			if (ThreadLocalRandom.current().nextInt(100) > chance) {
 				resPts = 100;
 				prize = new Prize(resPts + " IQ", 0, type);
 			} else {
