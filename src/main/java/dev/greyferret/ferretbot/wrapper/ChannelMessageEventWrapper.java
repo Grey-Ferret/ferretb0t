@@ -1,9 +1,6 @@
 package dev.greyferret.ferretbot.wrapper;
 
-import dev.greyferret.ferretbot.processor.FerretChatProcessor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.RegExUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.kitteh.irc.client.library.defaults.element.DefaultUser;
 import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.MessageTag;
@@ -16,10 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Log4j2
-public class ChannelMessageEventWrapper {
+public class ChannelMessageEventWrapper extends ChatEventMessageBase {
 	private ClientReceiveCommandEvent event;
-	private boolean isDebug;
-	private ApplicationContext context;
 
 	public ChannelMessageEventWrapper(ClientReceiveCommandEvent event, boolean isDebug, ApplicationContext context) {
 		this.isDebug = isDebug;
@@ -43,48 +38,6 @@ public class ChannelMessageEventWrapper {
 		return getTag("display-name");
 	}
 
-	public void sendMessageWithMention(String text) {
-		sendMessage("@" + getLoginVisual() + " " + text);
-	}
-
-	public void sendMessageWithMentionMe(String text) {
-		sendMessageMe("@" + getLoginVisual() + " " + text);
-	}
-
-	public void sendMessageWithMention(String text, String toWhom) {
-		if (StringUtils.isBlank(toWhom)) {
-			sendMessageWithMention(text);
-		} else {
-			boolean removeGavGav = true;
-			while (removeGavGav) {
-				if (toWhom.startsWith("@")) {
-					toWhom = toWhom.substring(1);
-				} else {
-					removeGavGav = false;
-				}
-			}
-			sendMessage("@" + toWhom + " " + text);
-		}
-	}
-
-	public void sendMessage(String text) {
-		text = RegExUtils.removeAll(text, "\n");
-		text = RegExUtils.removeAll(text, "\r");
-		text = RegExUtils.removeAll(text, "\0");
-		log.info(text);
-		if (!isDebug)
-			context.getBean(FerretChatProcessor.class).sendMessage(text);
-	}
-
-	public void sendMessageMe(String text) {
-		text = RegExUtils.removeAll(text, "\n");
-		text = RegExUtils.removeAll(text, "\r");
-		text = RegExUtils.removeAll(text, "\0");
-		log.info(text);
-		if (!isDebug)
-			context.getBean(FerretChatProcessor.class).sendMessageMe(text);
-	}
-
 
 	public String getTag(String tag) {
 		Optional<MessageTag> _tag = this.event.getTag(tag);
@@ -106,7 +59,7 @@ public class ChannelMessageEventWrapper {
 	}
 
 	public boolean hasBadge(String badgeName) {
-		List<Badges.Badge> badges = getBadges(badgeName);
+		List<Badges.Badge> badges = getBadges();
 		if (badges == null)
 			return false;
 		for (Badges.Badge badge : badges) {
@@ -116,7 +69,7 @@ public class ChannelMessageEventWrapper {
 		return false;
 	}
 
-	public List<Badges.Badge> getBadges(String badgeName) {
+	public List<Badges.Badge> getBadges() {
 		Optional<MessageTag> _tag = event.getTag("badges");
 		if (!_tag.isPresent()) {
 			return new ArrayList<>();
@@ -133,5 +86,15 @@ public class ChannelMessageEventWrapper {
 			return new ArrayList<>();
 		}
 		return badges;
+	}
+
+	@Override
+	public void sendMessageWithMention(String text) {
+		sendMessageWithMention(text, getLoginVisual());
+	}
+
+	@Override
+	public void sendMessageWithMentionMe(String text) {
+		sendMessageWithMentionMe(text, getLoginVisual());
 	}
 }

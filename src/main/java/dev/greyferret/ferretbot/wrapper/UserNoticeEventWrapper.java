@@ -8,10 +8,8 @@ import org.springframework.context.ApplicationContext;
 import java.util.Optional;
 
 @Log4j2
-public class UserNoticeEventWrapper {
+public class UserNoticeEventWrapper extends ChatEventMessageBase {
 	private UserNoticeEvent event;
-	private boolean isDebug;
-	private ApplicationContext context;
 
 	public UserNoticeEventWrapper(UserNoticeEvent event, boolean isDebug, ApplicationContext context) {
 		this.event = event;
@@ -32,10 +30,8 @@ public class UserNoticeEventWrapper {
 		}
 	}
 
-	public void sendMessage(String text) {
-		log.info(text);
-		if (!isDebug)
-			context.getBean("SendMessage", text);
+	public String getLoginVisual() {
+		return getTag("display-name");
 	}
 
 	@Override
@@ -45,5 +41,15 @@ public class UserNoticeEventWrapper {
 				", event=" + event +
 				", isDebug=" + isDebug +
 				'}';
+	}
+
+	@Override
+	public void sendMessageWithMention(String text) {
+		this.sendMessageWithMention(text, getLoginVisual());
+	}
+
+	@Override
+	public void sendMessageWithMentionMe(String text) {
+		sendMessageWithMentionMe(text, getLoginVisual());
 	}
 }
