@@ -67,11 +67,11 @@ public class ChatLogic {
 		String message = FerretBotUtils.buildMessage(event.getMessage());
 		String[] split = message.split(" ");
 
-		if (message.startsWith("!")) {
-			if (message.startsWith("!поход")) {
+		if (message.toLowerCase().startsWith("!")) {
+			if (message.toLowerCase().startsWith("!поход")) {
 				adventureProcessor.checkAdventure(event);
 			}
-			if (message.startsWith("!проверка")) {
+			if (message.toLowerCase().startsWith("!проверка")) {
 				adventureProcessor.checkAdventurer(event);
 			}
 			boolean foundCustomLogicCommand = false;
@@ -95,12 +95,12 @@ public class ChatLogic {
 					}
 				}
 			}
-			if (message.startsWith("!обнять")) {
+			if (message.toLowerCase().startsWith("!обнять")) {
 				foundCustomLogicCommand = true;
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollHug(event.getLoginVisual());
 			}
-			if (message.startsWith("!стукнуть")) {
+			if (message.toLowerCase().startsWith("!стукнуть")) {
 				foundCustomLogicCommand = true;
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollSmack(event.getLoginVisual());
