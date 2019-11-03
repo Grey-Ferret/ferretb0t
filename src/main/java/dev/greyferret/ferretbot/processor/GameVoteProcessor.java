@@ -92,10 +92,10 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 					channelCombination.getAddChannel().sendMessage("Ошибка получения игры...").queue();
 				} else {
 					GameVoteGame gameVoteGame = gameVoteGameService.getByGame(channelCombination.getAddChannelId(), game);
-					if (gameVoteGame != null && !gameVoteGame.getVoteChannelId().equals(channelCombination.getAddChannelId())) {
+					if (gameVoteGame != null) {
 						String _game = gameVoteGame.getGame();
 						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
-							if (event.getMember().getUser().getId().equals(gameVoteGame.getId())) {
+							if (event.getMember().getUser().getId().equals(gameVoteGame.getUserId())) {
 								channelCombination.getAddChannel().sendMessage("Такая игра уже предложена вами!").queue();
 							} else {
 								channelCombination.getAddChannel().sendMessage("Такая игра уже предложена...").queue();

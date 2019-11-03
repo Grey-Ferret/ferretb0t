@@ -44,13 +44,26 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
+	public GameVoteGame getByUserId(Long textChannelId, String userId) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
+		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
+		criteria.select(root);
+		criteria.where(builder.and(builder.equal(root.get("userId"), userId), builder.equal(root.get("voteChannelId"), textChannelId)));
+		try {
+			return entityManager.createQuery(criteria).getSingleResult();
+		} catch (NoResultException ex) {
+			return null;
+		}
+	}
+
+	@Transactional
 	public GameVoteGame getByGame(Long textChannelId, String game) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
 		criteria.select(root);
-		criteria.where(builder.equal(root.get("game"), game));
-		criteria.where(builder.equal(root.get("voteChannelId"), textChannelId));
+		criteria.where(builder.and(builder.equal(root.get("game"), game), builder.equal(root.get("voteChannelId"), textChannelId)));
 		try {
 			return entityManager.createQuery(criteria).getSingleResult();
 		} catch (NoResultException ex) {
@@ -61,7 +74,7 @@ public class GameVoteGameService {
 	@Transactional
 	public boolean addOrUpdate(GameVoteGame _gameVoteGame) {
 		boolean found = false;
-		GameVoteGame gameVoteGame = getByGame(_gameVoteGame.getVoteChannelId(), _gameVoteGame.getGame());
+		GameVoteGame gameVoteGame = getByUserId(_gameVoteGame.getVoteChannelId(), _gameVoteGame.getUserId());
 		if (gameVoteGame == null) {
 			entityManager.persist(_gameVoteGame);
 		} else {
@@ -108,8 +121,7 @@ public class GameVoteGameService {
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
 		criteria.select(root);
-		criteria.where(builder.equal(root.get("emoteId"), emoteId));
-		criteria.where(builder.equal(root.get("voteChannelId"), textChannelId));
+		criteria.where(builder.and(builder.equal(root.get("emoteId"), emoteId), builder.equal(root.get("voteChannelId"), textChannelId)));
 		GameVoteGame res = entityManager.createQuery(criteria).getSingleResult();
 		return res;
 	}
