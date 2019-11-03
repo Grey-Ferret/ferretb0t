@@ -1,12 +1,10 @@
 package dev.greyferret.ferretbot.service;
 
-import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.entity.Command;
 import dev.greyferret.ferretbot.entity.CommandAlias;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
+import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

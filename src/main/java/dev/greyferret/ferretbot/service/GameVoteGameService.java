@@ -27,9 +27,9 @@ public class GameVoteGameService {
 	private EntityManagerFactory entityManagerFactory;
 
 	@Transactional
-	public boolean reset() {
+	public boolean reset(Long textChannelId) {
 		try {
-			List<GameVoteGame> gameVoteGames = getAll();
+			List<GameVoteGame> gameVoteGames = getAllWithTextChannelId(textChannelId);
 			for (GameVoteGame gameVoteGame : gameVoteGames) {
 				entityManager.remove(gameVoteGame);
 			}
@@ -44,26 +44,13 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public GameVoteGame getByGame(String game) {
+	public GameVoteGame getByGame(Long textChannelId, String game) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
 		criteria.select(root);
 		criteria.where(builder.equal(root.get("game"), game));
-		try {
-			return entityManager.createQuery(criteria).getSingleResult();
-		} catch (NoResultException ex) {
-			return null;
-		}
-	}
-
-	@Transactional
-	public GameVoteGame getGameByName(String name) {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
-		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
-		criteria.select(root);
-		criteria.where(builder.equal(root.get("name"), name));
+		criteria.where(builder.equal(root.get("voteChannelId"), textChannelId));
 		try {
 			return entityManager.createQuery(criteria).getSingleResult();
 		} catch (NoResultException ex) {
@@ -74,7 +61,7 @@ public class GameVoteGameService {
 	@Transactional
 	public boolean addOrUpdate(GameVoteGame _gameVoteGame) {
 		boolean found = false;
-		GameVoteGame gameVoteGame = entityManager.find(GameVoteGame.class, _gameVoteGame.getId());
+		GameVoteGame gameVoteGame = getByGame(_gameVoteGame.getVoteChannelId(), _gameVoteGame.getGame());
 		if (gameVoteGame == null) {
 			entityManager.persist(_gameVoteGame);
 		} else {
@@ -87,17 +74,8 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public List<GameVoteGame> getAll() {
-		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
-		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
-		criteria.select(root);
-		return entityManager.createQuery(criteria).getResultList();
-	}
-
-	@Transactional
-	public Long findNewEmoteId(List<Emote> emotes) {
-		HashSet<Long> foundEmotes = getAllEmotes();
+	public Long findNewEmoteId(Long textChannelId, List<Emote> emotes) {
+		HashSet<Long> foundEmotes = getAllEmotes(textChannelId);
 		if (foundEmotes.size() >= emotes.size()) {
 			return null;
 		}
@@ -115,8 +93,8 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public HashSet<Long> getAllEmotes() {
-		List<GameVoteGame> allGames = getAll();
+	public HashSet<Long> getAllEmotes(Long textChannelId) {
+		List<GameVoteGame> allGames = getAllWithTextChannelId(textChannelId);
 		HashSet<Long> emotesCodes = new HashSet<>();
 		for (GameVoteGame game : allGames) {
 			emotesCodes.add(game.getEmoteId());
@@ -125,19 +103,20 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public GameVoteGame getGameByEmoteId(long emoteId) {
+	public GameVoteGame getGameByEmoteId(Long textChannelId, long emoteId) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
 		criteria.select(root);
 		criteria.where(builder.equal(root.get("emoteId"), emoteId));
+		criteria.where(builder.equal(root.get("voteChannelId"), textChannelId));
 		GameVoteGame res = entityManager.createQuery(criteria).getSingleResult();
 		return res;
 	}
 
 	@Transactional
-	public boolean addVoter(long emoteId, long userId) {
-		GameVoteGame game = getGameByEmoteId(emoteId);
+	public boolean addVoter(Long textChannelId, long emoteId, long userId) {
+		GameVoteGame game = getGameByEmoteId(textChannelId, emoteId);
 		HashSet<Long> voters = game.getVoters();
 		boolean res = voters.add(userId);
 		game.setVoters(voters);
@@ -146,8 +125,8 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public void removeVoter(long emoteId, long userId) {
-		GameVoteGame game = getGameByEmoteId(emoteId);
+	public void removeVoter(Long textChannelId, long emoteId, long userId) {
+		GameVoteGame game = getGameByEmoteId(textChannelId, emoteId);
 		HashSet<Long> voters = game.getVoters();
 		HashSet<Long> newVoters = new HashSet<>();
 		boolean deleted = false;
@@ -166,8 +145,8 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public boolean clearVoters() {
-		List<GameVoteGame> games = getAll();
+	public boolean clearVoters(Long textChannelId) {
+		List<GameVoteGame> games = getAllWithTextChannelId(textChannelId);
 		for (GameVoteGame gameVoteGame : games) {
 			gameVoteGame.setVoters(new HashSet<>());
 			entityManager.merge(gameVoteGame);
@@ -179,8 +158,8 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public void saveGameForVote() {
-		List<GameVoteGame> games = getAll();
+	public void saveGameForVote(Long textChannelId) {
+		List<GameVoteGame> games = getAllWithTextChannelId(textChannelId);
 		for (GameVoteGame game : games) {
 			game.setInVote(true);
 			game.setGameVote(game.getGame());
@@ -189,5 +168,15 @@ public class GameVoteGameService {
 		if (games != null && games.size() > 0) {
 			entityManager.flush();
 		}
+	}
+
+	@Transactional
+	public List<GameVoteGame> getAllWithTextChannelId(Long textChannelId) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
+		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
+		criteria.select(root);
+		criteria.where(builder.equal(root.get("voteChannelId"), textChannelId));
+		return entityManager.createQuery(criteria).getResultList();
 	}
 }

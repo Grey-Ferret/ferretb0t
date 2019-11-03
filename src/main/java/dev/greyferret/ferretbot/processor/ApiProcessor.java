@@ -12,12 +12,9 @@ import dev.greyferret.ferretbot.entity.json.twitch.users.follows.Follows;
 import dev.greyferret.ferretbot.service.ViewerService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
@@ -49,10 +46,10 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
 
 	@PostConstruct
 	private void postConstruct() {
-		channelStatusUrl = this.twitchAPIPrefix + "streams?user_login=" + chatConfig.getChannel();
-		gameInfoUrl = this.twitchAPIPrefix + "games?id=";
-		usersInfoUrl = this.twitchAPIPrefix + "users?login=";
-		followerInfoUrl = this.twitchAPIPrefix + "users/follows?from_id=";
+		channelStatusUrl = twitchAPIPrefix + "streams?user_login=" + chatConfig.getChannel();
+		gameInfoUrl = twitchAPIPrefix + "games?id=";
+		usersInfoUrl = twitchAPIPrefix + "users?login=";
+		followerInfoUrl = twitchAPIPrefix + "users/follows?from_id=";
 		isOn = true;
 	}
 
@@ -170,10 +167,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
 	}
 
 	public static boolean isFollowerByFollowedAtString(String followedAt) {
-		if (StringUtils.isNotBlank(followedAt)) {
-			return true;
-		}
-		return false;
+		return StringUtils.isNotBlank(followedAt);
 	}
 
 	public synchronized String streamerId() {

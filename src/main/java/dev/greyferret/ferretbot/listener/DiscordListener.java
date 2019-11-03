@@ -3,9 +3,9 @@ package dev.greyferret.ferretbot.listener;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.processor.DiscordProcessor;
 import dev.greyferret.ferretbot.processor.GameVoteProcessor;
-import dev.greyferret.ferretbot.processor.SubVoteProcessor;
 import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
@@ -28,8 +28,6 @@ public class DiscordListener extends ListenerAdapter {
 	@Autowired
 	private BotConfig botConfig;
 	@Autowired
-	private SubVoteProcessor subVoteProcessor;
-	@Autowired
 	private GameVoteProcessor gameVoteProcessor;
 	@Autowired
 	private GameVoteGameService gameVoteGameService;
@@ -46,10 +44,13 @@ public class DiscordListener extends ListenerAdapter {
 			}
 		}
 
-		if (botConfig.isSubVoteOn() && event.getChannel() == discordProcessor.subsChannel) {
-			subVoteProcessor.processSubVoteMessage(event);
+		boolean foundChannelForSubVote = false;
+		for (GamevoteChannelCombination combination : discordProcessor.gamevoteChannelCombinations) {
+			if (event.getChannel().getIdLong() == combination.getAddChannelId()) {
+				foundChannelForSubVote = true;
+			}
 		}
-		if (botConfig.isSubVoteOn() && event.getChannel() == discordProcessor.readVoteChannel) {
+		if (botConfig.isSubVoteOn() && foundChannelForSubVote) {
 			gameVoteProcessor.processGameVoteMessage(event);
 		}
 	}
@@ -60,22 +61,23 @@ public class DiscordListener extends ListenerAdapter {
 		if (event.getUser().getIdLong() == discordConfig.getSelfId()) {
 			return;
 		}
-		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds();
+		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
+		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
-			log.info(event);
 			long emoteId = event.getReactionEmote().getIdLong();
-			GameVoteGame game = gameVoteGameService.getGameByEmoteId(emoteId);
+			GameVoteGame game = gameVoteGameService.getGameByEmoteId(channelCombination.getAddChannelId(), emoteId);
 			if (game.getVoters().contains(userId)) {
 				return;
 			}
+			log.info("Reaction added for game {} (message {}) from {}", game, event.getMessageId(), event.getMember().getUser());
 			HashMap<Long, Long> usersRemoveChanceMap = gameVoteProcessor.getUsersRemoveChance();
-			if (usersRemoveChanceMap.keySet().contains(userId)) {
+			if (usersRemoveChanceMap.containsKey(userId)) {
 				if (usersRemoveChanceMap.get(userId) == emoteId) {
 					return;
 				}
 			}
-			gameVoteGameService.addVoter(emoteId, userId);
-			gameVoteProcessor.createOrUpdatePost();
+			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), emoteId, userId);
+			gameVoteProcessor.createOrUpdatePost(channelCombination);
 		}
 	}
 
@@ -85,18 +87,19 @@ public class DiscordListener extends ListenerAdapter {
 		if (event.getUser().getIdLong() == discordConfig.getSelfId()) {
 			return;
 		}
-		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds();
+		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
+		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
-			log.info(event);
 			long emoteId = event.getReactionEmote().getIdLong();
-			GameVoteGame game = gameVoteGameService.getGameByEmoteId(emoteId);
+			GameVoteGame game = gameVoteGameService.getGameByEmoteId(channelCombination.getAddChannelId(), emoteId);
 			if (!game.getVoters().contains(userId)) {
 				return;
 			}
+			log.info("Reaction removed for game {} (message {}) from {}", game, event.getMessageId(), event.getMember().getUser());
 			boolean available = gameVoteProcessor.addUserRemoveChance(userId, emoteId);
 			if (available) {
-				gameVoteGameService.removeVoter(emoteId, userId);
-				gameVoteProcessor.createOrUpdatePost();
+				gameVoteGameService.removeVoter(channelCombination.getAddChannelId(), emoteId, userId);
+				gameVoteProcessor.createOrUpdatePost(channelCombination);
 			}
 		}
 	}

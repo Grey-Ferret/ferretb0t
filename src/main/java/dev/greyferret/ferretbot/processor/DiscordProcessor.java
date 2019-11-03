@@ -4,12 +4,14 @@ import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.config.Messages;
+import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.listener.DiscordListener;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -44,10 +46,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 	public TextChannel announcementChannel;
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
-	public TextChannel subsChannel;
-	public TextChannel readVoteChannel;
-	public TextChannel subVoteChannel;
-	public TextChannel writeVoteChannel;
+	public ArrayList<GamevoteChannelCombination> gamevoteChannelCombinations;
 	private boolean isOn;
 	private ApiProcessor apiProcessor;
 
@@ -61,6 +60,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 
 	@Override
 	public void run() {
+		gamevoteChannelCombinations = new ArrayList<>();
 		try {
 			JDABuilder builder = new JDABuilder(discordConfig.getToken());
 			// Disable parts of the cache
@@ -80,10 +80,16 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
-		subsChannel = jda.getTextChannelById(discordConfig.getSubsChannel());
-		readVoteChannel = jda.getTextChannelById(discordConfig.getReadVoteChannel());
-		subVoteChannel = jda.getTextChannelById(discordConfig.getSubVoteChannel());
-		writeVoteChannel = jda.getTextChannelById(discordConfig.getWriteVoteChannel());
+		List<Long> gamevoteAddChannelIds = discordConfig.getGamevoteAddChannels();
+		List<Long> gamevoteVoteChannelIds = discordConfig.getGamevoteVoteChannels();
+		for (int i = 0; i < Math.min(gamevoteAddChannelIds.size(), gamevoteVoteChannelIds.size()); i++) {
+			Long addId = gamevoteAddChannelIds.get(i);
+			Long voteId = gamevoteVoteChannelIds.get(i);
+			if (addId == null || voteId == null) {
+				continue;
+			}
+			gamevoteChannelCombinations.add(new GamevoteChannelCombination(jda.getTextChannelById(addId), jda.getTextChannelById(voteId)));
+		}
 
 		apiProcessor = context.getBean(ApiProcessor.class);
 
@@ -126,5 +132,33 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 		} else {
 			log.info("Discord is off");
 		}
+	}
+
+	public JDA getJDA() {
+		return jda;
+	}
+
+	public GamevoteChannelCombination getGamevoteCombinationByAddChannel(MessageChannel channel) {
+		return getGamevoteCombinationByAddChannel(channel.getIdLong());
+	}
+
+	public GamevoteChannelCombination getGamevoteCombinationByAddChannel(long channelId) {
+		for (GamevoteChannelCombination combination : this.gamevoteChannelCombinations) {
+			if (combination.getAddChannelId() == channelId)
+				return combination;
+		}
+		return null;
+	}
+
+	public GamevoteChannelCombination getGamevoteCombinationByVoteChannel(MessageChannel channel) {
+		return getGamevoteCombinationByVoteChannel(channel.getIdLong());
+	}
+
+	public GamevoteChannelCombination getGamevoteCombinationByVoteChannel(long channelId) {
+		for (GamevoteChannelCombination combination : this.gamevoteChannelCombinations) {
+			if (combination.getVoteChannelId() == channelId)
+				return combination;
+		}
+		return null;
 	}
 }

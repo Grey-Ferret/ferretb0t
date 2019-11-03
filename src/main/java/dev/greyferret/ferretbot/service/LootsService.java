@@ -1,16 +1,12 @@
 package dev.greyferret.ferretbot.service;
 
-import dev.greyferret.ferretbot.config.ApplicationConfig;
-import dev.greyferret.ferretbot.exception.TransactionRuntimeFerretBotException;
 import dev.greyferret.ferretbot.entity.Loots;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.entity.ViewerLootsMap;
+import dev.greyferret.ferretbot.exception.TransactionRuntimeFerretBotException;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +19,10 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by GreyFerret on 19.12.2017.

@@ -3,6 +3,7 @@ package dev.greyferret.ferretbot.processor;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
@@ -21,14 +22,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @EnableConfigurationProperties({BotConfig.class})
@@ -42,82 +38,82 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 	private GameVoteGameService gameVoteGameService;
 	@Autowired
 	private BotConfig botConfig;
-	@Autowired
-	private CalcVoteResultsProcessor calcVoteResultsProcessor;
 
-	@Value("${discord.delay-to-one-minute}")
+	@Value("${discord.delay-to-countdown}")
 	private int minsBeforeCountDown;
 
 	public static int gamesPerPost = 10;
-	private ArrayList<Long> messages = new ArrayList<>();
-	private Long messageWithResult = -1L;
+	private HashMap<Long, ArrayList<Long>> channelMessageMap = new HashMap<>();
+	private HashMap<Long, Long> channelMessageResultIdMap = new HashMap<>();
 	private final Object MESSAGES_LOCKER = new Object();
-
-	private ScheduledExecutorService ses;
-	private ScheduledFuture<?> scheduledFuture;
 	private HashMap<Long, Long> removeVoteUsers = new HashMap<>();
 
 	private final Object REMOVE_VOTE_USERS_LOCK = new Object();
-
-	@PostConstruct
-	private void postConstruct() {
-		ses = Executors.newScheduledThreadPool(1);
-	}
 
 	@Override
 	public void run() {
 	}
 
 	public void processGameVoteMessage(MessageReceivedEvent event) {
+		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByAddChannel(event.getChannel());
+		if (channelCombination == null) {
+			return;
+		}
 		String message = event.getMessage().getContentDisplay();
-		if (discordConfig.getSubVoteAdminId().contains(event.getMember().getUser().getIdLong())) {
+		if (discordConfig.getSubVoteAdminId().contains(event.getMember().getIdLong())) {
 			if (message.equalsIgnoreCase("!reset")) {
-				boolean reseted = gameVoteGameService.reset();
-				resetMessageIds();
+				boolean reseted = gameVoteGameService.reset(channelCombination.getAddChannelId());
+				resetMessageIds(channelCombination.getAddChannelId());
 				if (reseted) {
 					event.getMessage().addReaction("\uD83D\uDC4D").queue();
 				} else {
-					discordProcessor.readVoteChannel.sendMessage("Что-то пошло не так...").queue();
+					channelCombination.getAddChannel().sendMessage("Что-то пошло не так...").queue();
 				}
 			} else if (message.equalsIgnoreCase("!publish")) {
-				boolean cleared = gameVoteGameService.clearVoters();
-				resetMessageIds();
-				gameVoteGameService.saveGameForVote();
-				postGameVote(discordProcessor.writeVoteChannel, true);
-				if (scheduledFuture != null) {
-					scheduledFuture.cancel(true);
-				}
+				boolean cleared = gameVoteGameService.clearVoters(channelCombination.getAddChannelId());
+				resetMessageIds(channelCombination.getAddChannelId());
+				gameVoteGameService.saveGameForVote(channelCombination.getAddChannelId());
+				postGameVote(channelCombination.getVoteChannel(), channelCombination.getAddChannelId(), true);
 				resetUsersRemoveChance();
-				scheduledFuture = ses.schedule(calcVoteResultsProcessor, minsBeforeCountDown, TimeUnit.MINUTES);
+
+				CalcVoteResultsProcessor calcVoteResultsProcessor = new CalcVoteResultsProcessor(channelCombination, gameVoteGameService, minsBeforeCountDown);
+				Thread calcVoteResultsThread = new Thread(calcVoteResultsProcessor);
+				calcVoteResultsThread.start();
 			}
 		}
 		if (message.toLowerCase().startsWith("!игры")) {
-			postGameVote(discordProcessor.readVoteChannel, false);
+			postGameVote(channelCombination.getAddChannel(), channelCombination.getAddChannelId(), false);
 		}
 		if (message.toLowerCase().startsWith("!игра")) {
 			if (message.indexOf(" ") > -1) {
 				String game = message.substring(message.indexOf(" ") + 1);
 				game = game.replaceAll("\n|\r\n", " ");
 				if (StringUtils.isBlank(game)) {
-					discordProcessor.readVoteChannel.sendMessage("Ошибка получения игры...").queue();
+					channelCombination.getAddChannel().sendMessage("Ошибка получения игры...").queue();
 				} else {
-					GameVoteGame gameVoteGame = gameVoteGameService.getByGame(game);
-					if (gameVoteGame != null) {
+					GameVoteGame gameVoteGame = gameVoteGameService.getByGame(channelCombination.getAddChannelId(), game);
+					if (gameVoteGame != null && !gameVoteGame.getVoteChannelId().equals(channelCombination.getAddChannelId())) {
 						String _game = gameVoteGame.getGame();
 						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
 							if (event.getMember().getUser().getId().equals(gameVoteGame.getId())) {
-								discordProcessor.readVoteChannel.sendMessage("Такая игра уже предложена вами!").queue();
+								channelCombination.getAddChannel().sendMessage("Такая игра уже предложена вами!").queue();
 							} else {
-								discordProcessor.readVoteChannel.sendMessage("Такая игра уже предложена...").queue();
+								channelCombination.getAddChannel().sendMessage("Такая игра уже предложена...").queue();
 							}
 						}
 					} else {
-						Long newEmoteId = gameVoteGameService.findNewEmoteId(discordProcessor.getPublicEmotes());
+						Long newEmoteId = gameVoteGameService.findNewEmoteId(channelCombination.getAddChannelId(), discordProcessor.getPublicEmotes());
 						if (newEmoteId == null) {
-							discordProcessor.readVoteChannel.sendMessage("Игр больше чем смайликов! Обратитесь к админам.");
+							channelCombination.getAddChannel().sendMessage("Игр больше чем смайликов! Обратитесь к админам.");
 							return;
 						}
-						boolean found = gameVoteGameService.addOrUpdate(new GameVoteGame(event.getMember().getUser().getId(), event.getMember(), game, newEmoteId));
+						GameVoteGame gameVoteGameToAdd = new GameVoteGame(
+								event.getMember().getUser().getId(),
+								event.getMember(),
+								game,
+								newEmoteId,
+								channelCombination.getAddChannelId());
+						boolean found = gameVoteGameService.addOrUpdate(gameVoteGameToAdd);
 						event.getMessage().addReaction("\uD83D\uDC4D").queue();
 					}
 				}
@@ -125,14 +121,14 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		}
 	}
 
-	private void resetMessageIds() {
-		messages = new ArrayList<>();
-		messageWithResult = -1L;
+	private void resetMessageIds(Long channelAddId) {
+		channelMessageMap.remove(channelAddId);
+		channelMessageResultIdMap.remove(channelAddId);
 	}
 
-	private void postGameVote(TextChannel channel, boolean withEmotes) {
+	private void postGameVote(TextChannel channel, Long textChannelId, boolean withEmotes) {
 		ArrayList<ArrayList<GameVoteGame>> posts = new ArrayList<>();
-		List<GameVoteGame> subGames = gameVoteGameService.getAll();
+		List<GameVoteGame> subGames = gameVoteGameService.getAllWithTextChannelId(textChannelId);
 		if (subGames == null || subGames.size() == 0) {
 			channel.sendMessage("Нет предложенных игр. Будешь первым? :)").queue();
 			return;
@@ -160,28 +156,39 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 					message.addReaction(emoteById).queue();
 				}
 				synchronized (MESSAGES_LOCKER) {
+					ArrayList<Long> messages = channelMessageMap.get(textChannelId);
+					if (messages == null) {
+						messages = new ArrayList<>();
+					}
 					messages.add(message.getIdLong());
+					channelMessageMap.put(textChannelId, messages);
 				}
 			}
 		}
 		if (withEmotes && posts.size() > 0) {
-			createOrUpdatePost();
+			createOrUpdatePost(discordProcessor.getGamevoteCombinationByAddChannel(textChannelId));
 		}
 	}
 
-	public void createOrUpdatePost() {
-		Long messageWithResult = getMessageWithResult();
+	public void createOrUpdatePost(GamevoteChannelCombination channelCombination) {
+		HashMap<Long, Long> messageWithResultMap = getMessageWithResult();
+		Long messageWithResult = messageWithResultMap.get(channelCombination.getAddChannelId());
+		if (messageWithResult == null) {
+			messageWithResult = -1L;
+		}
 		try {
-			JDA jda = discordProcessor.writeVoteChannel.getJDA();
+			JDA jda = discordProcessor.getJDA();
 			if (messageWithResult < 0) {
-				Message messageId = discordProcessor.writeVoteChannel.sendMessage(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAll(), jda, false, true)).complete(true);
-				setMessageWithResult(messageId.getIdLong());
+				Message messageId = channelCombination.getVoteChannel().sendMessage(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true)).complete(true);
+				messageWithResultMap.put(channelCombination.getAddChannelId(), messageId.getIdLong());
+				setMessageWithResult(messageWithResultMap);
 			} else {
 				synchronized (MESSAGES_LOCKER) {
-					MessageHistory history = discordProcessor.writeVoteChannel.getHistoryAfter(messages.get(messages.size() - 1), 20).complete(true);
+					ArrayList<Long> messages = channelMessageMap.get(channelCombination.getAddChannelId());
+					MessageHistory history = channelCombination.getVoteChannel().getHistoryAfter(messages.get(messages.size() - 1), 20).complete(true);
 					for (Message message : history.getRetrievedHistory()) {
 						if (message.getIdLong() == messageWithResult) {
-							message.editMessageFormat(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAll(), jda, false, true)).queue();
+							message.editMessageFormat(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true)).queue();
 							return;
 						}
 					}
@@ -205,18 +212,18 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		}
 	}
 
-	public ArrayList<Long> getVoteMessageIds() {
+	public ArrayList<Long> getVoteMessageIds(Long addChannelId) {
 		synchronized (MESSAGES_LOCKER) {
-			return this.messages;
+			return this.channelMessageMap.get(addChannelId);
 		}
 	}
 
-	public Long getMessageWithResult() {
-		return messageWithResult;
+	public HashMap<Long, Long> getMessageWithResult() {
+		return channelMessageResultIdMap;
 	}
 
-	public void setMessageWithResult(Long messageWithResult) {
-		this.messageWithResult = messageWithResult;
+	public void setMessageWithResult(HashMap<Long, Long> messageWithResult) {
+		this.channelMessageResultIdMap = channelMessageResultIdMap;
 	}
 
 	public void resetUsersRemoveChance() {
@@ -233,7 +240,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 
 	public boolean addUserRemoveChance(Long userId, long emoteId) {
 		synchronized (REMOVE_VOTE_USERS_LOCK) {
-			if (removeVoteUsers.keySet().contains(userId)) {
+			if (removeVoteUsers.containsKey(userId)) {
 				return false;
 			} else {
 				removeVoteUsers.put(userId, emoteId);

@@ -2,22 +2,26 @@ package dev.greyferret.ferretbot.entity;
 
 import net.dv8tion.jda.api.entities.Member;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.ColumnDefault;
 import org.jetbrains.annotations.NotNull;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.HashSet;
 
 @Entity
-@Table(name = "game_vote_game")
+@Table(name = "gamevote", uniqueConstraints={@UniqueConstraint(columnNames = {"user_id", "vote_channel_id"})})
 public class GameVoteGame implements Comparable<GameVoteGame> {
 	@Id
+	@GeneratedValue
 	@Column(name = "id", updatable = false, nullable = false)
-	private String id;
-	@Column(name = "name")
-	private String name;
+	private Long id;
+	@Column(name = "user_id")
+	private String userId;
+	@Column(name = "vote_channel_id", nullable = false)
+	@ColumnDefault("-1")
+	private Long voteChannelId;
+	@Column(name = "user_nickname")
+	private String userNickname;
 	@Column(name = "game")
 	private String game;
 	@Column(name = "in_vote")
@@ -32,26 +36,27 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 	private GameVoteGame() {
 	}
 
-	public GameVoteGame(String id, Member member, String game, Long emoteId) {
+	public GameVoteGame(String userId, Member member, String game, Long emoteId, Long voteChannelId) {
 		String nickname = member.getNickname();
 		if (StringUtils.isBlank(nickname)) {
 			nickname = member.getUser().getName();
 		}
-		this.id = id;
+		this.userId = userId;
 		this.game = game;
-		this.name = nickname;
+		this.userNickname = nickname;
 		this.emoteId = emoteId;
 		this.voters = new HashSet<>();
 		this.inVote = false;
 		this.gameVote = game;
+		this.voteChannelId = voteChannelId;
 	}
 
-	public String getName() {
-		return name;
+	public String getUserNickname() {
+		return userNickname;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setUserNickname(String userNickname) {
+		this.userNickname = userNickname;
 	}
 
 	public String getGame() {
@@ -62,11 +67,11 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 		this.game = game;
 	}
 
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -86,11 +91,27 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 		this.voters = voters;
 	}
 
+	public Long getVoteChannelId() {
+		return voteChannelId;
+	}
+
+	public void setVoteChannelId(Long voteChannelId) {
+		this.voteChannelId = voteChannelId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
 	@Override
 	public String toString() {
 		return "GameVoteGame{" +
 				"id='" + id + '\'' +
-				", name='" + name + '\'' +
+				", name='" + userNickname + '\'' +
 				", game='" + game + '\'' +
 				", inVote=" + inVote +
 				", gameVote='" + gameVote + '\'' +
