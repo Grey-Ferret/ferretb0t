@@ -46,7 +46,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 	public TextChannel announcementChannel;
 	public TextChannel testChannel;
 	public TextChannel raffleChannel;
-	public ArrayList<GamevoteChannelCombination> gamevoteChannelCombinations;
+	public ArrayList<GamevoteChannelCombination> gameVoteChannelCombinations;
 	private boolean isOn;
 	private ApiProcessor apiProcessor;
 
@@ -60,7 +60,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 
 	@Override
 	public void run() {
-		gamevoteChannelCombinations = new ArrayList<>();
+		gameVoteChannelCombinations = new ArrayList<>();
 		try {
 			JDABuilder builder = new JDABuilder(discordConfig.getToken());
 			// Disable parts of the cache
@@ -80,15 +80,15 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 		announcementChannel = jda.getTextChannelById(discordConfig.getAnnouncementChannel());
 		testChannel = jda.getTextChannelById(discordConfig.getTestChannel());
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
-		List<Long> gamevoteAddChannelIds = discordConfig.getGamevoteAddChannels();
-		List<Long> gamevoteVoteChannelIds = discordConfig.getGamevoteVoteChannels();
-		for (int i = 0; i < Math.min(gamevoteAddChannelIds.size(), gamevoteVoteChannelIds.size()); i++) {
-			Long addId = gamevoteAddChannelIds.get(i);
-			Long voteId = gamevoteVoteChannelIds.get(i);
+		List<Long> gameVoteAddChannelIds = discordConfig.getGameVoteAddChannels();
+		List<Long> gameVoteVoteChannelIds = discordConfig.getGameVoteVoteChannels();
+		for (int i = 0; i < Math.min(gameVoteAddChannelIds.size(), gameVoteVoteChannelIds.size()); i++) {
+			Long addId = gameVoteAddChannelIds.get(i);
+			Long voteId = gameVoteVoteChannelIds.get(i);
 			if (addId == null || voteId == null) {
 				continue;
 			}
-			gamevoteChannelCombinations.add(new GamevoteChannelCombination(jda.getTextChannelById(addId), jda.getTextChannelById(voteId)));
+			gameVoteChannelCombinations.add(new GamevoteChannelCombination(jda.getTextChannelById(addId), jda.getTextChannelById(voteId)));
 		}
 
 		apiProcessor = context.getBean(ApiProcessor.class);
@@ -143,7 +143,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 	}
 
 	public GamevoteChannelCombination getGamevoteCombinationByAddChannel(long channelId) {
-		for (GamevoteChannelCombination combination : this.gamevoteChannelCombinations) {
+		for (GamevoteChannelCombination combination : this.gameVoteChannelCombinations) {
 			if (combination.getAddChannelId() == channelId)
 				return combination;
 		}
@@ -155,7 +155,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 	}
 
 	public GamevoteChannelCombination getGamevoteCombinationByVoteChannel(long channelId) {
-		for (GamevoteChannelCombination combination : this.gamevoteChannelCombinations) {
+		for (GamevoteChannelCombination combination : this.gameVoteChannelCombinations) {
 			if (combination.getVoteChannelId() == channelId)
 				return combination;
 		}

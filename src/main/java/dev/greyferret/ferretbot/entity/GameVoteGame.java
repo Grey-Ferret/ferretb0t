@@ -9,7 +9,7 @@ import javax.persistence.*;
 import java.util.HashSet;
 
 @Entity
-@Table(name = "gamevote", uniqueConstraints={@UniqueConstraint(columnNames = {"user_id", "vote_channel_id"})})
+@Table(name = "game_vote", uniqueConstraints={@UniqueConstraint(columnNames = {"user_id", "vote_channel_id"})})
 public class GameVoteGame implements Comparable<GameVoteGame> {
 	@Id
 	@GeneratedValue

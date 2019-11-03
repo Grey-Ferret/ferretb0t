@@ -45,7 +45,7 @@ public class DiscordListener extends ListenerAdapter {
 		}
 
 		boolean foundChannelForSubVote = false;
-		for (GamevoteChannelCombination combination : discordProcessor.gamevoteChannelCombinations) {
+		for (GamevoteChannelCombination combination : discordProcessor.gameVoteChannelCombinations) {
 			if (event.getChannel().getIdLong() == combination.getAddChannelId()) {
 				foundChannelForSubVote = true;
 			}
