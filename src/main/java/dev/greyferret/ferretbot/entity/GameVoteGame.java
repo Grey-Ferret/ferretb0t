@@ -110,8 +110,10 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 	@Override
 	public String toString() {
 		return "GameVoteGame{" +
-				"id='" + id + '\'' +
-				", name='" + userNickname + '\'' +
+				"id=" + id +
+				", userId='" + userId + '\'' +
+				", voteChannelId=" + voteChannelId +
+				", userNickname='" + userNickname + '\'' +
 				", game='" + game + '\'' +
 				", inVote=" + inVote +
 				", gameVote='" + gameVote + '\'' +

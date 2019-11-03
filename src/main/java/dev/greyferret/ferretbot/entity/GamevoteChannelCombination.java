@@ -18,4 +18,14 @@ public class GamevoteChannelCombination {
 		this.addChannelId = addChannel.getIdLong();
 		this.voteChannelId = voteChannel.getIdLong();
 	}
+
+	@Override
+	public String toString() {
+		return "GamevoteChannelCombination{" +
+				"addChannelId=" + addChannelId +
+				", voteChannelId=" + voteChannelId +
+				", addChannel=" + addChannel +
+				", voteChannel=" + voteChannel +
+				'}';
+	}
 }
