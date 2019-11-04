@@ -91,7 +91,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				if (StringUtils.isBlank(game)) {
 					channelCombination.getAddChannel().sendMessage("Ошибка получения игры...").queue();
 				} else {
-					GameVoteGame gameVoteGame = gameVoteGameService.getByGame(channelCombination.getAddChannelId(), game);
+					GameVoteGame gameVoteGame = gameVoteGameService.getChannelIdAndByGame(channelCombination.getAddChannelId(), game);
 					if (gameVoteGame != null) {
 						String _game = gameVoteGame.getGame();
 						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {

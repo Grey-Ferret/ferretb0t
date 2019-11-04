@@ -44,7 +44,7 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public GameVoteGame getByUserId(Long textChannelId, String userId) {
+	public GameVoteGame getByChannelIdAndUserId(Long textChannelId, String userId) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
@@ -58,7 +58,7 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public GameVoteGame getByGame(Long textChannelId, String game) {
+	public GameVoteGame getChannelIdAndByGame(Long textChannelId, String game) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
@@ -74,7 +74,7 @@ public class GameVoteGameService {
 	@Transactional
 	public boolean addOrUpdate(GameVoteGame _gameVoteGame) {
 		boolean found = false;
-		GameVoteGame gameVoteGame = getByUserId(_gameVoteGame.getVoteChannelId(), _gameVoteGame.getUserId());
+		GameVoteGame gameVoteGame = getByChannelIdAndUserId(_gameVoteGame.getVoteChannelId(), _gameVoteGame.getUserId());
 		if (gameVoteGame == null) {
 			entityManager.persist(_gameVoteGame);
 		} else {
@@ -116,7 +116,7 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public GameVoteGame getGameByEmoteId(Long textChannelId, long emoteId) {
+	public GameVoteGame getGameByChannelIdAndEmoteId(Long textChannelId, long emoteId) {
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
 		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
@@ -128,7 +128,7 @@ public class GameVoteGameService {
 
 	@Transactional
 	public boolean addVoter(Long textChannelId, long emoteId, long userId) {
-		GameVoteGame game = getGameByEmoteId(textChannelId, emoteId);
+		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
 		HashSet<Long> voters = game.getVoters();
 		boolean res = voters.add(userId);
 		game.setVoters(voters);
@@ -138,7 +138,7 @@ public class GameVoteGameService {
 
 	@Transactional
 	public void removeVoter(Long textChannelId, long emoteId, long userId) {
-		GameVoteGame game = getGameByEmoteId(textChannelId, emoteId);
+		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
 		HashSet<Long> voters = game.getVoters();
 		HashSet<Long> newVoters = new HashSet<>();
 		boolean deleted = false;
