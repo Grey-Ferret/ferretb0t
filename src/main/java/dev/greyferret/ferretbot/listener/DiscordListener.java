@@ -60,6 +60,9 @@ public class DiscordListener extends ListenerAdapter {
 			return;
 		}
 		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
+		if (channelCombination == null) {
+			return;
+		}
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
@@ -92,6 +95,9 @@ public class DiscordListener extends ListenerAdapter {
 			return;
 		}
 		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
+		if (channelCombination == null) {
+			return;
+		}
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
