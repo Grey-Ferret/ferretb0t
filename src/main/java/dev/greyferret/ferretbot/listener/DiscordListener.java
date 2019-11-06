@@ -56,11 +56,8 @@ public class DiscordListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionAdd(MessageReactionAddEvent event) {
 		long userId = event.getUser().getIdLong();
-		if (userId == event.getJDA().getSelfUser().getIdLong()) {
-			return;
-		}
 		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
-		if (channelCombination == null) {
+		if (userId == event.getJDA().getSelfUser().getIdLong() || channelCombination == null) {
 			return;
 		}
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
@@ -91,11 +88,8 @@ public class DiscordListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
 		long userId = event.getUser().getIdLong();
-		if (userId == event.getJDA().getSelfUser().getIdLong()) {
-			return;
-		}
 		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
-		if (channelCombination == null) {
+		if (userId == event.getJDA().getSelfUser().getIdLong() || channelCombination == null) {
 			return;
 		}
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
