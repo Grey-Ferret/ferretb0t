@@ -167,11 +167,11 @@ public class FerretBotUtils {
 			Emote emote = jda.getEmoteById(game.getEmoteId());
 			String t = "";
 			if (withEmotes && withVotes) {
-				t = game.getVoters().size() + " - " + emote.getAsMention() + " - " + gameName + " (" + game.getUserNickname() + ")";
+				t = game.calcVotesWithBonus() + " - " + emote.getAsMention() + " - " + gameName + " (" + game.getUserNickname() + ")";
 			} else if (withEmotes) {
 				t = emote.getAsMention() + " - " + gameName + " (" + game.getUserNickname() + ")";
 			} else if (withVotes) {
-				t = game.getVoters().size() + " - " + gameName + " (" + game.getUserNickname() + ")";
+				t = game.calcVotesWithBonus() + " - " + gameName + " (" + game.getUserNickname() + ")";
 			} else {
 				t = gameName + " (" + game.getUserNickname() + ")";
 			}
@@ -184,7 +184,7 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static String formResultsGameVoteEntity(List<GameVoteGame> _games, JDA jda, boolean withEmotes, boolean withVoters) {
+	public static String formResultsGameVoteEntity(List<GameVoteGame> _games, JDA jda, boolean withEmotes, boolean withVoters, Long gameVoteDoubleVoteRoleId) {
 		ArrayList<GameVoteGame> games = new ArrayList<>();
 		for (GameVoteGame game : _games) {
 			if (game.isInVote()) {

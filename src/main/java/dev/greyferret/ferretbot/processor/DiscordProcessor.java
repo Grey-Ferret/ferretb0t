@@ -82,13 +82,14 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 		raffleChannel = jda.getTextChannelById(discordConfig.getRaffleChannel());
 		List<Long> gameVoteAddChannelIds = discordConfig.getGameVoteAddChannels();
 		List<Long> gameVoteVoteChannelIds = discordConfig.getGameVoteVoteChannels();
+		List<Long> gameVoteDoubleVoteRoleIds = discordConfig.getGameVoteDoubleVoteRoleIds();
 		for (int i = 0; i < Math.min(gameVoteAddChannelIds.size(), gameVoteVoteChannelIds.size()); i++) {
 			Long addId = gameVoteAddChannelIds.get(i);
 			Long voteId = gameVoteVoteChannelIds.get(i);
 			if (addId == null || voteId == null) {
 				continue;
 			}
-			gameVoteChannelCombinations.add(new GamevoteChannelCombination(jda.getTextChannelById(addId), jda.getTextChannelById(voteId)));
+			gameVoteChannelCombinations.add(new GamevoteChannelCombination(jda.getTextChannelById(addId), jda.getTextChannelById(voteId), gameVoteDoubleVoteRoleIds.get(i)));
 		}
 
 		apiProcessor = context.getBean(ApiProcessor.class);

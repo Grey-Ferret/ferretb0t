@@ -63,7 +63,7 @@ public class CalcVoteResultsProcessor implements Runnable {
 		int topVoteGame = 0;
 		List<GameVoteGame> games = this.gameVoteGameService.getAllWithTextChannelId(textChannelId);
 		for (GameVoteGame game : games) {
-			int gameVotersForCurrentGame = game.getVoters().size();
+			int gameVotersForCurrentGame = game.calcVotesWithBonus();
 			if (gameVotersForCurrentGame > topVoteGame) {
 				topVoteGame = gameVotersForCurrentGame;
 				topGames = new ArrayList<>();

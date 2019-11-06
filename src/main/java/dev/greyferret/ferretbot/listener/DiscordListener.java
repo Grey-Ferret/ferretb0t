@@ -1,7 +1,6 @@
 package dev.greyferret.ferretbot.listener;
 
 import dev.greyferret.ferretbot.config.BotConfig;
-import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
 import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.processor.DiscordProcessor;
@@ -10,6 +9,7 @@ import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -31,8 +31,6 @@ public class DiscordListener extends ListenerAdapter {
 	private GameVoteProcessor gameVoteProcessor;
 	@Autowired
 	private GameVoteGameService gameVoteGameService;
-	@Autowired
-	private DiscordConfig discordConfig;
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
@@ -58,7 +56,7 @@ public class DiscordListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionAdd(MessageReactionAddEvent event) {
 		long userId = event.getUser().getIdLong();
-		if (event.getUser().getIdLong() == discordConfig.getSelfId()) {
+		if (userId == event.getJDA().getSelfUser().getIdLong()) {
 			return;
 		}
 		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
@@ -66,7 +64,7 @@ public class DiscordListener extends ListenerAdapter {
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
 			GameVoteGame game = gameVoteGameService.getGameByChannelIdAndEmoteId(channelCombination.getAddChannelId(), emoteId);
-			if (game.getVoters().contains(userId)) {
+			if (game.getVoters().containsKey(userId)) {
 				return;
 			}
 			log.info("Reaction added for game {} (message {}) from {}", game, event.getMessageId(), event.getMember().getUser());
@@ -76,7 +74,13 @@ public class DiscordListener extends ListenerAdapter {
 					return;
 				}
 			}
-			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), emoteId, userId);
+			boolean roleToDoubleBoolean = false;
+			Long gameVoteDoubleVoteRoleId = channelCombination.getGameVoteDoubleVoteRoleId();
+			if(gameVoteDoubleVoteRoleId > 0) {
+				Role roleToDouble = event.getJDA().getRoleById(gameVoteDoubleVoteRoleId);
+				roleToDoubleBoolean = event.getMember().getRoles().contains(roleToDouble);
+			}
+			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), roleToDoubleBoolean, emoteId, userId);
 			gameVoteProcessor.createOrUpdatePost(channelCombination);
 		}
 	}
@@ -84,7 +88,7 @@ public class DiscordListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
 		long userId = event.getUser().getIdLong();
-		if (event.getUser().getIdLong() == discordConfig.getSelfId()) {
+		if (userId == event.getJDA().getSelfUser().getIdLong()) {
 			return;
 		}
 		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
@@ -92,7 +96,7 @@ public class DiscordListener extends ListenerAdapter {
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
 			GameVoteGame game = gameVoteGameService.getGameByChannelIdAndEmoteId(channelCombination.getAddChannelId(), emoteId);
-			if (!game.getVoters().contains(userId)) {
+			if (!game.getVoters().containsKey(userId)) {
 				return;
 			}
 			log.info("Reaction removed for game {} (message {}) from {}", game, event.getMessageId(), event.getMember().getUser());

@@ -14,6 +14,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -127,24 +128,26 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public boolean addVoter(Long textChannelId, long emoteId, long userId) {
+	public void addVoter(Long textChannelId, boolean roleToDoubleBoolean, long emoteId, long userId) {
 		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
-		HashSet<Long> voters = game.getVoters();
-		boolean res = voters.add(userId);
+		HashMap<Long, Boolean> voters = game.getVoters();
+		if (voters == null) {
+			voters = new HashMap<>();
+		}
+		voters.put(userId, roleToDoubleBoolean);
 		game.setVoters(voters);
 		entityManager.merge(game);
-		return res;
 	}
 
 	@Transactional
 	public void removeVoter(Long textChannelId, long emoteId, long userId) {
 		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
-		HashSet<Long> voters = game.getVoters();
-		HashSet<Long> newVoters = new HashSet<>();
+		HashMap<Long, Boolean> voters = game.getVoters();
+		HashMap<Long, Boolean> newVoters = new HashMap<>();
 		boolean deleted = false;
-		for (Long _userId : voters) {
+		for (Long _userId : voters.keySet()) {
 			if (userId != _userId) {
-				newVoters.add(_userId);
+				newVoters.put(_userId, voters.get(_userId));
 			} else {
 				deleted = true;
 			}
@@ -160,7 +163,7 @@ public class GameVoteGameService {
 	public boolean clearVoters(Long textChannelId) {
 		List<GameVoteGame> games = getAllWithTextChannelId(textChannelId);
 		for (GameVoteGame gameVoteGame : games) {
-			gameVoteGame.setVoters(new HashSet<>());
+			gameVoteGame.setVoters(new HashMap<>());
 			entityManager.merge(gameVoteGame);
 		}
 		if (games.size() > 0) {

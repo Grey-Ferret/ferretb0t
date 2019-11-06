@@ -6,10 +6,10 @@ import org.hibernate.annotations.ColumnDefault;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
-import java.util.HashSet;
+import java.util.HashMap;
 
 @Entity
-@Table(name = "game_vote", uniqueConstraints={@UniqueConstraint(columnNames = {"user_id", "vote_channel_id"})})
+@Table(name = "game_vote", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "vote_channel_id"})})
 public class GameVoteGame implements Comparable<GameVoteGame> {
 	@Id
 	@GeneratedValue
@@ -31,7 +31,7 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 	@Column(name = "emote_id")
 	private Long emoteId;
 	@Column(name = "voters")
-	private HashSet<Long> voters;
+	private HashMap<Long, Boolean> voters;
 
 	private GameVoteGame() {
 	}
@@ -45,7 +45,7 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 		this.game = game;
 		this.userNickname = nickname;
 		this.emoteId = emoteId;
-		this.voters = new HashSet<>();
+		this.voters = new HashMap<>();
 		this.inVote = false;
 		this.gameVote = game;
 		this.voteChannelId = voteChannelId;
@@ -83,11 +83,11 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 		this.emoteId = emoteId;
 	}
 
-	public HashSet<Long> getVoters() {
+	public HashMap<Long, Boolean> getVoters() {
 		return voters;
 	}
 
-	public void setVoters(HashSet<Long> voters) {
+	public void setVoters(HashMap<Long, Boolean> voters) {
 		this.voters = voters;
 	}
 
@@ -122,9 +122,20 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 				'}';
 	}
 
+	public int calcVotesWithBonus() {
+		int res = 0;
+		for (Long voterId : this.voters.keySet()) {
+			res++;
+			if (this.voters.get(voterId)) {
+				res++;
+			}
+		}
+		return res;
+	}
+
 	@Override
 	public int compareTo(@NotNull GameVoteGame o) {
-		return o.getVoters().size() - this.getVoters().size();
+		return o.calcVotesWithBonus() - this.calcVotesWithBonus();
 	}
 
 	public boolean isInVote() {
