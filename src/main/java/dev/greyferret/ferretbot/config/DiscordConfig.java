@@ -18,7 +18,6 @@ public class DiscordConfig {
 	private Long testChannel;
 	private List<Long> gameVoteAddChannels;
 	private List<Long> gameVoteVoteChannels;
-	private List<Long> gameVoteDoubleVoteRoleIds;
 	private Long raffleChannel;
 	private Long checkTime;
 	private List<Long> subVoteAdminId;

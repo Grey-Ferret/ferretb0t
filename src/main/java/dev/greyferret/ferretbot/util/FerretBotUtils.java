@@ -184,7 +184,7 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static String formResultsGameVoteEntity(List<GameVoteGame> _games, JDA jda, boolean withEmotes, boolean withVoters, Long gameVoteDoubleVoteRoleId) {
+	public static String formResultsGameVoteEntity(List<GameVoteGame> _games, JDA jda, boolean withEmotes, boolean withVoters) {
 		ArrayList<GameVoteGame> games = new ArrayList<>();
 		for (GameVoteGame game : _games) {
 			if (game.isInVote()) {

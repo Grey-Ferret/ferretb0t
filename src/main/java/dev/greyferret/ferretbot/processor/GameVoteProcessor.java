@@ -179,7 +179,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		try {
 			JDA jda = discordProcessor.getJDA();
 			if (messageWithResult < 0) {
-				Message messageId = channelCombination.getVoteChannel().sendMessage(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true, channelCombination.getGameVoteDoubleVoteRoleId())).complete(true);
+				Message messageId = channelCombination.getVoteChannel().sendMessage(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true)).complete(true);
 				messageWithResultMap.put(channelCombination.getAddChannelId(), messageId.getIdLong());
 				setMessageWithResult(messageWithResultMap);
 			} else {
@@ -188,7 +188,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 					MessageHistory history = channelCombination.getVoteChannel().getHistoryAfter(messages.get(messages.size() - 1), 20).complete(true);
 					for (Message message : history.getRetrievedHistory()) {
 						if (message.getIdLong() == messageWithResult) {
-							message.editMessageFormat(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true, channelCombination.getGameVoteDoubleVoteRoleId())).queue();
+							message.editMessageFormat(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true)).queue();
 							return;
 						}
 					}

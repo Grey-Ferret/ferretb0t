@@ -1,10 +1,12 @@
 package dev.greyferret.ferretbot.listener;
 
 import dev.greyferret.ferretbot.config.BotConfig;
+import dev.greyferret.ferretbot.entity.GameVoteBonusVote;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
 import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.processor.DiscordProcessor;
 import dev.greyferret.ferretbot.processor.GameVoteProcessor;
+import dev.greyferret.ferretbot.service.GameVoteBonusVoteService;
 import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Component
 @Log4j2
@@ -31,6 +34,8 @@ public class DiscordListener extends ListenerAdapter {
 	private GameVoteProcessor gameVoteProcessor;
 	@Autowired
 	private GameVoteGameService gameVoteGameService;
+	@Autowired
+	private GameVoteBonusVoteService gameVoteBonusVoteService;
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
@@ -74,13 +79,17 @@ public class DiscordListener extends ListenerAdapter {
 					return;
 				}
 			}
-			boolean roleToDoubleBoolean = false;
-			Long gameVoteDoubleVoteRoleId = channelCombination.getGameVoteDoubleVoteRoleId();
-			if(gameVoteDoubleVoteRoleId > 0) {
-				Role roleToDouble = event.getJDA().getRoleById(gameVoteDoubleVoteRoleId);
-				roleToDoubleBoolean = event.getMember().getRoles().contains(roleToDouble);
+			Integer votes = 1;
+			List<GameVoteBonusVote> gameVoteBonusVotes = gameVoteBonusVoteService.findByTextChannelId(channelCombination.getAddChannelId());
+			if (gameVoteBonusVotes.size() > 0) {
+				for (GameVoteBonusVote bonusVoteEntity : gameVoteBonusVotes) {
+					Role roleToDouble = event.getJDA().getRoleById(bonusVoteEntity.getRoleId());
+					if (event.getMember().getRoles().contains(roleToDouble)) {
+						votes = votes + bonusVoteEntity.getVotes();
+					}
+				}
 			}
-			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), roleToDoubleBoolean, emoteId, userId);
+			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), votes, emoteId, userId);
 			gameVoteProcessor.createOrUpdatePost(channelCombination);
 		}
 	}

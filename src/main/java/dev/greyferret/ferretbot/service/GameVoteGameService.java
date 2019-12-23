@@ -128,13 +128,13 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
-	public void addVoter(Long textChannelId, boolean roleToDoubleBoolean, long emoteId, long userId) {
+	public void addVoter(Long textChannelId, Integer votes, long emoteId, long userId) {
 		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
-		HashMap<Long, Boolean> voters = game.getVoters();
+		HashMap<Long, Integer> voters = game.getVoters();
 		if (voters == null) {
 			voters = new HashMap<>();
 		}
-		voters.put(userId, roleToDoubleBoolean);
+		voters.put(userId, votes);
 		game.setVoters(voters);
 		entityManager.merge(game);
 	}
@@ -142,8 +142,8 @@ public class GameVoteGameService {
 	@Transactional
 	public void removeVoter(Long textChannelId, long emoteId, long userId) {
 		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
-		HashMap<Long, Boolean> voters = game.getVoters();
-		HashMap<Long, Boolean> newVoters = new HashMap<>();
+		HashMap<Long, Integer> voters = game.getVoters();
+		HashMap<Long, Integer> newVoters = new HashMap<>();
 		boolean deleted = false;
 		for (Long _userId : voters.keySet()) {
 			if (userId != _userId) {

@@ -11,12 +11,10 @@ public class GamevoteChannelCombination {
 	private TextChannel voteChannel;
 	private Long addChannelId;
 	private Long voteChannelId;
-	private Long gameVoteDoubleVoteRoleId;
 
-	public GamevoteChannelCombination(TextChannel addChannel, TextChannel voteChannel, Long gameVoteDoubleVoteRoleId) {
+	public GamevoteChannelCombination(TextChannel addChannel, TextChannel voteChannel) {
 		this.addChannel = addChannel;
 		this.voteChannel = voteChannel;
-		this.gameVoteDoubleVoteRoleId = gameVoteDoubleVoteRoleId == null || gameVoteDoubleVoteRoleId < 0 ? 0 : gameVoteDoubleVoteRoleId;
 		this.addChannelId = addChannel.getIdLong();
 		this.voteChannelId = voteChannel.getIdLong();
 	}
@@ -28,7 +26,6 @@ public class GamevoteChannelCombination {
 				", voteChannelId=" + voteChannelId +
 				", addChannel=" + addChannel +
 				", voteChannel=" + voteChannel +
-				", gameVoteDoubleVoteRoleId=" + gameVoteDoubleVoteRoleId +
 				'}';
 	}
 }

@@ -3,9 +3,9 @@ package dev.greyferret.ferretbot.entity;
 import net.dv8tion.jda.api.entities.Member;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.ColumnDefault;
-import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 
 @Entity
@@ -31,7 +31,7 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 	@Column(name = "emote_id")
 	private Long emoteId;
 	@Column(name = "voters")
-	private HashMap<Long, Boolean> voters;
+	private HashMap<Long, Integer> voters;
 
 	private GameVoteGame() {
 	}
@@ -83,11 +83,11 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 		this.emoteId = emoteId;
 	}
 
-	public HashMap<Long, Boolean> getVoters() {
+	public HashMap<Long, Integer> getVoters() {
 		return voters;
 	}
 
-	public void setVoters(HashMap<Long, Boolean> voters) {
+	public void setVoters(HashMap<Long, Integer> voters) {
 		this.voters = voters;
 	}
 
@@ -122,13 +122,10 @@ public class GameVoteGame implements Comparable<GameVoteGame> {
 				'}';
 	}
 
-	public int calcVotesWithBonus() {
-		int res = 0;
+	public Integer calcVotesWithBonus() {
+		Integer res = 0;
 		for (Long voterId : this.voters.keySet()) {
-			res++;
-			if (this.voters.get(voterId)) {
-				res++;
-			}
+			res = res + this.voters.get(voterId);
 		}
 		return res;
 	}
