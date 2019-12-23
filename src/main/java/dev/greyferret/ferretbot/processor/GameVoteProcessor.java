@@ -8,10 +8,7 @@ import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.RateLimitedException;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +58,19 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		}
 		String message = event.getMessage().getContentDisplay();
 		if (discordConfig.getSubVoteAdminId().contains(event.getMember().getIdLong())) {
-			if (message.equalsIgnoreCase("!reset")) {
+			if (message.toLowerCase().startsWith("!remove")) {
+				List<User> mentionedUsers = event.getMessage().getMentionedUsers();
+				if (mentionedUsers == null || mentionedUsers.size() == 0) {
+					channelCombination.getAddChannel().sendMessage("В сообщении не было найдено упоминаний!").queue();
+					return;
+				}
+				ArrayList<String> mentionedUsersIds = new ArrayList<>();
+				for (User mentionedUser : mentionedUsers) {
+					mentionedUsersIds.add(mentionedUser.getId());
+				}
+				String messageToReply = gameVoteGameService.removeGame(channelCombination.getAddChannelId(), mentionedUsersIds);
+				channelCombination.getAddChannel().sendMessage(messageToReply).queue();
+			} else if (message.equalsIgnoreCase("!reset")) {
 				boolean reseted = gameVoteGameService.reset(channelCombination.getAddChannelId());
 				resetMessageIds(channelCombination.getAddChannelId());
 				if (reseted) {

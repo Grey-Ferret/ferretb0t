@@ -3,6 +3,7 @@ package dev.greyferret.ferretbot.service;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.entities.Emote;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -128,6 +130,17 @@ public class GameVoteGameService {
 	}
 
 	@Transactional
+	public GameVoteGame getGameByChannelIdAndUserId(Long textChannelId, String userId) {
+		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<GameVoteGame> criteria = builder.createQuery(GameVoteGame.class);
+		Root<GameVoteGame> root = criteria.from(GameVoteGame.class);
+		criteria.select(root);
+		criteria.where(builder.and(builder.equal(root.get("userId"), userId), builder.equal(root.get("voteChannelId"), textChannelId)));
+		GameVoteGame res = entityManager.createQuery(criteria).getSingleResult();
+		return res;
+	}
+
+	@Transactional
 	public void addVoter(Long textChannelId, Integer votes, long emoteId, long userId) {
 		GameVoteGame game = getGameByChannelIdAndEmoteId(textChannelId, emoteId);
 		HashMap<Long, Integer> voters = game.getVoters();
@@ -193,5 +206,28 @@ public class GameVoteGameService {
 		criteria.select(root);
 		criteria.where(builder.equal(root.get("voteChannelId"), textChannelId));
 		return entityManager.createQuery(criteria).getResultList();
+	}
+
+	@Transactional
+	public String removeGame(Long textChannelId, ArrayList<String> userIds) {
+		String res = "Успешно удалены варианты: ";
+		ArrayList<String> games = new ArrayList<>();
+		for (String userId : userIds) {
+			String _game = "";
+			try {
+				GameVoteGame game = getGameByChannelIdAndUserId(textChannelId, userId);
+				_game = game.getGame();
+				entityManager.remove(game);
+				entityManager.flush();
+			} catch (Exception ex) {
+				log.error(ex);
+				continue;
+			}
+			games.add(_game);
+		}
+		if (games.size() == 0) {
+			return "Игр от указанных зрителей найдено не было...";
+		}
+		return res + StringUtils.join(games, ", ");
 	}
 }
