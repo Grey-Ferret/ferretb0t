@@ -61,7 +61,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 			if (message.toLowerCase().startsWith("!remove")) {
 				List<User> mentionedUsers = event.getMessage().getMentionedUsers();
 				if (mentionedUsers == null || mentionedUsers.size() == 0) {
-					channelCombination.getAddChannel().sendMessage("В сообщении не было найдено упоминаний!").queue();
+					channelCombination.getAddChannel().sendMessage("В сообщении не было найдено упоминаний! Если вы хотели удалить свой вариант как админ, используйте упоминание.").queue();
 					return;
 				}
 				ArrayList<String> mentionedUsersIds = new ArrayList<>();
@@ -88,6 +88,12 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				CalcVoteResultsProcessor calcVoteResultsProcessor = new CalcVoteResultsProcessor(channelCombination, gameVoteGameService, minsBeforeCountDown);
 				Thread calcVoteResultsThread = new Thread(calcVoteResultsProcessor);
 				calcVoteResultsThread.start();
+			}
+		} else {
+			// If not admin
+			if (message.toLowerCase().startsWith("!remove")) {
+				String result = gameVoteGameService.removeGame(channelCombination.getAddChannelId(), event.getMember().getUser().getId());
+				channelCombination.getAddChannel().sendMessage(result).queue();
 			}
 		}
 		if (message.toLowerCase().startsWith("!игры")) {
@@ -153,6 +159,9 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		}
 		for (ArrayList<GameVoteGame> games : posts) {
 			String text = FerretBotUtils.formGameVoteEntity(games, channel.getJDA(), withEmotes);
+			if (StringUtils.isBlank(text)) {
+				continue;
+			}
 			Message message = null;
 			try {
 				message = channel.sendMessage(text).complete(true);

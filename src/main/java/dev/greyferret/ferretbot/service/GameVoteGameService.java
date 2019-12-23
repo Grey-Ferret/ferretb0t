@@ -230,4 +230,21 @@ public class GameVoteGameService {
 		}
 		return res + StringUtils.join(games, ", ");
 	}
+
+	@Transactional
+	public String removeGame(Long textChannelId, String userId) {
+		String res = "Успешно удалён вариант: ";
+		String _game = "";
+		GameVoteGame game;
+		try {
+			game = getGameByChannelIdAndUserId(textChannelId, userId);
+			_game = game.getGame();
+		} catch (Exception ex) {
+			log.error(ex);
+			return "А был ли вариантик?..";
+		}
+		entityManager.remove(game);
+		entityManager.flush();
+		return res + _game;
+	}
 }
