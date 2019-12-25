@@ -79,7 +79,7 @@ public class DiscordListener extends ListenerAdapter {
 					return;
 				}
 			}
-			Integer votes = 1;
+			Integer votes = 0;
 			List<GameVoteBonusVote> gameVoteBonusVotes = gameVoteBonusVoteService.findByTextChannelId(channelCombination.getAddChannelId());
 			if (gameVoteBonusVotes.size() > 0) {
 				for (GameVoteBonusVote bonusVoteEntity : gameVoteBonusVotes) {
