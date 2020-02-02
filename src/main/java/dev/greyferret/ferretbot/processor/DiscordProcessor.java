@@ -98,7 +98,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
 			testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
 			while (isOn) {
 				String channelStatusMessage = apiProcessor.getChannelStatusMessage();
-				if (StringUtils.isNotBlank(channelStatusMessage) && !applicationConfig.isDebug())
+				if (botConfig.isDiscordOn() && botConfig.isDiscordAnnouncementOn() && StringUtils.isNotBlank(channelStatusMessage) && !applicationConfig.isDebug())
 					announcementChannel.sendMessage(channelStatusMessage).queue();
 				Thread.sleep(discordConfig.getCheckTime());
 			}
