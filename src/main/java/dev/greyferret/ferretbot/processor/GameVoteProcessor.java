@@ -3,6 +3,7 @@ package dev.greyferret.ferretbot.processor;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.GameVoteVoting;
 import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
@@ -68,10 +69,10 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				for (User mentionedUser : mentionedUsers) {
 					mentionedUsersIds.add(mentionedUser.getId());
 				}
-				String messageToReply = gameVoteGameService.removeGame(channelCombination.getAddChannelId(), mentionedUsersIds);
+				String messageToReply = gameVoteGameService.removeGame(mentionedUsersIds);
 				channelCombination.getAddChannel().sendMessage(messageToReply).queue();
 			} else if (message.equalsIgnoreCase("!reset")) {
-				boolean reseted = gameVoteGameService.reset(channelCombination.getAddChannelId());
+				boolean reseted = gameVoteGameService.reset();
 				resetMessageIds(channelCombination.getAddChannelId());
 				if (reseted) {
 					event.getMessage().addReaction("\uD83D\uDC4D").queue();
@@ -92,7 +93,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		} else {
 			// If not admin
 			if (message.toLowerCase().startsWith("!remove")) {
-				String result = gameVoteGameService.removeGame(channelCombination.getAddChannelId(), event.getMember().getUser().getId());
+				String result = gameVoteGameService.removeGame(event.getMember().getUser().getId());
 				channelCombination.getAddChannel().sendMessage(result).queue();
 			}
 		}
@@ -106,7 +107,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				if (StringUtils.isBlank(game)) {
 					channelCombination.getAddChannel().sendMessage("Ошибка получения игры...").queue();
 				} else {
-					GameVoteGame gameVoteGame = gameVoteGameService.getChannelIdAndByGame(channelCombination.getAddChannelId(), game);
+					GameVoteGame gameVoteGame = gameVoteGameService.getByName(game);
 					if (gameVoteGame != null) {
 						String _game = gameVoteGame.getGame();
 						if (StringUtils.deleteWhitespace(_game).equalsIgnoreCase(StringUtils.deleteWhitespace(game))) {
@@ -126,8 +127,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 								event.getMember().getUser().getId(),
 								event.getMember(),
 								game,
-								newEmoteId,
-								channelCombination.getAddChannelId());
+								newEmoteId);
 						boolean found = gameVoteGameService.addOrUpdate(gameVoteGameToAdd);
 						event.getMessage().addReaction("\uD83D\uDC4D").queue();
 					}
@@ -142,8 +142,8 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 	}
 
 	private void postGameVote(TextChannel channel, Long textChannelId, boolean withEmotes) {
-		ArrayList<ArrayList<GameVoteGame>> posts = new ArrayList<>();
-		List<GameVoteGame> subGames = gameVoteGameService.getAllWithTextChannelId(textChannelId);
+		ArrayList<ArrayList<GameVoteVoting>> posts = new ArrayList<>();
+		List<GameVoteGame> subGames = gameVoteGameService.getAllGames();
 		if (subGames == null || subGames.size() == 0) {
 			channel.sendMessage("Нет предложенных игр. Будешь первым? :)").queue();
 			return;
@@ -152,12 +152,15 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		log.info(subGames.toString());
 		int postsAmount = (subGames.size() / gamesPerPost) + 1;
 		for (int i = 0; i < postsAmount; i++) {
-			ArrayList<GameVoteGame> temp = new ArrayList<>();
+			ArrayList<GameVoteVoting> temp = new ArrayList<>();
 			int to = Math.min(gamesPerPost, subGames.size() - gamesPerPost * i);
-			temp.addAll(subGames.subList(i * gamesPerPost, i * gamesPerPost + to));
+			List<GameVoteGame> gameVoteGames = subGames.subList(i * gamesPerPost, i * gamesPerPost + to);
+			for (GameVoteGame gameVoteGame : gameVoteGames) {
+				temp.add(gameVoteGameService.getOrCreateVotingByChannelAndGame(textChannelId, gameVoteGame));
+			}
 			posts.add(temp);
 		}
-		for (ArrayList<GameVoteGame> games : posts) {
+		for (ArrayList<GameVoteVoting> games : posts) {
 			String text = FerretBotUtils.formGameVoteEntity(games, channel.getJDA(), withEmotes);
 			if (StringUtils.isBlank(text)) {
 				continue;
@@ -169,8 +172,8 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 				log.error(e);
 			}
 			if (withEmotes) {
-				for (GameVoteGame game : games) {
-					Emote emoteById = channel.getJDA().getEmoteById(game.getEmoteId());
+				for (GameVoteVoting game : games) {
+					Emote emoteById = channel.getJDA().getEmoteById(game.getGame().getEmoteId());
 					message.addReaction(emoteById).queue();
 				}
 				synchronized (MESSAGES_LOCKER) {
@@ -197,7 +200,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 		try {
 			JDA jda = discordProcessor.getJDA();
 			if (messageWithResult < 0) {
-				Message messageId = channelCombination.getVoteChannel().sendMessage(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true)).complete(true);
+				Message messageId = channelCombination.getVoteChannel().sendMessage(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getVotingsForChannelId(channelCombination.getAddChannelId()), jda, false, true)).complete(true);
 				messageWithResultMap.put(channelCombination.getAddChannelId(), messageId.getIdLong());
 				setMessageWithResult(messageWithResultMap);
 			} else {
@@ -206,7 +209,7 @@ public class GameVoteProcessor implements Runnable, ApplicationListener<ContextS
 					MessageHistory history = channelCombination.getVoteChannel().getHistoryAfter(messages.get(messages.size() - 1), 20).complete(true);
 					for (Message message : history.getRetrievedHistory()) {
 						if (message.getIdLong() == messageWithResult) {
-							message.editMessageFormat(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getAllWithTextChannelId(channelCombination.getAddChannelId()), jda, false, true)).queue();
+							message.editMessageFormat(FerretBotUtils.formResultsGameVoteEntity(gameVoteGameService.getVotingsForChannelId(channelCombination.getAddChannelId()), jda, false, true)).queue();
 							return;
 						}
 					}

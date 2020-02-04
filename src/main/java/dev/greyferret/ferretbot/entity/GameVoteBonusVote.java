@@ -15,9 +15,6 @@ public class GameVoteBonusVote {
 	@Column(name = "id", updatable = false, nullable = false)
 	private Long id;
 
-	@Column(name = "text_channel_id", nullable = false)
-	private Long textChannelId;
-
 	@Column(name = "role_id")
 	private Long roleId;
 

@@ -1,6 +1,6 @@
 package dev.greyferret.ferretbot.processor;
 
-import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.GameVoteVoting;
 import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
@@ -29,7 +29,7 @@ public class CalcVoteResultsProcessor implements Runnable {
 		} catch (InterruptedException e) {
 			log.error(e);
 		}
-		ArrayList<GameVoteGame> topGames = getTopGames(channelCombination.getAddChannelId());
+		ArrayList<GameVoteVoting> topGames = getTopGames(channelCombination.getAddChannelId());
 
 		if (topGames.size() == 0) {
 			channelCombination.getVoteChannel().sendMessage("Голосуем?").queue();
@@ -37,6 +37,10 @@ public class CalcVoteResultsProcessor implements Runnable {
 			channelCombination.getVoteChannel().sendMessage("До окончания голосования осталась **одна минута**!\n\n**Текущий фаворит**: " + topGames.get(0).getGameVote()).queue();
 		} else {
 			channelCombination.getVoteChannel().sendMessage("До окончания голосования осталась **одна минута**!\n\n**Текущие фавориты**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
+		}
+
+		if (topGames.size() > 0) {
+			channelCombination.getVoteChannel().sendMessage("PS: Если ваша игра не выиграла в голосовании НЕ НУЖНО расстраиваться и дизморалить весь чат. Старайтесь наслаждаться контентом или покиньте стрим до конца игры").queue();
 		}
 
 		try {
@@ -53,23 +57,23 @@ public class CalcVoteResultsProcessor implements Runnable {
 		} else {
 			int i = ThreadLocalRandom.current().nextInt(topGames.size());
 			log.info("Rolling Game Vote Winner out of " + topGames.size() + ". Result is: " + i);
-			GameVoteGame game = topGames.get(i);
+			GameVoteVoting game = topGames.get(i);
 			channelCombination.getVoteChannel().sendMessage("**ПОБЕДИТЕЛЬ**: " + game.getGameVote() + "!\n\n**Рандом решил между**: " + FerretBotUtils.joinGamesBySeparator(topGames, ", ")).queue();
 		}
 	}
 
-	private ArrayList<GameVoteGame> getTopGames(Long textChannelId) {
-		ArrayList<GameVoteGame> topGames = new ArrayList<>();
+	private ArrayList<GameVoteVoting> getTopGames(Long textChannelId) {
+		ArrayList<GameVoteVoting> topGames = new ArrayList<>();
 		Integer topVoteGame = 0;
-		List<GameVoteGame> games = this.gameVoteGameService.getAllWithTextChannelId(textChannelId);
-		for (GameVoteGame game : games) {
-			Integer gameVotersForCurrentGame = game.calcVotesWithBonus();
+		List<GameVoteVoting> votings = this.gameVoteGameService.getVotingsForChannelId(textChannelId);
+		for (GameVoteVoting voting : votings) {
+			Integer gameVotersForCurrentGame = voting.calcVotesWithBonus();
 			if (gameVotersForCurrentGame > topVoteGame) {
 				topVoteGame = gameVotersForCurrentGame;
 				topGames = new ArrayList<>();
 			}
 			if (gameVotersForCurrentGame == topVoteGame) {
-				topGames.add(game);
+				topGames.add(voting);
 			}
 		}
 		return topGames;

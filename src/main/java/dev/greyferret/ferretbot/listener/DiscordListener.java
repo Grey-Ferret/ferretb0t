@@ -1,12 +1,12 @@
 package dev.greyferret.ferretbot.listener;
 
 import dev.greyferret.ferretbot.config.BotConfig;
+import dev.greyferret.ferretbot.config.DiscordConfig;
 import dev.greyferret.ferretbot.entity.GameVoteBonusVote;
-import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.GameVoteVoting;
 import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.processor.DiscordProcessor;
 import dev.greyferret.ferretbot.processor.GameVoteProcessor;
-import dev.greyferret.ferretbot.service.GameVoteBonusVoteService;
 import dev.greyferret.ferretbot.service.GameVoteGameService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import lombok.extern.log4j.Log4j2;
@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -26,16 +25,23 @@ import java.util.List;
 @Component
 @Log4j2
 public class DiscordListener extends ListenerAdapter {
-	@Autowired
-	private DiscordProcessor discordProcessor;
-	@Autowired
-	private BotConfig botConfig;
-	@Autowired
-	private GameVoteProcessor gameVoteProcessor;
-	@Autowired
-	private GameVoteGameService gameVoteGameService;
-	@Autowired
-	private GameVoteBonusVoteService gameVoteBonusVoteService;
+	private final DiscordProcessor discordProcessor;
+	private final BotConfig botConfig;
+	private final GameVoteProcessor gameVoteProcessor;
+	private final GameVoteGameService gameVoteGameService;
+	private final DiscordConfig discordConfig;
+
+	public DiscordListener(DiscordProcessor discordProcessor,
+						   BotConfig botConfig,
+						   GameVoteProcessor gameVoteProcessor,
+						   GameVoteGameService gameVoteGameService,
+						   DiscordConfig discordConfig) {
+		this.discordProcessor = discordProcessor;
+		this.botConfig = botConfig;
+		this.gameVoteProcessor = gameVoteProcessor;
+		this.gameVoteGameService = gameVoteGameService;
+		this.discordConfig = discordConfig;
+	}
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
@@ -68,7 +74,7 @@ public class DiscordListener extends ListenerAdapter {
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
-			GameVoteGame game = gameVoteGameService.getGameByChannelIdAndEmoteId(channelCombination.getAddChannelId(), emoteId);
+			GameVoteVoting game = gameVoteGameService.getVotingByChannelAndEmote(channelCombination.getAddChannelId(), emoteId);
 			if (game.getVoters().containsKey(userId)) {
 				return;
 			}
@@ -80,14 +86,17 @@ public class DiscordListener extends ListenerAdapter {
 				}
 			}
 			Integer votes = 0;
-			List<GameVoteBonusVote> gameVoteBonusVotes = gameVoteBonusVoteService.findByTextChannelId(channelCombination.getAddChannelId());
+			List<GameVoteBonusVote> gameVoteBonusVotes = gameVoteGameService.getAllBonusVotes();
 			if (gameVoteBonusVotes.size() > 0) {
 				for (GameVoteBonusVote bonusVoteEntity : gameVoteBonusVotes) {
-					Role roleToDouble = event.getJDA().getRoleById(bonusVoteEntity.getRoleId());
-					if (event.getMember().getRoles().contains(roleToDouble)) {
+					Role roleToIncrease = event.getJDA().getRoleById(bonusVoteEntity.getRoleId());
+					if (event.getMember().getRoles().contains(roleToIncrease)) {
 						votes = votes + bonusVoteEntity.getVotes();
 					}
 				}
+			}
+			if (discordConfig.getGameVoteDisableRoles().contains(channelCombination.getAddChannelId()) || votes == 0) {
+				votes = game.getGame().getBaseVotingCounter();
 			}
 			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), votes, emoteId, userId);
 			gameVoteProcessor.createOrUpdatePost(channelCombination);
@@ -104,7 +113,7 @@ public class DiscordListener extends ListenerAdapter {
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
 		if (voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
-			GameVoteGame game = gameVoteGameService.getGameByChannelIdAndEmoteId(channelCombination.getAddChannelId(), emoteId);
+			GameVoteVoting game = gameVoteGameService.getVotingByChannelAndEmote(channelCombination.getAddChannelId(), emoteId);
 			if (!game.getVoters().containsKey(userId)) {
 				return;
 			}

@@ -1,7 +1,7 @@
 package dev.greyferret.ferretbot.util;
 
 import dev.greyferret.ferretbot.entity.AdventureResponse;
-import dev.greyferret.ferretbot.entity.GameVoteGame;
+import dev.greyferret.ferretbot.entity.GameVoteVoting;
 import dev.greyferret.ferretbot.entity.Viewer;
 import io.magicthegathering.javasdk.resource.Card;
 import lombok.extern.log4j.Log4j2;
@@ -156,24 +156,24 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes) {
+	public static String formGameVoteEntity(List<GameVoteVoting> games, JDA jda, boolean withEmotes) {
 		return formGameVoteEntity(games, jda, withEmotes, false, false);
 	}
 
-	public static String formGameVoteEntity(List<GameVoteGame> games, JDA jda, boolean withEmotes, boolean withVotes, boolean isVote) {
+	public static String formGameVoteEntity(List<GameVoteVoting> games, JDA jda, boolean withEmotes, boolean withVotes, boolean isVote) {
 		String res = "";
-		for (GameVoteGame game : games) {
-			String gameName = (isVote) ? game.getGameVote() : game.getGame();
-			Emote emote = jda.getEmoteById(game.getEmoteId());
+		for (GameVoteVoting game : games) {
+			String gameName = (isVote) ? game.getGameVote() : game.getGame().getGame();
+			Emote emote = jda.getEmoteById(game.getGame().getEmoteId());
 			String t = "";
 			if (withEmotes && withVotes) {
-				t = game.calcVotesWithBonus() + " - " + emote.getAsMention() + " - " + gameName + " (" + game.getUserNickname() + ")";
+				t = game.calcVotesWithBonus() + " - " + emote.getAsMention() + " - " + gameName + " (" + game.getGame().getUserNickname() + ")";
 			} else if (withEmotes) {
-				t = emote.getAsMention() + " - " + gameName + " (" + game.getUserNickname() + ")";
+				t = emote.getAsMention() + " - " + gameName + " (" + game.getGame().getUserNickname() + ")";
 			} else if (withVotes) {
-				t = game.calcVotesWithBonus() + " - " + gameName + " (" + game.getUserNickname() + ")";
+				t = game.calcVotesWithBonus() + " - " + gameName + " (" + game.getGame().getUserNickname() + ")";
 			} else {
-				t = gameName + " (" + game.getUserNickname() + ")";
+				t = gameName + " (" + game.getGame().getUserNickname() + ")";
 			}
 			if (StringUtils.isNotBlank(res)) {
 				res = res + "\n" + t;
@@ -184,9 +184,9 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static String formResultsGameVoteEntity(List<GameVoteGame> _games, JDA jda, boolean withEmotes, boolean withVoters) {
-		ArrayList<GameVoteGame> games = new ArrayList<>();
-		for (GameVoteGame game : _games) {
+	public static String formResultsGameVoteEntity(List<GameVoteVoting> _games, JDA jda, boolean withEmotes, boolean withVoters) {
+		ArrayList<GameVoteVoting> games = new ArrayList<>();
+		for (GameVoteVoting game : _games) {
 			if (game.isInVote()) {
 				games.add(game);
 			}
@@ -213,15 +213,15 @@ public class FerretBotUtils {
 		return res;
 	}
 
-	public static String joinGamesBySeparator(List<GameVoteGame> games, String separator) {
+	public static String joinGamesBySeparator(List<GameVoteVoting> votings, String separator) {
 		String res = "";
-		if (games == null || games.size() == 0) return res;
+		if (votings == null || votings.size() == 0) return res;
 
-		for (GameVoteGame game : games) {
+		for (GameVoteVoting voting : votings) {
 			if (StringUtils.isBlank(res)) {
-				res = game.getGameVote();
+				res = voting.getGameVote();
 			} else {
-				res = res + separator + game.getGameVote();
+				res = res + separator + voting.getGameVote();
 			}
 		}
 
