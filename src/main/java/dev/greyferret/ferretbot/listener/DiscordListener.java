@@ -96,7 +96,11 @@ public class DiscordListener extends ListenerAdapter {
 				}
 			}
 			if (discordConfig.getGameVoteDisableRoles().contains(channelCombination.getAddChannelId()) || votes == 0) {
-				votes = game.getGame().getBaseVotingCounter();
+				if (discordConfig.getBaseVoteMap() == null || !discordConfig.getBaseVoteMap().containsKey(channelCombination.getAddChannelId())) {
+					votes = 1;
+				} else {
+					votes = discordConfig.getBaseVoteMap().get(channelCombination.getAddChannelId());
+				}
 			}
 			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), votes, emoteId, userId);
 			gameVoteProcessor.createOrUpdatePost(channelCombination);

@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by GreyFerret on 15.12.2017.
@@ -22,4 +23,5 @@ public class DiscordConfig {
 	private Long raffleChannel;
 	private Long checkTime;
 	private List<Long> subVoteAdminId;
+	private Map<Long, Integer> baseVoteMap;
 }

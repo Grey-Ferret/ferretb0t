@@ -2,7 +2,6 @@ package dev.greyferret.ferretbot.entity;
 
 import net.dv8tion.jda.api.entities.Member;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -24,9 +23,6 @@ public class GameVoteGame implements Serializable {
 	private String game;
 	@Column(name = "emote_id")
 	private Long emoteId;
-	@Column(name = "base_voting_counter")
-	@ColumnDefault("1")
-	private Integer baseVotingCounter = 1;
 	@OneToMany(cascade = CascadeType.REMOVE,
 			mappedBy = "game",
 			orphanRemoval = true)
@@ -92,14 +88,6 @@ public class GameVoteGame implements Serializable {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
-	}
-
-	public Integer getBaseVotingCounter() {
-		return baseVotingCounter;
-	}
-
-	public void setBaseVotingCounter(Integer baseVotingCounter) {
-		this.baseVotingCounter = baseVotingCounter;
 	}
 
 	@Override
