@@ -15,8 +15,8 @@ public class WasdMessages implements Serializable {
     @Column(name = "wasd_id")
     private String wasdId;
 
-    @Column(name = "messageType")
-    private Integer message_type;
+    @Column(name = "message_type")
+    private Integer messageType;
 
     @Column(name = "author")
     private String author;
