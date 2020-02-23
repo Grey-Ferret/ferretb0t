@@ -100,6 +100,11 @@ public class ChatLogic {
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollHug(event.getLoginVisual());
 			}
+			if (message.toLowerCase().startsWith("!подарить")) {
+				foundCustomLogicCommand = true;
+				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
+				viewersProcessor.rollGift(event.getLoginVisual());
+			}
 			if (message.toLowerCase().startsWith("!стукнуть")) {
 				foundCustomLogicCommand = true;
 				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
