@@ -40,7 +40,7 @@ public class CalcVoteResultsProcessor implements Runnable {
 		}
 
 		if (topGames.size() > 0) {
-			channelCombination.getVoteChannel().sendMessage("PS: Если ваша игра не выиграла в голосовании НЕ НУЖНО расстраиваться и дизморалить весь чат. Старайтесь наслаждаться контентом или покиньте стрим до конца игры").queue();
+			channelCombination.getVoteChannel().sendMessage("PS: Если ваша игра не выиграла в голосовании НЕ НУЖНО расстраиваться и дизморалить весь чат. Старайтесь наслаждаться контентом и не портить хорошее настроение чату").queue();
 		}
 
 		try {
