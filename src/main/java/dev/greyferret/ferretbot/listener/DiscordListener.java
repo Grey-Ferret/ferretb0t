@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
@@ -107,26 +106,26 @@ public class DiscordListener extends ListenerAdapter {
 		}
 	}
 
-	@Override
-	public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
-		long userId = event.getUser().getIdLong();
-		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
-		if (userId == event.getJDA().getSelfUser().getIdLong() || channelCombination == null) {
-			return;
-		}
-		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
-		if (voteMessageIds.contains(event.getMessageIdLong())) {
-			long emoteId = event.getReactionEmote().getIdLong();
-			GameVoteVoting game = gameVoteGameService.getVotingByChannelAndEmote(channelCombination.getAddChannelId(), emoteId);
-			if (!game.getVoters().containsKey(userId)) {
-				return;
-			}
-			log.info("Reaction removed for game {} (message {}) from {}", game, event.getMessageId(), event.getMember().getUser());
-			boolean available = gameVoteProcessor.addUserRemoveChance(userId, emoteId);
-			if (available) {
-				gameVoteGameService.removeVoter(channelCombination.getAddChannelId(), emoteId, userId);
-				gameVoteProcessor.createOrUpdatePost(channelCombination);
-			}
-		}
-	}
+//	@Override
+//	public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+//		long userId = event.getUser().getIdLong();
+//		GamevoteChannelCombination channelCombination = discordProcessor.getGamevoteCombinationByVoteChannel(event.getChannel().getIdLong());
+//		if (userId == event.getJDA().getSelfUser().getIdLong() || channelCombination == null) {
+//			return;
+//		}
+//		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
+//		if (voteMessageIds.contains(event.getMessageIdLong())) {
+//			long emoteId = event.getReactionEmote().getIdLong();
+//			GameVoteVoting game = gameVoteGameService.getVotingByChannelAndEmote(channelCombination.getAddChannelId(), emoteId);
+//			if (!game.getVoters().containsKey(userId)) {
+//				return;
+//			}
+//			log.info("Reaction removed for game {} (message {}) from {}", game, event.getMessageId(), event.getMember().getUser());
+//			boolean available = gameVoteProcessor.addUserRemoveChance(userId, emoteId);
+//			if (available) {
+//				gameVoteGameService.removeVoter(channelCombination.getAddChannelId(), emoteId, userId);
+//				gameVoteProcessor.createOrUpdatePost(channelCombination);
+//			}
+//		}
+//	}
 }

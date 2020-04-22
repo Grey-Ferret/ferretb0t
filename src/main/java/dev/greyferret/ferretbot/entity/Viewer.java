@@ -1,10 +1,11 @@
 package dev.greyferret.ferretbot.entity;
 
-import dev.greyferret.ferretbot.config.ApplicationConfig;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

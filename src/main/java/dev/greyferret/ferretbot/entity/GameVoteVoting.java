@@ -97,4 +97,16 @@ public class GameVoteVoting implements Comparable<GameVoteVoting>, Serializable 
 	public int compareTo(@NotNull GameVoteVoting o) {
 		return o.calcVotesWithBonus() - this.calcVotesWithBonus();
 	}
+
+	@Override
+	public String toString() {
+		return "GameVoteVoting{" +
+				"id=" + id +
+				", game=" + game +
+				", voteChannelId=" + voteChannelId +
+				", inVote=" + inVote +
+				", gameVote='" + gameVote + '\'' +
+				", voters=" + voters +
+				'}';
+	}
 }
