@@ -16,6 +16,7 @@ public class ChatConfig {
 	private String channel;
 	private Integer retryMs;
 	private String clientId;
+	private String clientSecret;
 	private Integer usersCheckMins;
 	private SubPlan subPlan;
 
