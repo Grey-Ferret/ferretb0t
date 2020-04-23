@@ -60,7 +60,7 @@ public class FerretBotApplication {
 	Properties additionalProperties() {
 		Properties properties = new Properties();
 		properties.setProperty("hibernate.hbm2ddl.auto", "update");
-		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
+		properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL10Dialect");
 		properties.setProperty("hibernate.connection.charSet", "UTF-8");
 		return properties;
 	}
