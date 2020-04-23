@@ -44,8 +44,6 @@ public class ChatLogic {
 	@Autowired
 	private AdventureProcessor adventureProcessor;
 	@Autowired
-	private MiscLogic miscLogic;
-	@Autowired
 	private PointsProcessor pointsProcessor;
 
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
@@ -114,7 +112,6 @@ public class ChatLogic {
 				CommandService commandService = context.getBean(CommandService.class);
 				commandService.proceedTextCommand(split[0].toLowerCase(), event);
 			}
-			miscLogic.proceed(event, message);
 		}
 	}
 
@@ -205,7 +202,6 @@ public class ChatLogic {
 					}
 				}
 			}
-			miscLogic.proceedAdmin(event, message);
 		}
 	}
 

@@ -1,7 +1,6 @@
 package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.ApplicationConfig;
-import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.Messages;
 import dev.greyferret.ferretbot.listener.FerretBotChatListener;

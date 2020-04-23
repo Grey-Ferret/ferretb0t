@@ -5,6 +5,8 @@ import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.logic.ChatLogic;
 import dev.greyferret.ferretbot.processor.*;
+import dev.greyferret.ferretbot.request.FollowDateByUserIdTwitchRequest;
+import dev.greyferret.ferretbot.request.UserIdByLoginTwitchRequest;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import dev.greyferret.ferretbot.wrapper.UserNoticeEventWrapper;
@@ -32,6 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -70,135 +73,140 @@ public class FerretBotChatListener extends TwitchListener {
 		super(client);
 	}
 
-	@PostConstruct
-	private void postConstruct() {
-	}
+    @PostConstruct
+    private void postConstruct() {
+    }
 
-	@CommandFilter("PRIVMSG")
-	@Handler
-	public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
-		ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), context);
+    @CommandFilter("PRIVMSG")
+    @Handler
+    public void onPrivMsgEvent(ClientReceiveCommandEvent event) {
+        ChannelMessageEventWrapper eventWrapper = new ChannelMessageEventWrapper(event, applicationConfig.isDebug(), context);
 
-		if (botConfig.isRaffleOn()) {
-			if (raffleProcessor == null) {
-				raffleProcessor = context.getBean(RaffleProcessor.class);
-			}
-			raffleProcessor.newMessage(eventWrapper.getLogin().toLowerCase());
-		}
+        if (botConfig.isRaffleOn()) {
+            if (raffleProcessor == null) {
+                raffleProcessor = context.getBean(RaffleProcessor.class);
+            }
+            raffleProcessor.newMessage(eventWrapper.getLogin().toLowerCase());
+        }
 
-		String login = eventWrapper.getLogin();
+        String login = eventWrapper.getLogin();
 //		chatlog.info(login + ": " + eventWrapper.getMessage());
 
-		Viewer viewer = viewerService.getViewerByName(login);
-		if (viewer != null) {
-			if (eventWrapper.hasBadge("subscriber") || eventWrapper.hasBadge("founder"))
-				viewerService.setSubscriber(viewer, true);
-			else
-				viewerService.setSubscriber(viewer, false);
-			if (eventWrapper.hasBadge("vip"))
-				viewerService.setVip(viewer, true);
-			else
-				viewerService.setVip(viewer, false);
-			boolean toUpdateMeta = false;
-			if (viewer.getUpdatedVisual(applicationConfig.getZoneId()) != null) {
-				ZonedDateTime zdt = viewer.getUpdatedVisual(applicationConfig.getZoneId()).plusHours(Viewer.hoursToUpdateVisual);
-				if (zdt.isBefore(ZonedDateTime.now(ZoneId.of(zoneId)))) {
-					toUpdateMeta = true;
-				}
-			} else {
-				toUpdateMeta = true;
-			}
-			if (toUpdateMeta) {
-				viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
-				String userId = apiProcessor.getUserIdByLogin(viewer.getLogin());
-				viewer.setTwitchUserId(userId);
-				String followDate = apiProcessor.getFollowDateByUserId(userId);
-				boolean isFollower = !StringUtils.isBlank(followDate);
-				viewerService.updateFollowerStatus(viewer, followDate, isFollower);
-			}
-		} else {
-			viewer = viewerService.createViewer(login);
-		}
+        Viewer viewer = viewerService.getViewerByName(login);
+        if (viewer != null) {
+            if (eventWrapper.hasBadge("subscriber") || eventWrapper.hasBadge("founder"))
+                viewerService.setSubscriber(viewer, true);
+            else
+                viewerService.setSubscriber(viewer, false);
+            if (eventWrapper.hasBadge("vip"))
+                viewerService.setVip(viewer, true);
+            else
+                viewerService.setVip(viewer, false);
+            boolean toUpdateMeta = false;
+            if (viewer.getUpdatedVisual(applicationConfig.getZoneId()) != null) {
+                ZonedDateTime zdt = viewer.getUpdatedVisual(applicationConfig.getZoneId()).plusHours(Viewer.hoursToUpdateVisual);
+                if (zdt.isBefore(ZonedDateTime.now(ZoneId.of(zoneId)))) {
+                    toUpdateMeta = true;
+                }
+            } else {
+                toUpdateMeta = true;
+            }
+            if (toUpdateMeta) {
+                viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
+                HashMap<String, String> params = new HashMap<>();
+                params.put("login", viewer.getLogin());
+                String userId = apiProcessor.proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap()));
+                viewer.setTwitchUserId(userId);
+                params = new HashMap<>();
+                params.put("from_id", userId);
+                params.put("to_id", apiProcessor.streamerId());
+                String followDate = apiProcessor.proceedTwitchRequest(new FollowDateByUserIdTwitchRequest(params, new HashMap()));
+                boolean isFollower = !StringUtils.isBlank(followDate);
+                viewerService.updateFollowerStatus(viewer, followDate, isFollower);
+            }
+        } else {
+            viewer = viewerService.createViewer(login);
+        }
 
-		if (true) {
-			boolean antispamCatched = chatLogic.antispamByWords(eventWrapper);
-			if (antispamCatched) {
-				log.info("Antispam caught following message: " + eventWrapper.getMessage());
-				log.info("Ban for author: " + eventWrapper.getLoginVisual());
-				eventWrapper.sendMessage("/ban " + eventWrapper.getLoginVisual());
-			}
-		}
+        if (true) {
+            boolean antispamCatched = chatLogic.antispamByWords(eventWrapper);
+            if (antispamCatched) {
+                log.info("Antispam caught following message: " + eventWrapper.getMessage());
+                log.info("Ban for author: " + eventWrapper.getLoginVisual());
+                eventWrapper.sendMessage("/ban " + eventWrapper.getLoginVisual());
+            }
+        }
 
-		boolean isBroadcaster = eventWrapper.hasBadge("broadcaster");
-		boolean isModerator = eventWrapper.hasBadge("moderator");
+        boolean isBroadcaster = eventWrapper.hasBadge("broadcaster");
+        boolean isModerator = eventWrapper.hasBadge("moderator");
 
-		if (eventWrapper.getMessage().startsWith("!")) {
-			chatLogic.proceedCommandLogic(eventWrapper);
-			if (isBroadcaster || isModerator) {
-				chatLogic.proceedModsCommandLogic(eventWrapper);
-				if (isBroadcaster || login.equalsIgnoreCase("greyferret")) {
-					chatLogic.proceedAdminCommandLogic(eventWrapper);
-				}
-			}
-		} else if (eventWrapper.getMessage().toLowerCase().length() == 1) {
-			adventureProcessor.setAdventurerResponse(eventWrapper, eventWrapper.getMessage().toLowerCase());
-		}
+        if (eventWrapper.getMessage().startsWith("!")) {
+            chatLogic.proceedCommandLogic(eventWrapper);
+            if (isBroadcaster || isModerator) {
+                chatLogic.proceedModsCommandLogic(eventWrapper);
+                if (isBroadcaster || login.equalsIgnoreCase("greyferret")) {
+                    chatLogic.proceedAdminCommandLogic(eventWrapper);
+                }
+            }
+        } else if (eventWrapper.getMessage().toLowerCase().length() == 1) {
+            adventureProcessor.setAdventurerResponse(eventWrapper, eventWrapper.getMessage().toLowerCase());
+        }
 
-		if (botConfig.isMtgaCardsOn()) {
-			String mtgText = eventWrapper.getMessage();
-			if (mtgText.indexOf("[[") > -1 && mtgText.indexOf("]]") > -1 && mtgText.indexOf("]]") > mtgText.indexOf("[[")) {
-				String text = eventWrapper.getMessage().substring(eventWrapper.getMessage().indexOf("[[") + 2, eventWrapper.getMessage().indexOf("]]"));
-				mtgaCardFinderProcessor.findCard(text, eventWrapper);
-			}
-		}
+        if (botConfig.isMtgaCardsOn()) {
+            String mtgText = eventWrapper.getMessage();
+            if (mtgText.indexOf("[[") > -1 && mtgText.indexOf("]]") > -1 && mtgText.indexOf("]]") > mtgText.indexOf("[[")) {
+                String text = eventWrapper.getMessage().substring(eventWrapper.getMessage().indexOf("[[") + 2, eventWrapper.getMessage().indexOf("]]"));
+                mtgaCardFinderProcessor.findCard(text, eventWrapper);
+            }
+        }
 
-		if (botConfig.isBitsOn()) {
-			String bits = eventWrapper.getTag("bits");
-			if (StringUtils.isNotBlank(bits)) {
-				Long points = NumberUtils.toLong(bits, 0);
-				if (points != 0) {
-					pointsProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
-				} else {
-					log.error("points == null/0");
-				}
-			}
-		}
+        if (botConfig.isBitsOn()) {
+            String bits = eventWrapper.getTag("bits");
+            if (StringUtils.isNotBlank(bits)) {
+                Long points = NumberUtils.toLong(bits, 0);
+                if (points != 0) {
+                    pointsProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
+                } else {
+                    log.error("points == null/0");
+                }
+            }
+        }
 
-	}
+    }
 
-	@Handler
-	private void onUserNoticeEvent(UserNoticeEvent event) {
+    @Handler
+    private void onUserNoticeEvent(UserNoticeEvent event) {
 //		chatlog.info("UserNoticeEvent: " + event);
-		UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), context);
-		String msgId = wrapper.getTag("msg-id");
+        UserNoticeEventWrapper wrapper = new UserNoticeEventWrapper(event, applicationConfig.isDebug(), context);
+        String msgId = wrapper.getTag("msg-id");
 
-		if (botConfig.isSubAlertOn()) {
-			if (StringUtils.isNotBlank(msgId)) {
-				if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
-					log.info("Sub Alert triggered for " + msgId);
-					log.info(wrapper.toString());
-					chatLogic.proceedSubAlert(wrapper);
-				} else if (msgId.equalsIgnoreCase("subgift")) {
-					log.info("Sub Gift Alert triggered for " + msgId);
-					log.info(wrapper.toString());
-					chatLogic.proceedSubAlert(wrapper, true);
-				}
-			}
-		}
-	}
+        if (botConfig.isSubAlertOn()) {
+            if (StringUtils.isNotBlank(msgId)) {
+                if (msgId.equalsIgnoreCase("sub") || msgId.equalsIgnoreCase("resub")) {
+                    log.info("Sub Alert triggered for " + msgId);
+                    log.info(wrapper.toString());
+                    chatLogic.proceedSubAlert(wrapper);
+                } else if (msgId.equalsIgnoreCase("subgift")) {
+                    log.info("Sub Gift Alert triggered for " + msgId);
+                    log.info(wrapper.toString());
+                    chatLogic.proceedSubAlert(wrapper, true);
+                }
+            }
+        }
+    }
 
-	@Handler
-	private void onGlobalUserStateEvent(GlobalUserStateEvent globalUserStateEvent) {
+    @Handler
+    private void onGlobalUserStateEvent(GlobalUserStateEvent globalUserStateEvent) {
 //		chatlog.info("GlobalUserStateEvent: " + globalUserStateEvent);
-	}
+    }
 
-	@Handler
-	private void onRoomStateEvent(RoomStateEvent roomStateEvent) {
+    @Handler
+    private void onRoomStateEvent(RoomStateEvent roomStateEvent) {
 //		chatlog.info("RoomStateEvent: " + roomStateEvent);
-	}
+    }
 
-	@Handler
-	private void onUserStateEvent(UserStateEvent userStateEvent) {
+    @Handler
+    private void onUserStateEvent(UserStateEvent userStateEvent) {
 //		chatlog.info("UserStateEvent: " + userStateEvent);
-	}
+    }
 }

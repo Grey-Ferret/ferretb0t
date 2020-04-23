@@ -33,8 +33,8 @@ public class Viewer implements Serializable {
 	private LocalDateTime created;
 	@Column(name = "age")
 	private LocalDateTime age;
-	@Column(name = "updated_visual")
-	private LocalDateTime updatedVisual;
+	@Column(name = "updated_meta")
+	private LocalDateTime updatedMeta;
 	@Column(name = "sub", nullable = false)
 	@ColumnDefault("false")
 	private Boolean sub;
@@ -53,9 +53,9 @@ public class Viewer implements Serializable {
 	@Column(name = "approved", nullable = false)
 	@ColumnDefault("false")
 	private Boolean approved;
-	@Column(name = "twitchUserId")
+	@Column(name = "twitch_user_id")
 	private String twitchUserId;
-	@Column(name = "followedAt")
+	@Column(name = "followed_at")
 	private String followedAt;
 	@Column(name = "follower")
 	@ColumnDefault("false")
@@ -82,7 +82,7 @@ public class Viewer implements Serializable {
 		this.followedAt = "";
 		this.follower = false;
 		ZonedDateTime zdt = ZonedDateTime.now(zoneId).minusHours(hoursToUpdateVisual);
-		setUpdatedVisual(zdt);
+		setUpdatedMeta(zdt);
 		this.suitableForRaffle = true;
 	}
 
@@ -165,18 +165,18 @@ public class Viewer implements Serializable {
 
 	public void setLoginVisual(String loginVisual, ZoneId zoneId) {
 		this.loginVisual = loginVisual;
-		setUpdatedVisual(ZonedDateTime.now(zoneId));
+		setUpdatedMeta(ZonedDateTime.now(zoneId));
 	}
 
 	public ZonedDateTime getUpdatedVisual(ZoneId zoneId) {
-		if (this.updatedVisual == null) {
+		if (this.updatedMeta == null) {
 			return null;
 		}
-		return ZonedDateTime.of(this.updatedVisual, zoneId);
+		return ZonedDateTime.of(this.updatedMeta, zoneId);
 	}
 
-	public void setUpdatedVisual(ZonedDateTime updatedVisual) {
-		this.updatedVisual = updatedVisual.toLocalDateTime();
+	public void setUpdatedMeta(ZonedDateTime updatedVisual) {
+		this.updatedMeta = updatedVisual.toLocalDateTime();
 	}
 
 	public boolean removePoints(Long points) {
@@ -238,7 +238,7 @@ public class Viewer implements Serializable {
 	}
 
 	public void setUpdatedVisual(LocalDateTime updatedVisual) {
-		this.updatedVisual = updatedVisual;
+		this.updatedMeta = updatedVisual;
 	}
 
 	public int getSubCumulative() {
@@ -282,7 +282,7 @@ public class Viewer implements Serializable {
 				", pointsTrue=" + pointsTrue +
 				", created=" + created +
 				", age=" + age +
-				", updatedVisual=" + updatedVisual +
+				", updatedVisual=" + updatedMeta +
 				", sub=" + sub +
 				", vip=" + vip +
 				", subCumulative=" + subCumulative +

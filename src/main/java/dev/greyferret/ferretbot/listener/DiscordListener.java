@@ -44,7 +44,7 @@ public class DiscordListener extends ListenerAdapter {
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
-		if (!event.getMessage().getMember().getUser().getName().equalsIgnoreCase("Dyno")) {
+		if (event.getMessage().getMember()!= null && !event.getMessage().getMember().getUser().getName().equalsIgnoreCase("Dyno")) {
 			if (event.isFromType(ChannelType.PRIVATE)) {
 				log.info("PRIVATE: " + FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
 			} else {

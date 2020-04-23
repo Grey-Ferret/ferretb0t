@@ -1,0 +1,72 @@
+main:
+  debug: false
+  zoneId: Europe/Moscow
+
+bot:
+  discord-on: true
+  loots-on: true
+  queue-on: true
+  raffle-on: true
+  custom-commands-on: true
+  sub-alert-on: true
+  bits-on: true
+  viewers-passive-points-on: true
+  stream-elements-integration-on: true
+  mtga-cards-on: true
+  sub-vote-on: true
+  discord-announcement-on: false
+
+discord:
+  token: token
+  announcement-channel: 111111111111111111
+  test-channel: 111111111111111111
+  raffle-channel: 111111111111111111
+  game-vote-add-channels: 111111111111111111, 111111111111111111
+  game-vote-vote-channels: 111111111111111111, 111111111111111111
+  game-vote-disable-roles: 111111111111111111, 111111111111111111
+  check-time: 30000
+  delay-to-countdown: 4 #mins
+  sub-vote-admin-id: 111111111111111111, 111111111111111111, 111111111111111111
+  base-vote-map:
+    222222222222222222: 1
+    333333333333333333: 1
+    444444444444444444: 5
+    555555555555555555: 5
+
+spring:
+  datasource:
+    platform: postgres
+    jdbc-url: jdbc:postgresql://127.0.0.1/postgres
+    username: postgres
+    password: postgres
+
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
+
+chat:
+  login: BotNick
+  password: oauth:code
+  channel: channelName
+  retry-ms: 15000
+  client-id: clientid
+  client-secret: clientsecret
+  users-check-mins: 5
+  sub-plan:
+    prime: 300
+    five: 400
+    ten: 800
+    twenty-five: 2000
+
+logging.config: classpath:log4j2-spring.xml
+
+loots:
+  login: email@mail.something
+  password: pass
+  timer:
+    default-retry-ms: 60000
+    additional-retry-ms: 30000
+    max-retry-ms: 600000
+  points-for-loots: 15
+
+streamelements:
+  jwt-token: long-jwt-token
+  channel-id: channel-id
