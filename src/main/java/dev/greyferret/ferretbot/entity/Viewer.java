@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * User
@@ -140,5 +141,18 @@ public class Viewer implements Serializable {
 
 	public Boolean isSub() {
 		return getSub();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Viewer viewer = (Viewer) o;
+		return login.equalsIgnoreCase(viewer.login);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(login);
 	}
 }
