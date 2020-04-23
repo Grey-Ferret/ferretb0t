@@ -1,5 +1,8 @@
 package dev.greyferret.ferretbot.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
@@ -10,7 +13,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 /**
  * User
@@ -18,6 +20,9 @@ import java.util.Objects;
  * Created by GreyFerret on 27.12.2017.
  */
 @Entity
+@Getter
+@Setter
+@ToString
 @Table(name = "viewer")
 public class Viewer implements Serializable {
 	@Id
@@ -86,28 +91,6 @@ public class Viewer implements Serializable {
 		this.suitableForRaffle = true;
 	}
 
-	public String getLogin() {
-		return login;
-	}
-
-	@Deprecated
-	public void setLogin(String login) {
-		this.login = login;
-	}
-
-	public Long getPoints() {
-		return points;
-	}
-
-	public void setPoints(Long points) {
-		this.points = points;
-	}
-
-	public void addPoints(long i) {
-		Long temp = this.points + i;
-		setPoints(temp);
-	}
-
 	public void addTruePoints(long i) {
 		Long temp = this.pointsTrue + i;
 		setPointsTrue(temp);
@@ -116,51 +99,27 @@ public class Viewer implements Serializable {
 		setPoints(temp);
 	}
 
-	public Long getPointsTrue() {
-		return pointsTrue;
+	public void addPoints(long i) {
+		Long temp = this.points + i;
+		setPoints(temp);
 	}
 
-	public void setPointsTrue(Long pointsTrue) {
-		this.pointsTrue = pointsTrue;
+	public boolean removePoints(Long points) {
+		if (this.points < points)
+			return false;
+		Long temp = this.points;
+		temp = temp - points;
+		setPoints(temp);
+		return true;
 	}
 
-	public ZonedDateTime getCreated(ZoneId zoneId) {
-		if (this.created == null) {
-			return null;
-		}
-		return ZonedDateTime.of(this.created, zoneId);
+	@Deprecated
+	public void setLogin(String login) {
+		this.login = login;
 	}
 
-	public void setCreated(ZonedDateTime created) {
-		this.created = created.toLocalDateTime();
-	}
-
-	public Boolean isSub() {
-		return sub;
-	}
-
-	public void setSub(Boolean sub) {
-		this.sub = sub;
-	}
-
-	public int getSubStreak() {
-		return subStreak;
-	}
-
-	public void setSubStreak(int subStreak) {
-		this.subStreak = subStreak;
-	}
-
-	public boolean isSuitableForRaffle() {
-		return suitableForRaffle;
-	}
-
-	public void setSuitableForRaffle(boolean suitableForRaffle) {
-		this.suitableForRaffle = suitableForRaffle;
-	}
-
-	public String getLoginVisual() {
-		return loginVisual;
+	public void setUpdatedMeta(ZonedDateTime updatedVisual) {
+		this.updatedMeta = updatedVisual.toLocalDateTime();
 	}
 
 	public void setLoginVisual(String loginVisual, ZoneId zoneId) {
@@ -175,123 +134,11 @@ public class Viewer implements Serializable {
 		return ZonedDateTime.of(this.updatedMeta, zoneId);
 	}
 
-	public void setUpdatedMeta(ZonedDateTime updatedVisual) {
-		this.updatedMeta = updatedVisual.toLocalDateTime();
-	}
-
-	public boolean removePoints(Long points) {
-		if (this.points < points)
-			return false;
-		Long temp = this.points;
-		temp = temp - points;
-		setPoints(temp);
-		return true;
-	}
-
-	public Boolean getApproved() {
-		return approved;
-	}
-
-	public void setApproved(Boolean approved) {
-		this.approved = approved;
-	}
-
-	public ZonedDateTime getAge(ZoneId zoneId) {
-		if (this.age == null) {
-			return null;
-		}
-		return ZonedDateTime.of(this.age, zoneId);
-	}
-
-	public void setAge(ZonedDateTime age) {
-		this.age = age.toLocalDateTime();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		Viewer viewer = (Viewer) o;
-		return login.equalsIgnoreCase(viewer.login);
-	}
-
-	@Override
-	public int hashCode() {
-
-		return Objects.hash(login);
-	}
-
 	public Boolean isVip() {
-		return vip;
+		return getVip();
 	}
 
-	public void setVip(Boolean vip) {
-		this.vip = vip;
-	}
-
-	public void setCreated(LocalDateTime created) {
-		this.created = created;
-	}
-
-	public void setAge(LocalDateTime age) {
-		this.age = age;
-	}
-
-	public void setUpdatedVisual(LocalDateTime updatedVisual) {
-		this.updatedMeta = updatedVisual;
-	}
-
-	public int getSubCumulative() {
-		return subCumulative;
-	}
-
-	public void setSubCumulative(int subCumulative) {
-		this.subCumulative = subCumulative;
-	}
-
-	public String getFollowedAt() {
-		return followedAt;
-	}
-
-	public void setFollowedAt(String followedAt) {
-		this.followedAt = followedAt;
-	}
-
-	public boolean getFollower() {
-		return follower;
-	}
-
-	public void setFollower(boolean follower) {
-		this.follower = follower;
-	}
-
-	public String getTwitchUserId() {
-		return twitchUserId;
-	}
-
-	public void setTwitchUserId(String twitchUserId) {
-		this.twitchUserId = twitchUserId;
-	}
-
-	@Override
-	public String toString() {
-		return "Viewer{" +
-				"login='" + login + '\'' +
-				", loginVisual='" + loginVisual + '\'' +
-				", points=" + points +
-				", pointsTrue=" + pointsTrue +
-				", created=" + created +
-				", age=" + age +
-				", updatedVisual=" + updatedMeta +
-				", sub=" + sub +
-				", vip=" + vip +
-				", subCumulative=" + subCumulative +
-				", subStreak=" + subStreak +
-				", suitableForRaffle=" + suitableForRaffle +
-				", approved=" + approved +
-				", twitchUserId='" + twitchUserId + '\'' +
-				", followedAt='" + followedAt + '\'' +
-				", follower=" + follower +
-				'}';
+	public Boolean isSub() {
+		return getSub();
 	}
 }
