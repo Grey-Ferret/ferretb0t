@@ -119,9 +119,6 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
                         channelStatusMessage = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();
                     }
                 }
-                if (this.currentChannelStatus != newChannelStatus) {
-                    log.info("Updated status of channel to {}", newChannelStatus);
-                }
                 this.currentChannelStatus = newChannelStatus;
                 if (botConfig.isDiscordOn() && botConfig.isDiscordAnnouncementOn() && StringUtils.isNotBlank(channelStatusMessage) && !applicationConfig.isDebug())
                     announcementChannel.sendMessage(channelStatusMessage).queue();

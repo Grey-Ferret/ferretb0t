@@ -152,6 +152,9 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
         if (streamData != null && streamData.getType().equalsIgnoreCase("live")) {
             newChannelStatus = ApiProcessor.ChannelStatus.ONLINE;
         }
+        if (this.currentChannelStatus != newChannelStatus) {
+            log.info("Updated status of channel to {}", newChannelStatus);
+        }
         this.currentChannelStatus = newChannelStatus;
 
         return streamData;
