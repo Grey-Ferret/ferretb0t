@@ -5,7 +5,6 @@ import dev.greyferret.ferretbot.entity.GamevoteChannelCombination;
 import dev.greyferret.ferretbot.entity.json.twitch.games.TwitchGames;
 import dev.greyferret.ferretbot.entity.json.twitch.streams.StreamData;
 import dev.greyferret.ferretbot.listener.DiscordListener;
-import dev.greyferret.ferretbot.request.ChannelStatusTwitchRequest;
 import dev.greyferret.ferretbot.request.GamesTwitchRequest;
 import lombok.extern.log4j.Log4j2;
 import net.dv8tion.jda.api.JDA;
@@ -97,18 +96,16 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
             Thread.sleep(discordConfig.getCheckTime());
             testChannel.sendMessage(Messages.HELLO_MESSAGE).queue();
             while (isOn) {
-                HashMap<String, String> params = new HashMap<>();
-                params.put("user_login", chatConfig.getChannel());
-                StreamData streamData = apiProcessor.proceedTwitchRequest(new ChannelStatusTwitchRequest(params, new HashMap<>()));
+                StreamData streamData = apiProcessor.getStreamData();
                 ApiProcessor.ChannelStatus newChannelStatus = ApiProcessor.ChannelStatus.OFFLINE;
                 if (streamData != null && streamData.getType().equalsIgnoreCase("live")) {
                     newChannelStatus = ApiProcessor.ChannelStatus.ONLINE;
                 }
                 String channelStatusMessage = "";
-                if (currentChannelStatus.equals(ApiProcessor.ChannelStatus.OFFLINE) && newChannelStatus.equals(ApiProcessor.ChannelStatus.ONLINE)) {
+                if (this.currentChannelStatus.equals(ApiProcessor.ChannelStatus.OFFLINE) && newChannelStatus.equals(ApiProcessor.ChannelStatus.ONLINE)) {
                     if (streamData != null && StringUtils.isNotBlank(streamData.getGameId())) {
                         String gameId = streamData.getGameId();
-                        params = new HashMap<>();
+                        HashMap<String, String> params = new HashMap<>();
                         params.put("id", gameId);
                         TwitchGames gameInfo = apiProcessor.proceedTwitchRequest(new GamesTwitchRequest(params, new HashMap<>()));
                         if (gameInfo == null || gameInfo.getData() == null || gameInfo.getData().isEmpty() || StringUtils.isBlank(gameInfo.getData().get(0).getName())) {
@@ -122,10 +119,10 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
                         channelStatusMessage = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();
                     }
                 }
-                if (currentChannelStatus != newChannelStatus) {
+                if (this.currentChannelStatus != newChannelStatus) {
                     log.info("Updated status of channel to {}", newChannelStatus);
                 }
-                currentChannelStatus = newChannelStatus;
+                this.currentChannelStatus = newChannelStatus;
                 if (botConfig.isDiscordOn() && botConfig.isDiscordAnnouncementOn() && StringUtils.isNotBlank(channelStatusMessage) && !applicationConfig.isDebug())
                     announcementChannel.sendMessage(channelStatusMessage).queue();
                 Thread.sleep(discordConfig.getCheckTime());

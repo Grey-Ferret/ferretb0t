@@ -3,8 +3,10 @@ package dev.greyferret.ferretbot.processor;
 import com.google.gson.Gson;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
+import dev.greyferret.ferretbot.entity.json.twitch.streams.StreamData;
 import dev.greyferret.ferretbot.exception.NoTwitchAccessTokenAviable;
 import dev.greyferret.ferretbot.request.BaseTwitchRequest;
+import dev.greyferret.ferretbot.request.ChannelStatusTwitchRequest;
 import dev.greyferret.ferretbot.request.FollowDateByUserIdTwitchRequest;
 import dev.greyferret.ferretbot.request.UserIdByLoginTwitchRequest;
 import dev.greyferret.ferretbot.security.twitch.AccessTokenJson;
@@ -140,6 +142,19 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
 
     public boolean getChannelStatus() {
         return this.currentChannelStatus == ChannelStatus.ONLINE;
+    }
+
+    public StreamData getStreamData() {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("user_login", chatConfig.getChannel());
+        StreamData streamData = proceedTwitchRequest(new ChannelStatusTwitchRequest(params, new HashMap<>()));
+        ApiProcessor.ChannelStatus newChannelStatus = ApiProcessor.ChannelStatus.OFFLINE;
+        if (streamData != null && streamData.getType().equalsIgnoreCase("live")) {
+            newChannelStatus = ApiProcessor.ChannelStatus.ONLINE;
+        }
+        this.currentChannelStatus = newChannelStatus;
+
+        return streamData;
     }
 
     @Override
