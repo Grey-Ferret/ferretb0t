@@ -70,3 +70,6 @@ loots:
 streamelements:
   jwt-token: long-jwt-token
   channel-id: channel-id
+
+viewers:
+  raffle-ignore: nick1, nick2

@@ -2,10 +2,12 @@ package dev.greyferret.ferretbot.processor;
 
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
+import dev.greyferret.ferretbot.config.ViewersConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.service.ViewerService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
@@ -16,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
+@EnableConfigurationProperties({ViewersConfig.class})
 @Log4j2
 public class ViewersProcessor implements Runnable, ApplicationListener<ContextStartedEvent> {
     @Autowired
