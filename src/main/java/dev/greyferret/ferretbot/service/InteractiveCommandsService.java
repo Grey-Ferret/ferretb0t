@@ -27,6 +27,9 @@ public class InteractiveCommandsService {
 	@Transactional
 	public boolean proceedInteractiveCommand(InteractiveCommand interactiveCommand, ChannelMessageEventWrapper event) {
 		if (interactiveCommand != null) {
+			if (interactiveCommand.isDisabled()) {
+				return false;
+			}
 			boolean enoughPoints = streamElementsAPIProcessor.updatePoints(event.getLogin(), interactiveCommand.getPrice());
 			if (enoughPoints) {
 				event.sendMessageWithMention(" успешно заказал \"" + interactiveCommand.getResponse() + "\"");
