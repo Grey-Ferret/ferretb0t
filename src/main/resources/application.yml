@@ -15,6 +15,7 @@ bot:
   mtga-cards-on: true
   sub-vote-on: true
   discord-announcement-on: false
+  interactive-commands-on: true
 
 discord:
   token: token

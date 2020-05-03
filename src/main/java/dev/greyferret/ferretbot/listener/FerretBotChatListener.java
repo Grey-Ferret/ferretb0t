@@ -165,7 +165,7 @@ public class FerretBotChatListener extends TwitchListener {
             if (StringUtils.isNotBlank(bits)) {
                 Long points = NumberUtils.toLong(bits, 0);
                 if (points != 0) {
-                    pointsProcessor.updatePoints(eventWrapper.getTag("display-name"), points);
+                    pointsProcessor.updatePoints(eventWrapper.getLogin(), points);
                 } else {
                     log.error("points == null/0");
                 }

@@ -2,9 +2,11 @@ package dev.greyferret.ferretbot.logic;
 
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
+import dev.greyferret.ferretbot.entity.InteractiveCommand;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.CommandService;
+import dev.greyferret.ferretbot.service.InteractiveCommandsService;
 import dev.greyferret.ferretbot.service.ViewerLootsMapService;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
@@ -46,14 +48,16 @@ public class ChatLogic {
 	@Autowired
 	private PointsProcessor pointsProcessor;
 
-	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
+	private ViewersProcessor viewersProcessor;
 	private HashMap<String, ZonedDateTime> recentSubsTimes = new HashMap<>();
+	InteractiveCommandsService interactiveCommandsService;
 
 	@PostConstruct
 	private void postConstruct() {
-		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
 		mtgaCardFinderProcessor = context.getBean(MTGACardFinderProcessor.class);
+		viewersProcessor = context.getBean(ViewersProcessor.class);
+		interactiveCommandsService = context.getBean(InteractiveCommandsService.class);
 	}
 
 	/***
@@ -95,18 +99,19 @@ public class ChatLogic {
 			}
 			if (message.toLowerCase().startsWith("!обнять")) {
 				foundCustomLogicCommand = true;
-				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollHug(event.getLoginVisual());
 			}
 			if (message.toLowerCase().startsWith("!подарить")) {
 				foundCustomLogicCommand = true;
-				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollGift(event.getLoginVisual());
 			}
 			if (message.toLowerCase().startsWith("!стукнуть")) {
 				foundCustomLogicCommand = true;
-				ViewersProcessor viewersProcessor = context.getBean(ViewersProcessor.class);
 				viewersProcessor.rollSmack(event.getLoginVisual());
+			}
+			InteractiveCommand interactiveCommand = interactiveCommandsService.getInteractiveCommandByCode(split[0].toLowerCase());
+			if (interactiveCommand != null) {
+				interactiveCommandsService.proceedInteractiveCommand(interactiveCommand, event);
 			}
 			if (!foundCustomLogicCommand && botConfig.isCustomCommandsOn()) {
 				CommandService commandService = context.getBean(CommandService.class);

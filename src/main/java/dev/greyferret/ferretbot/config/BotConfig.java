@@ -20,4 +20,5 @@ public class BotConfig {
 	private boolean mtgaCardsOn = false;
 	private boolean subVoteOn = false;
 	private boolean discordAnnouncementOn = false;
+	private boolean interactiveCommandsOn = false;
 }

@@ -5,21 +5,17 @@ import dev.greyferret.ferretbot.entity.CommandAlias;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 
 @Service
 public class CommandService {
 	@PersistenceContext
 	private EntityManager entityManager;
-	@Autowired
-	private EntityManagerFactory entityManagerFactory;
 
 	@Transactional
 	public String addOrEditCommand(@Nonnull String code, @Nonnull String text) {
