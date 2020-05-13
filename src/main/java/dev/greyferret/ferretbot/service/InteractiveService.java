@@ -1,7 +1,10 @@
 package dev.greyferret.ferretbot.service;
 
-import dev.greyferret.ferretbot.entity.InteractiveCommand;
+import dev.greyferret.ferretbot.entity.Interactive;
+import dev.greyferret.ferretbot.entity.RedeemedInteractive;
+import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
+import dev.greyferret.ferretbot.repository.RedeemedInteractiveRepository;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,23 +19,29 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 @Service
-public class InteractiveCommandsService {
+public class InteractiveService {
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
 	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
+	@Autowired
+	private ViewerService viewerService;
+	@Autowired
+	private RedeemedInteractiveRepository redeemedInteractiveRepository;
 
 	@Transactional
-	public boolean proceedInteractiveCommand(InteractiveCommand interactiveCommand, ChannelMessageEventWrapper event) {
-		if (interactiveCommand != null) {
-			if (interactiveCommand.isDisabled()) {
+	public boolean proceedInteractiveCommand(Interactive interactive, ChannelMessageEventWrapper event) {
+		if (interactive != null) {
+			if (interactive.isDisabled()) {
 				return false;
 			}
-			boolean enoughPoints = streamElementsAPIProcessor.updatePoints(event.getLogin(), interactiveCommand.getPrice());
+			boolean enoughPoints = streamElementsAPIProcessor.updatePoints(event.getLogin(), interactive.getPrice());
 			if (enoughPoints) {
-				event.sendMessageWithMention(" успешно заказал \"" + interactiveCommand.getResponse() + "\"");
+				Viewer viewer = viewerService.getViewerByName(event.getLogin().toLowerCase());
+				redeemedInteractiveRepository.save(new RedeemedInteractive(interactive, viewer));
+				event.sendMessageWithMention(" успешно заказал \"" + interactive.getResponse() + "\"");
 			} else {
 				event.sendMessageWithMention("Недостаточно IQ для заказа");
 			}
@@ -42,14 +51,14 @@ public class InteractiveCommandsService {
 	}
 
 	@Transactional
-	public InteractiveCommand getInteractiveCommandByCode(String code) {
+	public Interactive getInteractiveCommandByCode(String code) {
 		if (code.startsWith("!")) {
 			code = code.substring(1);
 		}
 
 		CriteriaBuilder builder = entityManagerFactory.getCriteriaBuilder();
-		CriteriaQuery<InteractiveCommand> criteria = builder.createQuery(InteractiveCommand.class);
-		Root<InteractiveCommand> root = criteria.from(InteractiveCommand.class);
+		CriteriaQuery<Interactive> criteria = builder.createQuery(Interactive.class);
+		Root<Interactive> root = criteria.from(Interactive.class);
 		criteria.select(root);
 		criteria.where(builder.equal(root.get("code"), code.toLowerCase()));
 		try {

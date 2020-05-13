@@ -1,5 +1,8 @@
+server:
+  port: 4108
+
 main:
-  debug: false
+  debug: true
   zoneId: Europe/Moscow
 
 bot:
@@ -40,6 +43,10 @@ spring:
     jdbc-url: jdbc:postgresql://127.0.0.1/postgres
     username: postgres
     password: postgres
+  data:
+    web:
+      pageable:
+        default-page-size: 10
 
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
 

@@ -12,7 +12,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Table(name = "interactive_command")
-public class InteractiveCommand {
+public class Interactive {
 	@Id
 	@GeneratedValue
 	@Column(name = "id", updatable = false, nullable = false)
@@ -28,7 +28,7 @@ public class InteractiveCommand {
 	@Column(name = "price")
 	private Long price;
 
-	public InteractiveCommand() {
+	public Interactive() {
 		this.disabled = false;
 	}
 
@@ -36,7 +36,7 @@ public class InteractiveCommand {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		InteractiveCommand that = (InteractiveCommand) o;
+		Interactive that = (Interactive) o;
 		return Objects.equals(id, that.id);
 	}
 

@@ -2,11 +2,11 @@ package dev.greyferret.ferretbot.logic;
 
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
-import dev.greyferret.ferretbot.entity.InteractiveCommand;
+import dev.greyferret.ferretbot.entity.Interactive;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.processor.*;
 import dev.greyferret.ferretbot.service.CommandService;
-import dev.greyferret.ferretbot.service.InteractiveCommandsService;
+import dev.greyferret.ferretbot.service.InteractiveService;
 import dev.greyferret.ferretbot.service.ViewerLootsMapService;
 import dev.greyferret.ferretbot.service.ViewerService;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
@@ -51,13 +51,13 @@ public class ChatLogic {
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
 	private ViewersProcessor viewersProcessor;
 	private HashMap<String, ZonedDateTime> recentSubsTimes = new HashMap<>();
-	InteractiveCommandsService interactiveCommandsService;
+	InteractiveService interactiveService;
 
 	@PostConstruct
 	private void postConstruct() {
 		mtgaCardFinderProcessor = context.getBean(MTGACardFinderProcessor.class);
 		viewersProcessor = context.getBean(ViewersProcessor.class);
-		interactiveCommandsService = context.getBean(InteractiveCommandsService.class);
+		interactiveService = context.getBean(InteractiveService.class);
 	}
 
 	/***
@@ -109,9 +109,9 @@ public class ChatLogic {
 				foundCustomLogicCommand = true;
 				viewersProcessor.rollSmack(event.getLoginVisual());
 			}
-			InteractiveCommand interactiveCommand = interactiveCommandsService.getInteractiveCommandByCode(split[0].toLowerCase());
-			if (interactiveCommand != null) {
-				interactiveCommandsService.proceedInteractiveCommand(interactiveCommand, event);
+			Interactive interactive = interactiveService.getInteractiveCommandByCode(split[0].toLowerCase());
+			if (interactive != null) {
+				interactiveService.proceedInteractiveCommand(interactive, event);
 			}
 			if (!foundCustomLogicCommand && botConfig.isCustomCommandsOn()) {
 				CommandService commandService = context.getBean(CommandService.class);
