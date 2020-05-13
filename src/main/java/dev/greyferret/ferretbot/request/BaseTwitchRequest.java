@@ -18,67 +18,72 @@ import java.util.Map;
 
 @Log4j2
 public abstract class BaseTwitchRequest<T> {
-    Map<String, String> params;
-    Map<String, String> additionalHeaders;
-    String twitchToken = "";
+	private final String clientId;
 
-    public BaseTwitchRequest(Map<String, String> params, Map<String, String> additionalHeaders) {
-        this.params = params;
-        this.additionalHeaders = additionalHeaders;
-    }
+	Map<String, String> params;
+	Map<String, String> additionalHeaders;
+	String twitchToken = "";
 
-    public void updateTwitchToken(String twitchToken) {
-        this.twitchToken = twitchToken;
-    }
+	public BaseTwitchRequest(Map<String, String> params, Map<String, String> additionalHeaders, String clientId) {
+		this.params = params;
+		this.additionalHeaders = additionalHeaders;
+		this.clientId = clientId;
+	}
 
-    public abstract T doRequest(String twitchToken) throws HttpStatusException;
+	public void updateTwitchToken(String twitchToken) {
+		this.twitchToken = twitchToken;
+	}
 
-    protected String doHttpRequest(String twitchToken) throws HttpStatusException {
-        Connection.Response response = null;
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + twitchToken);
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            headers.put(entry.getKey(), entry.getValue());
-        }
-        URI uri;
-        try {
-            uri = new URIBuilder(getRequestUrl()).addParameters(parseToNameValuePair(params)).build();
-        } catch (URISyntaxException e) {
-            log.error("Error building url for request", e);
-            return "";
-        }
-        try {
-            response = Jsoup.connect(uri.toString())
-                    .method(getMethod())
-                    .ignoreContentType(true)
-                    .headers(headers)
-                    .execute();
-        } catch (HttpStatusException e) {
-            throw e;
-        } catch (IOException e) {
-            log.error("Could not request Channel Status for url {}", uri.toString(), e);
-        }
-        return response == null ? "" : response.body();
-    }
+	public abstract T doRequest(String twitchToken) throws HttpStatusException;
 
-    public List<NameValuePair> parseToNameValuePair(Map<String, String> params) {
-        ArrayList<NameValuePair> res = new ArrayList<>();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            res.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-        }
-        return res;
-    }
-    protected abstract String getRequestUrl();
+	protected String doHttpRequest(String twitchToken) throws HttpStatusException {
+		Connection.Response response = null;
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Authorization", "Bearer " + twitchToken);
+		headers.put("Client-ID", clientId);
+		for (Map.Entry<String, String> entry : headers.entrySet()) {
+			headers.put(entry.getKey(), entry.getValue());
+		}
+		URI uri;
+		try {
+			uri = new URIBuilder(getRequestUrl()).addParameters(parseToNameValuePair(params)).build();
+		} catch (URISyntaxException e) {
+			log.error("Error building url for request", e);
+			return "";
+		}
+		try {
+			response = Jsoup.connect(uri.toString())
+					.method(getMethod())
+					.ignoreContentType(true)
+					.headers(headers)
+					.execute();
+		} catch (HttpStatusException e) {
+			throw e;
+		} catch (IOException e) {
+			log.error("Could not request Channel Status for url {}", uri.toString(), e);
+		}
+		return response == null ? "" : response.body();
+	}
 
-    protected abstract Connection.Method getMethod();
+	public List<NameValuePair> parseToNameValuePair(Map<String, String> params) {
+		ArrayList<NameValuePair> res = new ArrayList<>();
+		for (Map.Entry<String, String> entry : params.entrySet()) {
+			res.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+		}
+		return res;
+	}
 
-    @Override
-    public String toString() {
-        return "iBasicTwitchRequest{" +
-                "params=" + params +
-                ", twitchToken='" + twitchToken + '\'' +
-                ", requestUrl='" + getRequestUrl() + '\'' +
-                ", method=" + getMethod() +
-                '}';
-    }
+	protected abstract String getRequestUrl();
+
+	protected abstract Connection.Method getMethod();
+
+	@Override
+	public String toString() {
+		return "iBasicTwitchRequest{" +
+				"params=" + params +
+				", twitchToken='" + twitchToken + '\'' +
+				", requestUrl='" + getRequestUrl() + '\'' +
+				", method=" + getMethod() +
+				'}';
+	}
 }

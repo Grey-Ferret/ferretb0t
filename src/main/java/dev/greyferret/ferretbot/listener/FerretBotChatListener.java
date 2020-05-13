@@ -2,6 +2,7 @@ package dev.greyferret.ferretbot.listener;
 
 import dev.greyferret.ferretbot.config.ApplicationConfig;
 import dev.greyferret.ferretbot.config.BotConfig;
+import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.logic.ChatLogic;
 import dev.greyferret.ferretbot.processor.*;
@@ -63,6 +64,8 @@ public class FerretBotChatListener extends TwitchListener {
 	private PointsProcessor pointsProcessor;
 	@Autowired
 	private MTGACardFinderProcessor mtgaCardFinderProcessor;
+	@Autowired
+	private ChatConfig chatConfig;
 
 	/**
 	 * Creates a new TwitchListener and registers all the Twitch tags.
@@ -115,12 +118,12 @@ public class FerretBotChatListener extends TwitchListener {
                 viewerService.updateVisual(viewer, eventWrapper.getLoginVisual());
                 HashMap<String, String> params = new HashMap<>();
                 params.put("login", viewer.getLogin());
-                String userId = apiProcessor.proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap()));
+                String userId = apiProcessor.proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap(), chatConfig.getClientId()));
                 viewer.setTwitchUserId(userId);
                 params = new HashMap<>();
                 params.put("from_id", userId);
                 params.put("to_id", apiProcessor.streamerId());
-                String followDate = apiProcessor.proceedTwitchRequest(new FollowDateByUserIdTwitchRequest(params, new HashMap()));
+                String followDate = apiProcessor.proceedTwitchRequest(new FollowDateByUserIdTwitchRequest(params, new HashMap(), chatConfig.getClientId()));
                 boolean isFollower = !StringUtils.isBlank(followDate);
                 viewerService.updateFollowerStatus(viewer, followDate, isFollower);
             }

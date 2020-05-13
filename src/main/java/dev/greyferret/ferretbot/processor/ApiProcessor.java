@@ -99,7 +99,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
                 return json.getAccessToken();
             }
         } catch (IOException e) {
-            log.error("Could not request Channel Status", e);
+            log.error("Could not request Twitch Token", e);
             throw new NoTwitchAccessTokenAviable(e);
         }
         throw new NoTwitchAccessTokenAviable();
@@ -118,7 +118,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
         if (StringUtils.isBlank(_streamerId)) {
             HashMap<String, String> params = new HashMap<>();
             params.put("login", chatConfig.getChannel());
-            _streamerId = proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap()));
+            _streamerId = proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap(), chatConfig.getClientId()));
         }
         return _streamerId;
     }
@@ -129,7 +129,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
         if (StringUtils.isBlank(userId)) {
             HashMap<String, String> params = new HashMap<>();
             params.put("login", login);
-            userId = proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap()));
+            userId = proceedTwitchRequest(new UserIdByLoginTwitchRequest(params, new HashMap(), chatConfig.getClientId()));
         }
         if (StringUtils.isBlank(userId)) {
             log.error("Error while checking for follower: " + login);
@@ -137,7 +137,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
         HashMap<String, String> params = new HashMap<>();
         params.put("from_id", userId);
         params.put("to_id", streamerId());
-        return proceedTwitchRequest(new FollowDateByUserIdTwitchRequest(params, new HashMap()));
+        return proceedTwitchRequest(new FollowDateByUserIdTwitchRequest(params, new HashMap(), chatConfig.getClientId()));
     }
 
     public boolean getChannelStatus() {
@@ -147,7 +147,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
     public StreamData getStreamData() {
         HashMap<String, String> params = new HashMap<>();
         params.put("user_login", chatConfig.getChannel());
-        StreamData streamData = proceedTwitchRequest(new ChannelStatusTwitchRequest(params, new HashMap<>()));
+        StreamData streamData = proceedTwitchRequest(new ChannelStatusTwitchRequest(params, new HashMap<>(), chatConfig.getClientId()));
         ApiProcessor.ChannelStatus newChannelStatus = ApiProcessor.ChannelStatus.OFFLINE;
         if (streamData != null && streamData.getType().equalsIgnoreCase("live")) {
             newChannelStatus = ApiProcessor.ChannelStatus.ONLINE;

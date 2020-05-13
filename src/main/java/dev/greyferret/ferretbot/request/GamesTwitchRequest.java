@@ -10,8 +10,8 @@ import java.util.Map;
 
 @Log4j2
 public class GamesTwitchRequest extends BaseTwitchRequest<TwitchGames> {
-    public GamesTwitchRequest(Map<String, String> params, Map<String, String> headers) {
-        super(params, headers);
+    public GamesTwitchRequest(Map<String, String> params, Map<String, String> headers, String clientId) {
+        super(params, headers, clientId);
     }
 
     @Override

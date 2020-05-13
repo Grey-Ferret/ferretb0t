@@ -107,7 +107,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
                         String gameId = streamData.getGameId();
                         HashMap<String, String> params = new HashMap<>();
                         params.put("id", gameId);
-                        TwitchGames gameInfo = apiProcessor.proceedTwitchRequest(new GamesTwitchRequest(params, new HashMap<>()));
+                        TwitchGames gameInfo = apiProcessor.proceedTwitchRequest(new GamesTwitchRequest(params, new HashMap<>(), chatConfig.getClientId()));
                         if (gameInfo == null || gameInfo.getData() == null || gameInfo.getData().isEmpty() || StringUtils.isBlank(gameInfo.getData().get(0).getName())) {
                             log.warn("Stream in JSON was not null, had Stream Type, had Game Id, but could not parse games request");
                             channelStatusMessage = Messages.ANNOUNCE_MESSAGE_WITHOUT_GAME + chatConfig.getChannel();

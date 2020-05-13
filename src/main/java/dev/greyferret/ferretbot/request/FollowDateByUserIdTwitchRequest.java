@@ -10,8 +10,8 @@ import java.util.Map;
 
 @Log4j2
 public class FollowDateByUserIdTwitchRequest extends BaseTwitchRequest<String> {
-    public FollowDateByUserIdTwitchRequest(Map<String, String> params, Map<String, String> headers) {
-        super(params, headers);
+	public FollowDateByUserIdTwitchRequest(Map<String, String> params, Map<String, String> headers, String clientId) {
+        super(params, headers, clientId);
     }
 
     @Override
