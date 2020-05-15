@@ -35,8 +35,8 @@ public class StreamElementsAPIProcessor implements Runnable, ApplicationListener
 
 	@PostConstruct
 	private void postConstruct() {
-		updatePointsUrl = this.streamElementsAPIPrefix + "points/" + streamelementsConfig.getChannelId() + '/';
-		checkPointsUrl = this.streamElementsAPIPrefix + "points/" + streamelementsConfig.getChannelId() + '/';
+		updatePointsUrl = streamElementsAPIPrefix + "points/" + streamelementsConfig.getChannelId() + '/';
+		checkPointsUrl = streamElementsAPIPrefix + "points/" + streamelementsConfig.getChannelId() + '/';
 		isOn = true;
 	}
 
@@ -49,7 +49,7 @@ public class StreamElementsAPIProcessor implements Runnable, ApplicationListener
 			if (points < 0) {
 				try {
 					Long pointsCurrent = checkPoints(nickname);
-					if (pointsCurrent != null && points != null && pointsCurrent < points) {
+					if (pointsCurrent != null && points != null && pointsCurrent < Math.abs(points)) {
 						return false;
 					}
 				} catch (Exception ex) {

@@ -30,7 +30,7 @@ public class InteractiveCommandsService {
 			if (interactiveCommand.isDisabled()) {
 				return false;
 			}
-			boolean enoughPoints = streamElementsAPIProcessor.updatePoints(event.getLogin(), -1 * interactiveCommand.getPrice());
+			boolean enoughPoints = streamElementsAPIProcessor.updatePoints(event.getLogin(), -1 * Math.abs(interactiveCommand.getPrice()));
 			if (enoughPoints) {
 				event.sendMessageWithMention(" успешно заказал \"" + interactiveCommand.getResponse() + "\"");
 			} else {
