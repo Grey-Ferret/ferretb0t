@@ -44,7 +44,7 @@ public class StreamElementsAPIProcessor implements Runnable, ApplicationListener
 	public void run() {
 	}
 
-	public boolean updatePoints(String nickname, Long points) {
+	protected boolean _updatePoints(String nickname, Long points) {
 		if (!applicationConfig.isDebug()) {
 			if (points < 0) {
 				try {

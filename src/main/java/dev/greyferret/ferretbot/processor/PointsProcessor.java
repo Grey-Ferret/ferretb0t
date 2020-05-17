@@ -12,11 +12,9 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableConfigurationProperties({StreamelementsConfig.class, BotConfig.class})
 @Log4j2
-public class PointsProcessor {
+public class PointsProcessor extends StreamElementsAPIProcessor {
 	@Autowired
 	private StreamelementsConfig streamelementsConfig;
-	@Autowired
-	private StreamElementsAPIProcessor streamElementsAPIProcessor;
 	@Autowired
 	private FerretChatProcessor ferretChatProcessor;
 	@Autowired
@@ -26,7 +24,7 @@ public class PointsProcessor {
 		if (botConfig.isStreamElementsIntegrationOn() &&
 				StringUtils.isNotBlank(streamelementsConfig.getChannelId()) &&
 				StringUtils.isNotBlank(streamelementsConfig.getJwtToken())) {
-			return streamElementsAPIProcessor.updatePoints(nick, points);
+			return _updatePoints(nick, points);
 		} else {
 			ferretChatProcessor.sendMessage(FerretBotUtils.buildMessageAddPoints(nick, points));
 		}

@@ -1,7 +1,7 @@
 package dev.greyferret.ferretbot.service;
 
 import dev.greyferret.ferretbot.entity.InteractiveCommand;
-import dev.greyferret.ferretbot.processor.StreamElementsAPIProcessor;
+import dev.greyferret.ferretbot.processor.PointsProcessor;
 import dev.greyferret.ferretbot.wrapper.ChannelMessageEventWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class InteractiveCommandsService {
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Autowired
-	private StreamElementsAPIProcessor streamElementsAPIProcessor;
+	private PointsProcessor pointsProcessor;
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
 
@@ -30,7 +30,7 @@ public class InteractiveCommandsService {
 			if (interactiveCommand.isDisabled()) {
 				return false;
 			}
-			boolean enoughPoints = streamElementsAPIProcessor.updatePoints(event.getLogin(), -1 * Math.abs(interactiveCommand.getPrice()));
+			boolean enoughPoints = pointsProcessor.updatePoints(event.getLogin(), -1 * Math.abs(interactiveCommand.getPrice()));
 			if (enoughPoints) {
 				event.sendMessageWithMention(" успешно заказал \"" + interactiveCommand.getResponse() + "\"");
 			} else {
