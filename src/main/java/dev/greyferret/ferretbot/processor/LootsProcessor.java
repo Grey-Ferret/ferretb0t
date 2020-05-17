@@ -65,8 +65,6 @@ public class LootsProcessor implements Runnable, ApplicationListener<ContextStar
 	private String token;
 	private String tokenChroma;
 
-	private StreamElementsAPIProcessor streamElementsAPIProcessor;
-
 	/***
 	 * Constructor with all params for Loots
 	 */
@@ -78,7 +76,7 @@ public class LootsProcessor implements Runnable, ApplicationListener<ContextStar
 	@PostConstruct
 	private void postConstruct() {
 		this.timeRetryMS = lootsConfig.getTimer().getDefaultRetryMs();
-		streamElementsAPIProcessor = context.getBean(StreamElementsAPIProcessor.class);
+		pointsProcessor = context.getBean(PointsProcessor.class);
 	}
 
 	public void run() {

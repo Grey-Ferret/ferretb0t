@@ -3,18 +3,26 @@ package dev.greyferret.ferretbot.processor;
 import dev.greyferret.ferretbot.config.BotConfig;
 import dev.greyferret.ferretbot.config.ChatConfig;
 import dev.greyferret.ferretbot.config.ViewersConfig;
+import dev.greyferret.ferretbot.entity.ChatGiftFluffDto;
 import dev.greyferret.ferretbot.entity.Viewer;
+import dev.greyferret.ferretbot.repository.ChatGiftFluffRepository;
 import dev.greyferret.ferretbot.service.ViewerService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -31,6 +39,8 @@ public class ViewersProcessor implements Runnable, ApplicationListener<ContextSt
 	private ApiProcessor apiProcessor;
 	@Autowired
 	private BotConfig botConfig;
+	@Autowired
+	private ChatGiftFluffRepository chatGiftFluffRepository;
 
 	private boolean isOn;
 	private int checkNumber;
@@ -102,59 +112,21 @@ public class ViewersProcessor implements Runnable, ApplicationListener<ContextSt
 				} else if (type == 2) {
 					ferretChatClient.sendMessage(author + " отвесил подзатыльник " + viewer.getLoginVisual() + " SMOrc");
 				} else if (type == 3) {
-					ferretChatClient.sendMessage(author + " подарил " + viewer.getLoginVisual() + " " + rollGiftEntity() + "!");
+					String giftText = rollGiftEntity();
+					if (StringUtils.isNotBlank(giftText)) {
+						ferretChatClient.sendMessage(author + " подарил(а) " + viewer.getLoginVisual() + " " + giftText + "!");
+					}
 				}
 			}
 		}
 	}
 
 	private String rollGiftEntity() {
-		List<String> gifts = Arrays.asList("леденец",
-				"шоколадную конфетку",
-				"конфетку кислинка",
-				"ириску",
-				"цветок",
-				"красивый камушек",
-				"редкий фантик",
-				"жука в коробке",
-				"самодельную открытку",
-				"кислое яблоко",
-				"шишку",
-				"солдатика",
-				"мыльные пузыри",
-				"шарик",
-				"крабовую палочку",
-				"веточку сирени",
-				"крапиву в горшке",
-				"скинчик в фортнайте",
-				"фойловую земельку",
-				"воображаемого друга",
-				"упаковку пельмешек",
-				"теплые обнимашки",
-				"белый носочек",
-				"красный воздушный шарик",
-				"диабет",
-				"фанфик про него",
-				"кошачьи ушки",
-				"сгоревший стул",
-				"машинку на радиоуправлении",
-				"чихухуа",
-				"лучшие годы своей жизни",
-				"пулю на веревочке",
-				"усталость",
-				"здоровый сон",
-				"пузырек пустырника",
-				"колу с кофе",
-				"чай с 5 ложками сахара",
-				"баночку нутеллы",
-				"вафельный тортик",
-				"столетнюю черепашку",
-				"хентайную мангу",
-				"билетов пачку",
-				"мифический джокер",
-				"подушечку");
-		int i = ThreadLocalRandom.current().nextInt(gifts.size());
-		return gifts.get(i);
+		long count = chatGiftFluffRepository.count();
+		if (count == 0) return "";
+		int idx = ThreadLocalRandom.current().nextInt((int) count);
+		Page<ChatGiftFluffDto> chatGiftFluffDtos = chatGiftFluffRepository.findAll(PageRequest.of(idx, 1));
+		return chatGiftFluffDtos.getContent().get(0).getGift();
 	}
 
 	public void rollHug(String author) {
