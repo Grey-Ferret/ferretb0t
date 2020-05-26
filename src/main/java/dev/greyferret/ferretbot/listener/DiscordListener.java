@@ -31,10 +31,10 @@ public class DiscordListener extends ListenerAdapter {
 	private final DiscordConfig discordConfig;
 
 	public DiscordListener(DiscordProcessor discordProcessor,
-						   BotConfig botConfig,
-						   GameVoteProcessor gameVoteProcessor,
-						   GameVoteGameService gameVoteGameService,
-						   DiscordConfig discordConfig) {
+	                       BotConfig botConfig,
+	                       GameVoteProcessor gameVoteProcessor,
+	                       GameVoteGameService gameVoteGameService,
+	                       DiscordConfig discordConfig) {
 		this.discordProcessor = discordProcessor;
 		this.botConfig = botConfig;
 		this.gameVoteProcessor = gameVoteProcessor;
@@ -44,7 +44,7 @@ public class DiscordListener extends ListenerAdapter {
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getMessage().getMember()!= null && !event.getMessage().getMember().getUser().getName().equalsIgnoreCase("Dyno")) {
+		if (event.getMessage().getMember() != null && !event.getMessage().getMember().getUser().getName().equalsIgnoreCase("Dyno")) {
 			if (event.isFromType(ChannelType.PRIVATE)) {
 				log.info("PRIVATE: " + FerretBotUtils.buildDiscordMessageLog(event.getMessage()));
 			} else {
@@ -85,21 +85,26 @@ public class DiscordListener extends ListenerAdapter {
 				}
 			}
 			Integer votes = 0;
+			Integer baseVote = 1;
+			if (discordConfig.getBaseVoteMap() != null && discordConfig.getBaseVoteMap().containsKey(channelCombination.getAddChannelId())) {
+				baseVote = discordConfig.getBaseVoteMap().get(channelCombination.getAddChannelId());
+			}
 			List<GameVoteBonusVote> gameVoteBonusVotes = gameVoteGameService.getAllBonusVotes();
-			if (gameVoteBonusVotes.size() > 0) {
-				for (GameVoteBonusVote bonusVoteEntity : gameVoteBonusVotes) {
-					Role roleToIncrease = event.getJDA().getRoleById(bonusVoteEntity.getRoleId());
-					if (event.getMember().getRoles().contains(roleToIncrease)) {
-						votes = votes + bonusVoteEntity.getVotes();
+			boolean foundWasdRole = false;
+			for (GameVoteBonusVote bonusVoteEntity : gameVoteBonusVotes) {
+				Role roleToIncrease = event.getJDA().getRoleById(bonusVoteEntity.getRoleId());
+				if (event.getMember().getRoles().contains(roleToIncrease)) {
+					if (bonusVoteEntity.isDisableBaseVote()) {
+						foundWasdRole = true;
 					}
+					votes = votes + bonusVoteEntity.getVotes();
 				}
 			}
+			if (!foundWasdRole) {
+				votes = votes + baseVote;
+			}
 			if (discordConfig.getGameVoteDisableRoles().contains(channelCombination.getAddChannelId()) || votes == 0) {
-				if (discordConfig.getBaseVoteMap() == null || !discordConfig.getBaseVoteMap().containsKey(channelCombination.getAddChannelId())) {
-					votes = 1;
-				} else {
-					votes = discordConfig.getBaseVoteMap().get(channelCombination.getAddChannelId());
-				}
+				votes = baseVote;
 			}
 			gameVoteGameService.addVoter(channelCombination.getAddChannelId(), votes, emoteId, userId);
 			gameVoteProcessor.createOrUpdatePost(channelCombination);

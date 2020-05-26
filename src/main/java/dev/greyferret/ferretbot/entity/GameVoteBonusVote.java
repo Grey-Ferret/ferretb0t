@@ -2,6 +2,7 @@ package dev.greyferret.ferretbot.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 
@@ -20,4 +21,8 @@ public class GameVoteBonusVote {
 
 	@Column(name = "votes")
 	private Integer votes;
+
+	@Column(name = "disable_base_vote")
+	@ColumnDefault(value = "false")
+	private boolean disableBaseVote;
 }
