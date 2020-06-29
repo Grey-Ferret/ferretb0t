@@ -118,7 +118,7 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
 		throw new NoTwitchAccessTokenAviable();
 	}
 
-	public Token refreshAccessToken(String refreshToken) {
+	public Token refreshStreamerAccessToken(String refreshToken) {
 		Connection.Response response;
 		try {
 			Map<String, String> headers = new HashMap<>();

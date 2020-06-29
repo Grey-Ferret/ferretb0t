@@ -38,7 +38,7 @@ public class WebSocketProcessor implements Runnable, ApplicationListener<Context
 	public void run() {
 		TwitchPubSub twitchPubSub = beanFactory.getBean(TwitchPubSub.class, new ScheduledThreadPoolExecutor(99));
 		twitchPubSub.connect();
-		Token token = apiProcessor.refreshAccessToken(dynamicPropertyService.getRefreshToken());
+		Token token = apiProcessor.refreshStreamerAccessToken(dynamicPropertyService.getRefreshToken());
 		twitchPubSub.listenForPointsEvents(token.getAccessToken(), token.getRefreshToken(), apiProcessor.getStreamerId());
 	}
 

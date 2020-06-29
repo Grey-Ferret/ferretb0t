@@ -285,7 +285,7 @@ public class TwitchPubSub implements AutoCloseable {
 
 	public void resubscribeToTopic(PubSubSubscription subscription) {
 		log.info("Refreshing Access Token for WebSocket");
-		Token token = apiProcessor.refreshAccessToken(dynamicPropertyService.getRefreshToken());
+		Token token = apiProcessor.refreshStreamerAccessToken(dynamicPropertyService.getRefreshToken());
 
 		PubSubRequest request = subscription.getRequest();
 		if (request.getType() != PubSubType.LISTEN) {
