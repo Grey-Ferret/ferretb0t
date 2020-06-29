@@ -199,10 +199,10 @@ public class TwitchPubSub implements AutoCloseable {
 								String pointsMessage = message.getData().getMessage();
 								PointsRedeemData pointsRedeemData = new Gson().fromJson(pointsMessage, PointsRedeemData.class);
 								Redemption redemption = pointsRedeemData.getData().getRedemption();
-								if (redemption.getReward().getTitle().equals("Бан на 4 часа")) {
+								if (redemption.getReward().getTitle().equals("Таймач на 4 часа")) {
 									new Thread(() -> {
 										try {
-											Thread.sleep(10 * 1000);
+											Thread.sleep(5 * 1000);
 										} catch (InterruptedException e) {
 											log.error(e);
 										}
