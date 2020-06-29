@@ -97,14 +97,8 @@ public class FerretBotChatListener extends TwitchListener {
 
         Viewer viewer = viewerService.getViewerByName(login);
         if (viewer != null) {
-            if (eventWrapper.hasBadge("subscriber") || eventWrapper.hasBadge("founder"))
-                viewerService.setSubscriber(viewer, true);
-            else
-                viewerService.setSubscriber(viewer, false);
-            if (eventWrapper.hasBadge("vip"))
-                viewerService.setVip(viewer, true);
-            else
-                viewerService.setVip(viewer, false);
+	        viewerService.setSubscriber(viewer, eventWrapper.hasBadge("subscriber") || eventWrapper.hasBadge("founder"));
+	        viewerService.setVip(viewer, eventWrapper.hasBadge("vip"));
             boolean toUpdateMeta = false;
             if (viewer.getUpdatedVisual(applicationConfig.getZoneId()) != null) {
                 ZonedDateTime zdt = viewer.getUpdatedVisual(applicationConfig.getZoneId()).plusHours(Viewer.hoursToUpdateVisual);
@@ -122,7 +116,7 @@ public class FerretBotChatListener extends TwitchListener {
                 viewer.setTwitchUserId(userId);
                 params = new HashMap<>();
                 params.put("from_id", userId);
-                params.put("to_id", apiProcessor.streamerId());
+                params.put("to_id", apiProcessor.getStreamerId());
                 String followDate = apiProcessor.proceedTwitchRequest(new FollowDateByUserIdTwitchRequest(params, new HashMap(), chatConfig.getClientId()));
                 boolean isFollower = !StringUtils.isBlank(followDate);
                 viewerService.updateFollowerStatus(viewer, followDate, isFollower);

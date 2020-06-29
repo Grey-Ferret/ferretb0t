@@ -3,7 +3,9 @@ package dev.greyferret.ferretbot.entity.json.v5.user;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import lombok.Data;
 
+@Data
 public class Links {
 
     @SerializedName("self")
@@ -24,18 +26,5 @@ public class Links {
     public Links(String self) {
         super();
         this.self = self;
-    }
-
-    public String getSelf() {
-        return self;
-    }
-
-    public void setSelf(String self) {
-        this.self = self;
-    }
-
-    public Links withSelf(String self) {
-        this.self = self;
-        return this;
     }
 }

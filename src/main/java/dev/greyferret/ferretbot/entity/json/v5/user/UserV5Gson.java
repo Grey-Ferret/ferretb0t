@@ -3,7 +3,9 @@ package dev.greyferret.ferretbot.entity.json.v5.user;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import lombok.Data;
 
+@Data
 public class UserV5Gson {
 
     @SerializedName("display_name")
@@ -64,122 +66,5 @@ public class UserV5Gson {
         this.updatedAt = updatedAt;
         this.logo = logo;
         this.links = links;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public UserV5Gson withDisplayName(String displayName) {
-        this.displayName = displayName;
-        return this;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public UserV5Gson withId(Integer id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public UserV5Gson withName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public UserV5Gson withType(String type) {
-        this.type = type;
-        return this;
-    }
-
-    public Object getBio() {
-        return bio;
-    }
-
-    public void setBio(Object bio) {
-        this.bio = bio;
-    }
-
-    public UserV5Gson withBio(Object bio) {
-        this.bio = bio;
-        return this;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public UserV5Gson withCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-        return this;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public UserV5Gson withUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-        return this;
-    }
-
-    public String getLogo() {
-        return logo;
-    }
-
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-
-    public UserV5Gson withLogo(String logo) {
-        this.logo = logo;
-        return this;
-    }
-
-    public Links getLinks() {
-        return links;
-    }
-
-    public void setLinks(Links links) {
-        this.links = links;
-    }
-
-    public UserV5Gson withLinks(Links links) {
-        this.links = links;
-        return this;
     }
 }

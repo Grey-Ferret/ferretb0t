@@ -2,7 +2,9 @@
 package dev.greyferret.ferretbot.entity.json.twitch.users.follows;
 
 
-public class Pagination {
+import lombok.Data;
 
+@Data
+public class Pagination {
 
 }
