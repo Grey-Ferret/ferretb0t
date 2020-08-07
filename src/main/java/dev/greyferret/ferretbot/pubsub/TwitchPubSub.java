@@ -104,7 +104,6 @@ public class TwitchPubSub implements AutoCloseable {
 		});
 
 		taskExecutor.schedule(this.queueThread, 1L, TimeUnit.MILLISECONDS);
-		log.debug("PubSub: Started Queue Worker Thread");
 	}
 
 	@Synchronized
@@ -210,7 +209,6 @@ public class TwitchPubSub implements AutoCloseable {
 							}
 						} else if (message.getType().equals(PubSubType.RESPONSE)) {
 							// topic subscription success or failed, response to listen command
-							// System.out.println(message.toString());
 							if (message.getError().length() > 0) {
 								if (message.getError().equalsIgnoreCase("ERR_BADAUTH")) {
 									log.error("PubSub: You used a invalid oauth token to subscribe to the topic. Please use a token that is authorized for the specified channel.");
