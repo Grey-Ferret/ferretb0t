@@ -105,7 +105,7 @@ public class TwitchPubSub implements AutoCloseable {
 				}
 			}
 			if (attempts >= limitAttempts) {
-				log.error("PubSub: Attempts reached limit of {}, stopping PubSub", limitAttempts);
+				log.error("PubSub: Attempts reached limit of {}", limitAttempts);
 			}
 		});
 
