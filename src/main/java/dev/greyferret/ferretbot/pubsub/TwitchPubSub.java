@@ -38,7 +38,7 @@ public class TwitchPubSub implements AutoCloseable {
 	@Autowired
 	private FerretChatProcessor ferretChatProcessor;
 
-	private final static String webSocketServer = "wss://pubsub-edge.twitch.tv:443";
+	private static final String webSocketServer = "wss://pubsub-edge.twitch.tv:443";
 
 	@Setter(AccessLevel.NONE)
 	private WebSocket webSocket;
@@ -82,7 +82,9 @@ public class TwitchPubSub implements AutoCloseable {
 		taskExecutor.scheduleAtFixedRate(this.heartbeatThread, 0, 15L, TimeUnit.SECONDS);
 		// queue command worker
 		this.queueThread = new Thread(() -> {
-			while (!isClosed) {
+			final int limitAttempts = 500;
+			int attempts = 0;
+			while (!isClosed && attempts < limitAttempts) {
 				try {
 					// check for missing pong response
 					if (ZonedDateTime.now().toInstant().toEpochMilli() >= lastPing + 10000 && lastPong < lastPing) {
@@ -98,8 +100,12 @@ public class TwitchPubSub implements AutoCloseable {
 						}
 					}
 				} catch (Exception ex) {
+					attempts++;
 					log.error("PubSub: Unexpected error in worker thread", ex);
 				}
+			}
+			if (attempts >= limitAttempts) {
+				log.error("PubSub: Attempts reached limit of {}", limitAttempts);
 			}
 		});
 
