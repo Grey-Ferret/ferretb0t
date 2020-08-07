@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.6.RELEASE</version>
+        <version>2.3.2.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>dev.greyferret</groupId>
@@ -136,10 +136,12 @@
             <version>1.12.1</version>
         </dependency>
 
+        <!--https://github.com/DV8FromTheWorld/JDA-->
+        <!--Discord-->
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.1.1_137</version>
+            <version>4.2.0_187</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>

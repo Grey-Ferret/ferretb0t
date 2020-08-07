@@ -95,8 +95,6 @@ public class TwitchPubSub implements AutoCloseable {
 					if (command != null) {
 						if (connectionState.equals(TMIConnectionState.CONNECTED)) {
 							sendCommand(command);
-							// Logging
-							log.debug("Processed command from queue: [{}].", command);
 						}
 					}
 				} catch (Exception ex) {
@@ -169,12 +167,12 @@ public class TwitchPubSub implements AutoCloseable {
 
 				@Override
 				public void onConnected(WebSocket ws, Map<String, List<String>> headers) {
-					log.info("Connecting to Twitch PubSub {}", webSocketServer);
+//					log.info("Connecting to Twitch PubSub {}", webSocketServer);
 
 					// Connection Success
 					connectionState = TMIConnectionState.CONNECTED;
 
-					log.info("Connected to Twitch PubSub {}", webSocketServer);
+//					log.info("Connected to Twitch PubSub {}", webSocketServer);
 
 					// resubscribe to all topics after disconnect
 					subscribedTopics.forEach(topic -> listenOnTopic(topic));
