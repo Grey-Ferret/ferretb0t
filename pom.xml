@@ -200,7 +200,7 @@
             <id>no-tests</id>
             <activation>
                 <property>
-                    <name>notests</name>
+                    <name>teamcity.version</name>
                 </property>
             </activation>
             <properties>
