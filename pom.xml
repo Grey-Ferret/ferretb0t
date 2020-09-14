@@ -199,6 +199,9 @@
         <profile>
             <id>no-tests</id>
             <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
                 <property>
                     <name>teamcity.version</name>
                 </property>
