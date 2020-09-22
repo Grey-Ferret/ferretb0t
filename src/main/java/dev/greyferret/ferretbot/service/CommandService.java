@@ -45,17 +45,19 @@ public class CommandService {
 		return "";
 	}
 
-	private static void findAndSendMessageWithMention(Command command, ChannelMessageEventWrapper event) {
+	private static void sendCommand(Command command, ChannelMessageEventWrapper event) {
 		String[] split = StringUtils.split(FerretBotUtils.buildMessage(event.getMessage()), ' ');
-		if (split.length == 1)
+		if (command.getResponseType() == 1)
+			event.sendMessage(command.getResponse());
+		else if (split.length == 1)
 			event.sendMessageWithMention(command.getResponse());
 		else
 			event.sendMessageWithMention(command.getResponse(), split[split.length - 1]);
 	}
 
 	public static void proceedTextCommand(Command command, ChannelMessageEventWrapper event) {
-		if(!command.isDisabled()) {
-			findAndSendMessageWithMention(command, event);
+		if (!command.isDisabled()) {
+			sendCommand(command, event);
 		}
 	}
 

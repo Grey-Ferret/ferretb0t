@@ -253,6 +253,10 @@ public class ChatLogic {
 		if (message.startsWith("!approve")) {
 			approve(event);
 		}
+
+		if (message.toLowerCase().startsWith("!so")) {
+			showSoMessage(event);
+		}
 	}
 
 	private void approve(ChannelMessageEventWrapper event) {
@@ -383,5 +387,13 @@ public class ChatLogic {
 		return result;
 	}
 
-	private ArrayList<String> tempBanWords = new ArrayList<>(Arrays.asList("getViewerspro"));
+	private void showSoMessage(ChannelMessageEventWrapper event) {
+		String message = FerretBotUtils.buildMessage(event.getMessage());
+		String[] split = StringUtils.split(message, ' ');
+		if (split.length >= 2) {
+			event.sendMessage("Обязательно посетите канал этого чудесного стримера: twitch.tv/" + split[1] + " PogChamp PogChamp PogChamp");
+		}
+	}
+
+	private final ArrayList<String> tempBanWords = new ArrayList<>(Arrays.asList("getViewerspro"));
 }
