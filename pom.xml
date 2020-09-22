@@ -195,20 +195,6 @@
 
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>no-tests</id>
-            <activation>
-                <property>
-                    <name>notests</name>
-                </property>
-            </activation>
-            <properties>
-                <maven.test.skip>true</maven.test.skip>
-            </properties>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
             <plugin>
