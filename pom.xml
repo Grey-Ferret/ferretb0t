@@ -150,12 +150,12 @@
             <version>1.12.1</version>
         </dependency>
 
-        <!--https://github.com/DV8FromTheWorld/JDA-->
+        <!-- https://github.com/DV8FromTheWorld/JDA -->
         <!--Discord-->
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.0_209</version>
+            <version>4.2.0_214</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>

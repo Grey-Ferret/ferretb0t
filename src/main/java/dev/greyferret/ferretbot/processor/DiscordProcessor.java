@@ -49,7 +49,7 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
     public TextChannel testChannel;
     public TextChannel raffleChannel;
     public ArrayList<GamevoteChannelCombination> gameVoteChannelCombinations;
-    private boolean isOn;
+    private final boolean isOn;
     private ApiProcessor apiProcessor;
     private ApiProcessor.ChannelStatus currentChannelStatus = ApiProcessor.ChannelStatus.UNDEFINED;
 
@@ -61,9 +61,9 @@ public class DiscordProcessor implements Runnable, ApplicationListener<ContextSt
     public void run() {
         gameVoteChannelCombinations = new ArrayList<>();
         try {
-            JDABuilder builder = new JDABuilder(discordConfig.getToken());
+            JDABuilder builder = JDABuilder.createDefault(discordConfig.getToken());
             // Disable parts of the cache
-            builder.setDisabledCacheFlags(EnumSet.of(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE));
+            builder.disableCache(EnumSet.of(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE));
             // Enable the bulk delete event
             builder.setBulkDeleteSplittingEnabled(false);
             // Disable compression (not recommended)
