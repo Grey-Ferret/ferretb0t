@@ -71,7 +71,7 @@ public class DiscordListener extends ListenerAdapter {
 			return;
 		}
 		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
-		if (voteMessageIds.contains(event.getMessageIdLong())) {
+		if (!voteMessageIds.isEmpty() && voteMessageIds.contains(event.getMessageIdLong())) {
 			long emoteId = event.getReactionEmote().getIdLong();
 			GameVoteVoting game = gameVoteGameService.getVotingByChannelAndEmote(channelCombination.getAddChannelId(), emoteId);
 			if (game.getVoters().containsKey(userId)) {
@@ -119,7 +119,7 @@ public class DiscordListener extends ListenerAdapter {
 //			return;
 //		}
 //		ArrayList<Long> voteMessageIds = gameVoteProcessor.getVoteMessageIds(channelCombination.getAddChannelId());
-//		if (voteMessageIds.contains(event.getMessageIdLong())) {
+//		if (!voteMessageIds.isEmpty() && voteMessageIds.contains(event.getMessageIdLong())) {
 //			long emoteId = event.getReactionEmote().getIdLong();
 //			GameVoteVoting game = gameVoteGameService.getVotingByChannelAndEmote(channelCombination.getAddChannelId(), emoteId);
 //			if (!game.getVoters().containsKey(userId)) {
