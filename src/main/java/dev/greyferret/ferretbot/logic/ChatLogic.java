@@ -254,7 +254,7 @@ public class ChatLogic {
 			approve(event);
 		}
 
-		if (message.toLowerCase().startsWith("!so")) {
+		if (message.toLowerCase().startsWith("!so ")) {
 			showSoMessage(event);
 		}
 	}
