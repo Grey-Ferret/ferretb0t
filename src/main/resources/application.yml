@@ -79,8 +79,4 @@ streamelements:
 
 viewers:
   raffle-ignore: nick1, nick2
-
-websocket:
-  streamer-client-id: streamerclientid
-  streamer-client-secret: streamerclientsecret
   

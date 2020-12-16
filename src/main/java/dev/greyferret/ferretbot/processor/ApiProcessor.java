@@ -2,10 +2,8 @@ package dev.greyferret.ferretbot.processor;
 
 import com.google.gson.Gson;
 import dev.greyferret.ferretbot.config.ChatConfig;
-import dev.greyferret.ferretbot.config.WebsocketConfig;
 import dev.greyferret.ferretbot.entity.Viewer;
 import dev.greyferret.ferretbot.entity.json.twitch.streams.StreamData;
-import dev.greyferret.ferretbot.entity.json.twitch.token.Token;
 import dev.greyferret.ferretbot.exception.NoTwitchAccessTokenAviable;
 import dev.greyferret.ferretbot.request.BaseTwitchRequest;
 import dev.greyferret.ferretbot.request.ChannelStatusTwitchRequest;
@@ -44,8 +42,6 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
 	private ViewerService viewerService;
 	@Autowired
 	private DynamicPropertyService dynamicPropertyService;
-	@Autowired
-	private WebsocketConfig websocketConfig;
 
 	@Override
 	public void run() {
@@ -110,36 +106,6 @@ public class ApiProcessor implements Runnable, ApplicationListener<ContextStarte
 				Gson g = new Gson();
 				AccessTokenJson json = g.fromJson(body, AccessTokenJson.class);
 				return json.getAccessToken();
-			}
-		} catch (IOException e) {
-			log.error("Could not request Twitch Token", e);
-			throw new NoTwitchAccessTokenAviable(e);
-		}
-		throw new NoTwitchAccessTokenAviable();
-	}
-
-	public Token refreshStreamerAccessToken(String refreshToken) {
-		Connection.Response response;
-		try {
-			Map<String, String> headers = new HashMap<>();
-			String tokenUrl = "https://id.twitch.tv/oauth2/token?" +
-					"grant_type=refresh_token" +
-					"&refresh_token=" + refreshToken +
-					"&client_id=" + websocketConfig.getStreamerClientId() +
-					"&client_secret=" + websocketConfig.getStreamerClientSecret();
-			response = Jsoup.connect(tokenUrl)
-					.method(Connection.Method.POST)
-					.ignoreContentType(true)
-					.headers(headers)
-					.execute();
-			String body = response.body();
-			if (StringUtils.isBlank(body)) {
-				log.error("Could not request Twitch Token, response was blank");
-			} else {
-				Gson g = new Gson();
-				Token token = g.fromJson(body, Token.class);
-				dynamicPropertyService.setToken(token);
-				return token;
 			}
 		} catch (IOException e) {
 			log.error("Could not request Twitch Token", e);

@@ -6,12 +6,8 @@ import dev.greyferret.ferretbot.entity.json.loots.Ok;
 import dev.greyferret.ferretbot.exception.LootsRunningLootsParsingException;
 import dev.greyferret.ferretbot.util.FerretBotUtils;
 import org.hibernate.annotations.Type;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
