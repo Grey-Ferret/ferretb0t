@@ -16,7 +16,6 @@ bot:
   sub-vote-on: true
   discord-announcement-on: false
   interactive-commands-on: true
-  twitch-points-on: false
 
 discord:
   token: token

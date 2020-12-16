@@ -21,5 +21,4 @@ public class BotConfig {
 	private boolean subVoteOn = false;
 	private boolean discordAnnouncementOn = false;
 	private boolean interactiveCommandsOn = false;
-	private boolean twitchPointsOn = false;
 }
